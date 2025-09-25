@@ -1,0 +1,3745 @@
+
+===== .\next-env.d.ts =====
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+/// <reference path="./.next/types/routes.d.ts" />
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+
+
+===== .\next.config.ts =====
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+
+
+===== .\package.json =====
+{
+  "name": "my-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-context-menu": "^2.2.16",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-slider": "^1.3.6",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.3.0",
+    "class-variance-authority": "^0.7.1",
+    "cmdk": "^1.1.1",
+    "framer-motion": "^12.23.22",
+    "lucide-react": "^0.544.0",
+    "next": "15.5.4",
+    "next-themes": "^0.4.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-hook-form": "^7.63.0",
+    "react-resizable-panels": "^3.0.6",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+
+
+===== .\tailwind.config.ts =====
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./(components)/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        inter: ["var(--font-inter)"],
+        "be-vietnam-pro": ["var(--font-be-vietnam-pro)"],
+        roboto: ["var(--font-roboto)"],
+      },
+      colors: {
+        'stone-50': '#FAFAF9',
+        'neutral-100': '#F5F5F5',
+        'neutral-900': '#171717',
+        'gray-800': '#262626',
+        'blue-800': '#1E40AF',
+        'blue-900': '#1E3A8A',
+        'yellow-400': '#FBBF24',
+        'card-bg': '#D6D8E5',
+        'footer-blue': '#E9EFFE',
+      },
+      backgroundImage: {
+        "linear-95": "linear-gradient(95deg, var(--tw-gradient-stops))",
+        "linear-65": "linear-gradient(65deg, var(--tw-gradient-stops))",
+      },
+      boxShadow: {
+        'custom': '0px 0px 2.2px 1px rgba(76, 76, 76, 0.22)',
+      },
+    },
+  },
+  plugins: [],
+};
+export default config;
+
+===== .\tsconfig.json =====
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+
+
+===== .\app\globals.css =====
+@import "tailwindcss";
+
+/* --- ĐÃ SỬA: Xóa bỏ các luật @apply bị lỗi --- */
+@layer base {
+  :root {
+    --background: 220 13% 97%; /* stone-50 */
+    --foreground: 240 4% 9%;   /* neutral-900 */
+
+    --card: 220 13% 97%;
+    --card-foreground: 240 4% 9%;
+
+    --popover: 220 13% 97%;
+    --popover-foreground: 240 4% 9%;
+    
+    --primary: 224 76% 38%; /* blue-900 */
+    --primary-foreground: 210 40% 98%; /* neutral-100 */
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 4% 9%;
+    
+    --muted: 240 5% 90%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 240 5% 90%;
+    --accent-foreground: 240 4% 9%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 240 4% 80%;
+    --input: 240 4% 80%;
+    --ring: 224 76% 38%;
+
+    --radius: 0.75rem;
+  }
+}
+
+===== .\app\layout.tsx =====
+import type { Metadata } from "next";
+import { Inter, Be_Vietnam_Pro, Roboto } from "next/font/google";
+import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
+
+// --- SỬA LỖI: Chuyển các font vào đây để đồng bộ ---
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const beVietnamPro = Be_Vietnam_Pro({ subsets: ["latin"], weight: ["400", "600", "700", "900"], variable: "--font-be-vietnam-pro" });
+const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-roboto" });
+
+export const metadata = {
+  title: "Vision2Reality",
+  description: "Generate Stunning 3D Models with AI.",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      {/* --- ĐÃ SỬA: Áp dụng trực tiếp class bg-background và text-foreground --- */}
+      <body className={`${inter.variable} ${beVietnamPro.variable} ${roboto.variable} bg-background text-foreground`}>
+        {children}
+        <Toaster />
+      </body>
+    </html>
+  );
+}
+
+===== .\app\page.tsx =====
+import Header from "@/components/Header";
+import Hero from "@/components/sections/Hero";
+import Features from "@/components/sections/Features";
+import CommunityShowcase from "@/components/sections/CommunityShowcase";
+import Cta from "@/components/sections/Cta";
+import Footer from "@/components/Footer";
+
+export default function Home() {
+  return (
+    // --- ĐÃ SỬA: Bỏ min-w-[1440px] ---
+    <div className="relative overflow-x-hidden">
+      <Header />
+      <main>
+        <Hero />
+        <Features />
+        <CommunityShowcase />
+        <Cta />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+===== .\app\forgot-password\page.tsx =====
+"use client"
+
+import Link from "next/link"
+import { motion } from "framer-motion"
+import Image from "next/image"
+import { ArrowLeft } from "lucide-react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { toast } from "sonner"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+
+const formSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address." }),
+})
+
+export default function ForgotPasswordPage() {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { email: "" },
+  })
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values)
+    toast.success("Password reset link sent!", {
+      description: `If an account with ${values.email} exists, you will receive an email.`,
+    })
+    form.reset()
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-8 font-sans bg-background relative overflow-hidden">
+      {/* --- ĐÃ SỬA: Tăng kích thước và độ sáng cho các đốm màu nền --- */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-yellow-400/20 rounded-full blur-3xl" />
+      </div>
+
+      <motion.div 
+        className="w-full max-w-md bg-card/80 backdrop-blur-sm border p-8 sm:p-10 rounded-2xl shadow-lg relative"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <Link href="/login" passHref>
+          <Button
+            variant="ghost"
+            className="absolute left-4 top-4 sm:left-8 sm:top-8 p-2 cursor-pointer"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="ml-2 hidden sm:inline">Back to Login</span>
+          </Button>
+        </Link>
+        
+        <div className="space-y-8 pt-12">
+          <div className="text-center flex flex-col items-center gap-3">
+            <Image src="/logo/dark.png" alt="Vision2Reality Logo" width={40} height={40} />
+            <h1 className="text-xl font-semibold text-foreground">Vision2Reality</h1>
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-2 text-center">
+              <h2 className="text-3xl font-bold text-foreground">Reset Password</h2>
+              <p className="text-muted-foreground">
+                Enter your email and we&apos;ll send you a reset link.
+              </p>
+            </div>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="user@company.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" variant="default">
+                  Send Reset Link
+                </Button>
+              </form>
+            </Form>
+            
+            <div className="text-center text-sm text-muted-foreground">
+              Remember Your Password?{" "}
+              <Link href="/login" className="font-medium text-primary hover:underline">
+                Sign In.
+              </Link>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+===== .\app\login\page.tsx =====
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Eye, EyeOff } from "lucide-react"
+import Image from "next/image"
+import { motion } from "framer-motion"
+
+const GoogleIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" preserveAspectRatio="xMidYMid" viewBox="0 0 256 262">
+        <path fill="#4285F4" d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.686H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"/>
+        <path fill="#34A853" d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.34 221.722 77.535 261.1 130.55 261.1"/>
+        <path fill="#FBBC05" d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.615.032C5.904 89.227 1 109.524 1 130.55s4.904 41.323 12.743 58.217l43.538-33.414z"/>
+        <path fill="#EB4335" d="M130.55 50.479c19.205 0 36.344 6.698 50.073 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 77.535 0 35.34 39.378 13.686 91.229l42.682 33.32z"/>
+    </svg>
+);
+
+const GithubIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+        <path fill="#181717" d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.207 11.387.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.725-4.042-1.61-4.042-1.61-.546-1.387-1.332-1.756-1.332-1.756-1.088-.745.082-.729.082-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.3-.54-1.52.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.656.24 2.876.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12 24 5.37 18.627 0 12 0z"/>
+    </svg>
+);
+
+export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false)
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-8 font-sans bg-background relative overflow-hidden">
+      {/* --- ĐÃ SỬA: Tăng kích thước và độ sáng cho các đốm màu nền --- */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-yellow-400/20 rounded-full blur-3xl" />
+      </div>
+
+      <motion.div 
+        className="w-full max-w-md bg-card/80 backdrop-blur-sm border p-8 sm:p-10 rounded-2xl shadow-lg"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+          <div className="space-y-8">
+              <div className="text-center flex flex-col items-center gap-3">
+                  <Image src="/logo/dark.png" alt="Vision2Reality Logo" width={40} height={40} />
+                  <h1 className="text-xl font-semibold text-foreground">Vision2Reality</h1>
+              </div>
+
+              <div className="space-y-6">
+                  <div className="space-y-2 text-center">
+                      <h2 className="text-3xl font-bold text-foreground">Welcome Back</h2>
+                      <p className="text-muted-foreground">Enter your email and password to access your account.</p>
+                  </div>
+
+                  <div className="space-y-4">
+                      <div className="space-y-2">
+                          <Label htmlFor="email">Email</Label>
+                          <Input id="email" type="email" placeholder="user@company.com" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="password">Password</Label>
+                          <div className="relative">
+                              <Input id="password" type={showPassword ? "text" : "password"} placeholder="Enter password" className="pr-10" />
+                              <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                              </Button>
+                          </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                              <input type="checkbox" id="remember" className="rounded border-border cursor-pointer" />
+                              <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer">Remember Me</Label>
+                          </div>
+                          <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+                              Forgot Password?
+                          </Link>
+                      </div>
+                  </div>
+                  
+                  <Button className="w-full" variant="default">Log In</Button>
+                  
+                  <div className="relative">
+                      <div className="absolute inset-0 flex items-center"><Separator /></div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                      </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button variant="outline" className="h-12 rounded-lg bg-white text-black hover:bg-gray-100 border-gray-300">
+                      <GoogleIcon />
+                      <span className="ml-2">Google</span>
+                    </Button>
+                    <Button variant="outline" className="h-12 rounded-lg bg-[#24292F] text-white hover:bg-[#24292F]/90 border-[#24292F]">
+                      <GithubIcon />
+                      <span className="ml-2">GitHub</span>
+                    </Button>
+                  </div>
+                  
+                  <div className="text-center text-sm text-muted-foreground">
+                      Don&apos;t Have An Account?{" "}
+                      <Link href="/register" className="font-medium text-primary hover:underline">
+                          Register Now.
+                      </Link>
+                  </div>
+              </div>
+          </div>
+      </motion.div>
+    </div>
+  )
+}
+
+===== .\app\register\page.tsx =====
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import { motion } from "framer-motion"
+import Image from "next/image"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { toast } from "sonner"
+import { Eye, EyeOff } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Separator } from "@/components/ui/separator"
+import { useRouter } from "next/navigation"
+
+const formSchema = z.object({
+    fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
+    email: z.string().email({ message: "Please enter a valid email." }),
+    password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+    confirmPassword: z.string()
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+});
+
+export default function RegisterPage() {
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const router = useRouter();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { fullName: "", email: "", password: "", confirmPassword: "" },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values)
+    toast.success("Account created successfully!");
+    router.push('/dashboard');
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-8 font-sans bg-background relative overflow-hidden">
+      {/* --- ĐÃ SỬA: Tăng kích thước và độ sáng cho các đốm màu nền --- */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-yellow-400/20 rounded-full blur-3xl" />
+      </div>
+
+      <motion.div 
+        className="w-full max-w-md bg-card/80 backdrop-blur-sm border p-8 sm:p-10 rounded-2xl shadow-lg"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <div className="space-y-8">
+          <div className="text-center flex flex-col items-center gap-3">
+            <Image src="/logo/dark.png" alt="Vision2Reality Logo" width={40} height={40} />
+            <h1 className="text-xl font-semibold text-foreground">Vision2Reality</h1>
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-2 text-center">
+              <h2 className="text-3xl font-bold text-foreground">Create Account</h2>
+              <p className="text-muted-foreground">Create a new account to get started.</p>
+            </div>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="user@company.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                          <div className="relative">
+                              <Input type={showPassword ? "text" : "password"} placeholder="Enter password" {...field} className="pr-10" />
+                              <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                              </Button>
+                          </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                          <div className="relative">
+                              <Input type={showConfirmPassword ? "text" : "password"} placeholder="Confirm password" {...field} className="pr-10" />
+                              <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                  {showConfirmPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                              </Button>
+                          </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full !mt-6" variant="default">Create Account</Button>
+              </form>
+            </Form>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center"><Separator /></div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
+            
+            <div className="text-center text-sm text-muted-foreground">
+              Already Have An Account?{" "}
+              <Link href="/login" className="font-medium text-primary hover:underline">
+                Sign In.
+              </Link>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+===== .\app\workspace\page.tsx =====
+"use client";
+
+import { useRef, useState } from 'react';
+import DashboardLayout from '@/components/dashboard-layout/layout';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+  type ImperativePanelHandle,
+} from "@/components/ui/resizable";
+import { ControlsPanel } from '@/components/workspace/ControlsPanel';
+import { ViewerPanel } from '@/components/workspace/ViewerPanel';
+import { AssetLibraryPanel } from '@/components/workspace/AssetLibraryPanel';
+import { Button } from '@/components/ui/button';
+import { PanelLeftOpen, PanelRightOpen } from 'lucide-react';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+
+export default function WorkspacePage() {
+  const controlsPanelRef = useRef<ImperativePanelHandle>(null);
+  const libraryPanelRef = useRef<ImperativePanelHandle>(null);
+
+  const [isControlsCollapsed, setControlsCollapsed] = useState(false);
+  const [isLibraryCollapsed, setLibraryCollapsed] = useState(false);
+
+  const toggleControlsPanel = () => {
+    const panel = controlsPanelRef.current;
+    if (panel) {
+      panel.toggleCollapse();
+    }
+  };
+  
+  const toggleLibraryPanel = () => {
+    const panel = libraryPanelRef.current;
+    if (panel) {
+      panel.toggleCollapse();
+    }
+  };
+
+  return (
+    <DashboardLayout>
+      {/* --- ĐÃ SỬA: Bỏ nền Aurora và áp dụng padding/gap cho ResizablePanelGroup --- */}
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="h-full max-h-[calc(100vh-4rem)] p-3 gap-3"
+      >
+        <ResizablePanel
+          ref={controlsPanelRef}
+          collapsible={true}
+          collapsedSize={4}
+          minSize={25}
+          defaultSize={28}
+          onCollapse={() => setControlsCollapsed(true)}
+          onExpand={() => setControlsCollapsed(false)}
+          className="!overflow-y-auto transition-all duration-300"
+        >
+          {isControlsCollapsed ? (
+            <div className="flex h-full items-center justify-center">
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={toggleControlsPanel}>
+                      <PanelLeftOpen className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>Expand Controls</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          ) : (
+            <ControlsPanel onToggle={toggleControlsPanel} />
+          )}
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        <ResizablePanel defaultSize={44} minSize={30}>
+          <ViewerPanel modelUrl="/model.glb" />
+        </ResizablePanel>
+        
+        <ResizableHandle withHandle />
+
+        <ResizablePanel
+          ref={libraryPanelRef}
+          collapsible={true}
+          collapsedSize={4}
+          minSize={25}
+          defaultSize={28}
+          onCollapse={() => setLibraryCollapsed(true)}
+          onExpand={() => setLibraryCollapsed(false)}
+          className="transition-all duration-300"
+        >
+           {isLibraryCollapsed ? (
+            <div className="flex h-full items-center justify-center">
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={toggleLibraryPanel}>
+                      <PanelRightOpen className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">
+                    <p>Expand Library</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+           ) : (
+            <AssetLibraryPanel onToggle={toggleLibraryPanel} />
+           )}
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </DashboardLayout>
+  );
+}
+
+===== .\components\Footer.tsx =====
+"use client"; // --- ĐÃ THÊM: Cần thiết để xử lý sự kiện onClick ---
+import Image from "next/image";
+import type { MouseEvent } from "react";
+
+const Footer = () => {
+
+  // --- ĐÃ THÊM: Hàm xử lý hiệu ứng cuộn mượt lên đầu trang ---
+  const handleScrollToTop = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault(); // Ngăn hành vi nhảy trang mặc định
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", // Kích hoạt hiệu ứng cuộn mượt
+    });
+  };
+
+  return (
+    <footer className="relative mt-10 bg-gradient-to-b from-stone-50 to-[#E9EFFE] pt-24 pb-12">
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 text-neutral-900">
+            <div className="lg:col-span-2">
+              <h3 className="font-roboto text-xl font-semibold">Subscribe to updates</h3>
+              <p className="font-roboto text-base mt-4">Join our newsletter to stay updated on latest news</p>
+              <form className="mt-4 flex flex-col sm:flex-row">
+                <input type="email" placeholder="Enter your email" className="w-full sm:w-80 h-11 px-4 py-2.5 bg-white rounded-lg sm:rounded-r-none border-none text-stone-500 placeholder:text-stone-500" />
+                <button type="submit" className="mt-2 sm:mt-0 w-full sm:w-32 h-11 bg-blue-800 text-white text-lg font-medium font-roboto rounded-lg sm:rounded-l-none">Subscribe</button>
+              </form>
+            </div>
+            <div className="lg:col-start-3">
+              <h3 className="font-roboto text-xl font-semibold">Features</h3>
+              <ul className="mt-4 space-y-3 font-be-vietnam-pro text-base">
+                <li><a href="#" className="hover:underline">Text to 3D</a></li>
+                <li><a href="#" className="hover:underline">Image to 3D</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-roboto text-xl font-semibold">Product</h3>
+              <ul className="mt-4 space-y-3 font-be-vietnam-pro text-base">
+                <li><a href="#" className="hover:underline">Pricing</a></li>
+                <li><a href="#" className="hover:underline">Community</a></li>
+                <li><a href="#" className="hover:underline">Plugin</a></li>
+                <li><a href="#" className="hover:underline">Status</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-roboto text-xl font-semibold">Company</h3>
+              <ul className="mt-4 space-y-3 font-be-vietnam-pro text-base">
+                <li><a href="#" className="hover:underline">About</a></li>
+                <li><a href="#" className="hover:underline">Contact</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-24 flex justify-between items-center pt-8">
+          <Image 
+            src="/logo/dark.png" 
+            alt="V2R Logo" 
+            width={90} 
+            height={56} 
+          />
+          {/* --- ĐÃ SỬA: Thêm sự kiện onClick vào nút --- */}
+          <a 
+            href="#"
+            onClick={handleScrollToTop}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-neutral-900 text-white"
+            aria-label="Scroll to top"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+              <path fillRule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
+
+===== .\components\Header.tsx =====
+"use client"; // --- ĐÃ THÊM: Cần thiết để sử dụng state ---
+import Image from "next/image";
+import { useState } from "react";
+
+const Header = () => {
+  // --- ĐÃ THÊM: State để giả lập trạng thái đăng nhập ---
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  return (
+    <header className="absolute top-0 left-0 w-full z-20 font-inter">
+      <div className="w-full max-w-screen-2xl mx-auto px-8">
+        <div className="flex justify-between items-center h-20">
+          <div className="flex items-center gap-x-10">
+            <Image 
+              src="/logo/dark.png" 
+              alt="V2R Logo" 
+              width={40} 
+              height={38} 
+            />
+            <nav className="hidden md:flex items-center space-x-8">
+              <a href="#" className="bg-neutral-900 text-neutral-100 text-base font-bold px-5 py-2.5 rounded-lg">Home</a>
+              <a href="#" className="text-gray-800 text-base">Community</a>
+              <a href="#" className="text-gray-800 text-base">Features</a>
+              <a href="#" className="text-gray-800 text-base">Pricing</a>
+            </nav>
+          </div>
+          
+          {/* --- ĐÃ SỬA: Logic hiển thị tùy theo trạng thái đăng nhập --- */}
+          <div>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-x-2">
+                {/* Notification Bell */}
+                <button className="relative w-12 h-12 flex items-center justify-center rounded-full text-black hover:bg-neutral-200 transition-colors" aria-label="Notifications">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.918zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
+                  </svg>
+                </button>
+                {/* User Avatar */}
+                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-black text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                  </svg>
+                </div> 
+              </div>
+            ) : (
+              <div className="flex items-center gap-x-4">
+                <a href="#" className="text-gray-800 text-base font-medium hover:text-black transition-colors">
+                  Log in
+                </a>
+                <a href="#" className="bg-neutral-900 text-neutral-100 text-base font-medium px-5 py-2.5 rounded-lg">
+                  Sign up
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
+
+===== .\components\ModelViewer.tsx =====
+// components/ModelViewer.tsx
+"use client";
+
+import { Suspense } from "react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
+
+// Component con để tải và hiển thị model
+function Model({ url }: { url: string }) {
+  const { scene } = useGLTF(url);
+  return <primitive object={scene} />;
+}
+
+// Component chính của trình xem
+export default function ModelViewer({ modelUrl }: { modelUrl: string }) {
+  return (
+    <Canvas
+      shadows
+      dpr={[1, 2]}
+      camera={{ fov: 50 }}
+      style={{ background: "transparent" }}
+    >
+      <Suspense fallback={null}>
+        {/* contactShadow không còn, thay bằng shadows={false} nếu muốn tắt hẳn shadow */}
+        <Stage environment="city" intensity={0.5} shadows={false}>
+          <Model url={modelUrl} />
+        </Stage>
+      </Suspense>
+      <OrbitControls
+        makeDefault
+        autoRotate
+        autoRotateSpeed={0.5}
+        minPolarAngle={0}
+        maxPolarAngle={Math.PI / 2}
+      />
+    </Canvas>
+  );
+}
+
+
+===== .\components\ThemeToggle.tsx =====
+"use client"
+
+import * as React from "react"
+import { Moon, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
+
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+export function ThemeToggle() {
+  const { setTheme } = useTheme()
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          Light
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+          Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          System
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+===== .\components\dashboard-layout\layout.tsx =====
+"use client"
+
+import type { ReactNode } from "react"
+import Sidebar from "@/components/dashboard-layout/sidebar"
+import TopNav from "@/components/dashboard-layout/top-nav"
+import { useEffect, useState } from "react"
+
+interface LayoutProps {
+  children: ReactNode
+}
+
+interface CustomWindow extends Window {
+    menuState?: "full" | "collapsed" | "hidden";
+    isHovered?: boolean;
+    isMobile?: boolean;
+}
+
+declare const window: CustomWindow;
+
+export default function Layout({ children }: LayoutProps) {
+  const [mounted, setMounted] = useState(false)
+  const [menuState, setMenuState] = useState<"full" | "collapsed" | "hidden">("full")
+  const [isHovered, setIsHovered] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    const checkState = () => {
+      if (typeof window !== "undefined") {
+        if (window.menuState) {
+          setMenuState(window.menuState)
+        }
+        if (window.isHovered !== undefined) {
+          setIsHovered(window.isHovered)
+        }
+        if (window.isMobile !== undefined) {
+          setIsMobile(window.isMobile)
+        }
+      }
+    }
+
+    const interval = setInterval(checkState, 50)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
+  const getMarginLeft = () => {
+    if (isMobile) { return "0" }
+    if (menuState === "hidden") { return "0" }
+    if (menuState === "collapsed" && isHovered) { return "16rem" }
+    if (menuState === "collapsed") { return "4rem" }
+    return "16rem"
+  }
+
+  return (
+    // --- ĐÃ SỬA: `bg-transparent` để nền Ambiance có thể hiển thị xuyên qua ---
+    <div className="flex h-screen bg-transparent">
+      <Sidebar />
+      <div
+        className="w-full flex flex-1 flex-col transition-all duration-300 ease-in-out min-w-0"
+        style={{ marginLeft: getMarginLeft() }}
+      >
+        {/* --- ĐÃ SỬA: Bỏ border-b, thay bằng shadow nhẹ để tinh tế hơn --- */}
+        <header className="h-16 flex-shrink-0 bg-card/80 backdrop-blur-lg sticky top-0 z-40 shadow-sm">
+          <TopNav />
+        </header>
+        {/* --- ĐÃ SỬA: Bọc main trong một div relative để chứa viền gradient --- */}
+        <div className="flex-1 relative">
+            {/* --- ĐÃ THÊM: Viền gradient --- */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400/0 via-yellow-400/80 to-yellow-400/0" />
+            <main className="flex-1 h-full overflow-auto bg-transparent min-w-0">
+                {children}
+            </main>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+===== .\components\dashboard-layout\sidebar.tsx =====
+"use client";
+
+import type React from "react";
+import { Boxes, Settings, LifeBuoy, Users, History, LayoutDashboard, Bell } from "lucide-react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { usePathname } from 'next/navigation';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+type MenuState = "full" | "collapsed" | "hidden";
+
+interface MenuItem {
+  id: string;
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+interface MenuGroup {
+    title?: string; 
+    items: MenuItem[];
+}
+
+interface CustomWindow extends Window {
+    toggleMenuState?: () => void;
+    setIsMobileMenuOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+    menuState?: MenuState;
+    isHovered?: boolean;
+    isMobile?: boolean;
+    isMobileMenuOpen?: boolean;
+}
+
+declare const window: CustomWindow;
+
+const menuGroups: MenuGroup[] = [
+    {
+        items: [
+            { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+            { id: "workspace", label: "Workspace", href: "/workspace", icon: Boxes },
+            { id: "history", label: "History", href: "/history", icon: History },
+            { id: "community", label: "Community", href: "/community", icon: Users },
+        ]
+    },
+    {
+        title: "Manage", 
+        items: [
+            { id: "notifications", label: "Notifications", href: "/notifications", icon: Bell },
+            { id: "settings", label: "Settings", href: "/settings", icon: Settings },
+        ]
+    },
+    {
+        title: "Support", 
+        items: [
+            { id: "help", label: "Help", href: "/help", icon: LifeBuoy },
+        ]
+    }
+];
+
+export default function Sidebar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [menuState, setMenuState] = useState<MenuState>("full");
+  const [isHovered, setIsHovered] = useState(false);
+  const [previousDesktopState, setPreviousDesktopState] = useState<MenuState>("full");
+  const [isMobile, setIsMobile] = useState(false);
+
+  const toggleMenuState = () => {
+    setMenuState((prev) => (prev === "full" ? "collapsed" : "full"));
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const isDesktop = window.innerWidth >= 1024;
+      setIsMobile(!isDesktop);
+      if (isDesktop && menuState === "hidden") {
+        setMenuState(previousDesktopState);
+      } else if (!isDesktop) {
+        setPreviousDesktopState(menuState);
+        setMenuState("hidden");
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    if (typeof window !== "undefined") {
+      window.toggleMenuState = toggleMenuState;
+      window.setIsMobileMenuOpen = setIsMobileMenuOpen;
+    }
+    return () => window.removeEventListener("resize", handleResize);
+  }, [menuState, previousDesktopState]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.menuState = menuState;
+      window.isHovered = isHovered;
+      window.isMobile = isMobile;
+      window.isMobileMenuOpen = isMobileMenuOpen;
+    }
+  }, [menuState, isHovered, isMobile, isMobileMenuOpen]);
+
+  const NavItem = ({ item }: { item: MenuItem }) => {
+    const pathname = usePathname();
+    const isActive = pathname === item.href;
+    const isCollapsed = menuState === "collapsed" && !isHovered;
+
+    const linkContent = (
+      <Link
+        href={item.href}
+        onClick={() => isMobile && setIsMobileMenuOpen(false)}
+        // --- ĐÃ SỬA: Trả về style active nền đen chữ trắng như trong hình ---
+        className={cn(
+          "flex items-center py-2 px-3 text-sm rounded-md transition-colors group",
+          isActive
+            ? "bg-neutral-900 text-white font-semibold hover:bg-neutral-900/90"
+            : "text-foreground/70 hover:bg-accent hover:text-accent-foreground",
+          isCollapsed && "justify-center"
+        )}
+      >
+        <item.icon className="h-4 w-4 shrink-0" />
+        <span className={cn("ml-3 flex-1 whitespace-nowrap", isCollapsed && "hidden")}>{item.label}</span>
+      </Link>
+    );
+
+    if (isCollapsed) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+          <TooltipContent side="right">
+            <p>{item.label}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return linkContent;
+  };
+
+  const SidebarContent = () => (
+    <div className="flex h-full flex-col bg-card">
+      <div className="flex h-16 shrink-0 items-center border-b px-4">
+        <Link href="/" className="flex items-center gap-3 font-semibold">
+          <Image src="/logo/dark.png" alt="V2R Logo" width={32} height={32} />
+          {(menuState === "full" || (isHovered && menuState === "collapsed")) && (
+            <span className="text-lg text-foreground">Vision2Reality</span>
+          )}
+        </Link>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2">
+        <nav className="flex flex-col gap-4"> 
+          {menuGroups.map((group, index) => (
+            <div key={index}>
+              {group.title && (menuState === 'full' || isHovered) && (
+                <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {group.title}
+                </h3>
+              )}
+              <div className="space-y-1">
+                {group.items.map(item => (
+                  <NavItem key={item.id} item={item} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+      </div>
+    </div>
+  );
+
+  const getSidebarWidth = () => {
+    if (isMobile) return "w-64";
+    if (menuState === "hidden") return "w-0 border-r-0";
+    if (menuState === "collapsed" && isHovered) return "w-64";
+    return menuState === "collapsed" ? "w-16" : "w-64";
+  };
+
+  if (isMobile) {
+    return (
+      <>
+        <nav className={cn("fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out border-r",
+          isMobileMenuOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"
+        )}>
+          <SidebarContent />
+        </nav>
+        {isMobileMenuOpen && <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setIsMobileMenuOpen(false)} />}
+      </>
+    );
+  }
+
+  return (
+    <TooltipProvider delayDuration={0}>
+      <nav
+        className={cn("fixed inset-y-0 left-0 z-50 border-r transition-all duration-300 ease-in-out", getSidebarWidth())}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{ overflow: menuState === "hidden" ? "hidden" : "visible" }}
+      >
+        <SidebarContent />
+      </nav>
+    </TooltipProvider>
+  );
+}
+
+===== .\components\dashboard-layout\top-nav.tsx =====
+// ===== File: .\components\dashboard-layout\top-nav.tsx =====
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import { Menu, Search, Bell, User, Settings, LogOut, Command as CommandIcon, Boxes, History, Users as CommunityIcon, HelpCircle, SidebarOpen, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator
+} from "@/components/ui/command";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import Link from "next/link";
+import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { ThemeToggle } from '@/components/ThemeToggle';
+
+// === MỚI: Dữ liệu thông báo giả lập cho dropdown ===
+const recentNotifications = [
+    { id: 1, user: 'PixelForge', avatar: 'https://github.com/shadcn.png', action: 'liked your model', subject: 'Cyberpunk Samurai', time: '5m ago', read: false },
+    { id: 2, user: 'System Update', avatar: '/logo/dark.png', action: 'New premium models are available!', subject: '', time: '1h ago', read: false },
+    { id: 3, user: 'ArtisanAI', avatar: 'https://github.com/vercel.png', action: 'commented on your model', subject: 'Forest Elf', time: '3h ago', read: true },
+];
+
+interface CustomWindow extends Window {
+    isMobile?: boolean;
+    isMobileMenuOpen?: boolean;
+    setIsMobileMenuOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+    toggleMenuState?: () => void;
+    toggleWorkspacePanels?: () => void;
+}
+declare const window: CustomWindow;
+
+export default function TopNav() {
+  const [openCommand, setOpenCommand] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const isWorkspacePage = pathname === '/workspace';
+  
+  // === MỚI: Tính toán số thông báo chưa đọc ===
+  const unreadCount = recentNotifications.filter(n => !n.read).length;
+
+  const breadcrumbItems = React.useMemo(() => {
+    const paths = pathname.split('/').filter(p => p);
+    if (paths.length === 0) return [];
+    
+    const items = paths.map((path, index) => {
+        const href = `/${paths.slice(0, index + 1).join('/')}`;
+        const isLast = index === paths.length - 1;
+        const name = path.charAt(0).toUpperCase() + path.slice(1).replace('-', ' ');
+        return { href, name, isLast };
+    });
+    
+    if (paths[0] !== 'dashboard' && paths.length > 0) {
+        return [{ href: '/dashboard', name: 'Dashboard', isLast: false }, ...items];
+    }
+    
+    return items;
+  }, [pathname]);
+
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpenCommand((open) => !open);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
+  
+  const runCommand = (command: () => void) => {
+    setOpenCommand(false);
+    command();
+  };
+
+  const handleMenuToggle = () => {
+    if (typeof window !== "undefined") {
+      if (window.isMobile) {
+        const current = window.isMobileMenuOpen || false;
+        if(window.setIsMobileMenuOpen) {
+            window.setIsMobileMenuOpen(!current);
+        }
+      } else if (window.toggleMenuState) {
+        window.toggleMenuState();
+      }
+    }
+  };
+  
+  const handleWorkspacePanelToggle = () => {
+    window.toggleWorkspacePanels?.();
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between h-full px-4 lg:px-6">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={handleMenuToggle} className="text-muted-foreground">
+            <Menu className="h-5 w-5" />
+          </Button>
+          {isWorkspacePage && (
+            <Button variant="ghost" size="icon" onClick={handleWorkspacePanelToggle} className="text-muted-foreground">
+              <SidebarOpen className="h-5 w-5" />
+            </Button>
+          )}
+          <Breadcrumb className="hidden md:block">
+            <BreadcrumbList>
+              {breadcrumbItems.map((item, index) => (
+                <React.Fragment key={`${item.href}-${index}`}>
+                  <BreadcrumbItem>
+                    {item.isLast ? (
+                      <BreadcrumbPage>{item.name}</BreadcrumbPage>
+                    ) : (
+                      <BreadcrumbLink asChild>
+                        <Link href={item.href}>{item.name}</Link>
+                      </BreadcrumbLink>
+                    )}
+                  </BreadcrumbItem>
+                  {!item.isLast && <BreadcrumbSeparator />}
+                </React.Fragment>
+              ))}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm" className="gap-2 text-muted-foreground" onClick={() => setOpenCommand(true)}>
+            <Search className="h-4 w-4" />
+            <span className="hidden lg:inline-block">Search...</span>
+            <kbd className="hidden lg:inline-flex pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </Button>
+          
+          <ThemeToggle />
+
+          {/* === THAY ĐỔI: Biến nút chuông thành Dropdown Menu === */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative text-muted-foreground">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-96">
+                <DropdownMenuLabel className="flex justify-between items-center">
+                    <span>Notifications</span>
+                    {unreadCount > 0 && <span className="text-xs font-normal text-primary">{unreadCount} New</span>}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="p-1">
+                {recentNotifications.map(item => (
+                    <DropdownMenuItem key={item.id} className="flex items-start gap-3 p-2 cursor-pointer">
+                        <Avatar className="h-8 w-8 border">
+                            <AvatarImage src={item.avatar} />
+                            <AvatarFallback>{item.user.substring(0,2)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                             <p className="text-xs">
+                                <span className="font-semibold">{item.user}</span> {item.action} {item.subject && <span className="font-medium text-primary">"{item.subject}"</span>}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{item.time}</p>
+                        </div>
+                        {!item.read && <div className="h-2 w-2 rounded-full bg-blue-500 mt-1" />}
+                    </DropdownMenuItem>
+                ))}
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href="/notifications" className="flex items-center justify-center p-2 cursor-pointer">
+                        <Button variant="ghost" size="sm" className="w-full">View all notifications</Button>
+                    </Link>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2 p-1 rounded-full h-auto">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="https://github.com/shadcn.png" alt="User" />
+                  <AvatarFallback>JD</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="flex items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings" className="flex items-center">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive flex items-center">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+      <CommandDialog open={openCommand} onOpenChange={setOpenCommand}>
+        <CommandInput placeholder="Type a command or search..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Navigation">
+            <CommandItem onSelect={() => runCommand(() => router.push('/workspace'))}>
+              <Boxes className="mr-2 h-4 w-4" />
+              <span>Workspace</span>
+            </CommandItem>
+            <CommandItem onSelect={() => runCommand(() => router.push('/history'))}>
+              <History className="mr-2 h-4 w-4" />
+              <span>History</span>
+            </CommandItem>
+             <CommandItem onSelect={() => runCommand(() => router.push('/community'))}>
+              <CommunityIcon className="mr-2 h-4 w-4" />
+              <span>Community</span>
+            </CommandItem>
+             <CommandItem onSelect={() => runCommand(() => router.push('/settings'))}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </CommandItem>
+          </CommandGroup>
+          <CommandSeparator />
+           <CommandGroup heading="Help">
+            <CommandItem onSelect={() => runCommand(() => router.push('/help'))}>
+              <HelpCircle className="mr-2 h-4 w-4" />
+              <span>Help & Support</span>
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+    </>
+  );
+}
+
+===== .\components\sections\CommunityShowcase.tsx =====
+
+"use client";
+import Image from "next/image";
+import { motion, Variants } from "framer-motion";
+
+// Danh sách các hình ảnh từ thư mục public/landing_page
+const communityImages = [
+  { src: "/landing_page/image 13.png", alt: "Community model 1" },
+  { src: "/landing_page/image 14.png", alt: "Community model 2" },
+  { src: "/landing_page/image 15.png", alt: "Community model 3" },
+  { src: "/landing_page/image 16.png", alt: "Community model 4" },
+  { src: "/landing_page/image 18.png", alt: "Community model 5" },
+  { src: "/landing_page/image 19.png", alt: "Community model 6" },
+  { src: "/landing_page/image 21.png", alt: "Community model 7" },
+  { src: "/landing_page/image 22.png", alt: "Community model 8" },
+  { src: "/landing_page/image 23.png", alt: "Community model 9" },
+];
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut"
+    }
+  },
+};
+
+const CommunityShowcase = () => {
+  return (
+    <section className="py-20 overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="font-be-vietnam-pro text-4xl font-bold text-neutral-900">
+            Step into the World of 3D Imagination
+          </h2>
+          <p className="font-roboto mt-4 text-xl text-neutral-900 max-w-3xl mx-auto">
+            Discover and download a variety of unique 3D models from our vibrant community.
+          </p>
+        </motion.div>
+        
+        {/* --- ANIMATION: Áp dụng stagger effect --- */}
+        <motion.div 
+          className="columns-1 sm:columns-2 md:columns-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          {communityImages.map((image, index) => (
+            <motion.div key={index} className="mb-8 break-inside-avoid" variants={itemVariants}>
+              <Image 
+                src={image.src} 
+                alt={image.alt} 
+                width={413}
+                height={600}
+                className="rounded-[35px] w-full h-auto object-cover" 
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        <div className="text-center mt-8">
+          <motion.button 
+            className="bg-neutral-900 text-white text-base font-semibold font-be-vietnam-pro rounded-full px-8 py-4"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Load more
+          </motion.button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default CommunityShowcase;
+
+===== .\components\sections\Cta.tsx =====
+"use client"; // --- ĐÃ THÊM: Cần thiết cho animation ---
+import { motion } from "framer-motion";
+
+const Cta = () => {
+    return (
+        // --- ĐÃ SỬA: Tăng padding dọc và thêm animation ---
+        <motion.section 
+            className="py-32"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.8 }}
+        >
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                 {/* --- ĐÃ SỬA: Tăng font-size tiêu đề --- */}
+                 <h2 className="font-be-vietnam-pro text-5xl font-bold text-neutral-900">
+                    Unlock a faster 3D workflow.
+                 </h2>
+                 {/* --- ĐÃ SỬA: Tăng margin, max-width và làm dịu màu chữ --- */}
+                 <p className="font-roboto mt-5 text-xl text-neutral-700 max-w-3xl mx-auto leading-relaxed">
+                    Transform your design process with V2R. Try it now and see your creativity come to life effortlessly!
+                 </p>
+                 {/* --- ĐÃ SỬA: Tăng margin và cập nhật style nút bấm --- */}
+                 <div className="mt-14 flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                    <motion.a 
+                        href="#" 
+                        className="bg-blue-900 rounded-full px-8 py-4 text-white text-base font-semibold font-be-vietnam-pro"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        START FOR FREE
+                    </motion.a>
+                    <motion.a 
+                        href="#" 
+                        className="bg-neutral-900 rounded-full px-8 py-4 text-neutral-100 text-base font-semibold font-be-vietnam-pro"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        EXPLORE
+                    </motion.a>
+                 </div>
+            </div>
+        </motion.section>
+    );
+}
+
+export default Cta;
+
+===== .\components\sections\Features.tsx =====
+"use client";
+import Image from "next/image";
+import { motion, Variants } from "framer-motion";
+
+const cardVariants: Variants = {
+  offscreen: { y: 50, opacity: 0 },
+  onscreen: { y: 0, opacity: 1, transition: { type: "spring", bounce: 0.4, duration: 1 } }
+};
+
+const Features = () => {
+  return (
+    // --- ĐÃ SỬA: Tăng padding dọc ---
+    <section className="py-24 mt-10 md:mt-20 overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-20"> {/* --- ĐÃ SỬA: Tăng margin-bottom --- */}
+          {/* --- ĐÃ SỬA: Tăng font-size tiêu đề --- */}
+          <h2 className="font-be-vietnam-pro text-5xl font-bold text-neutral-900">Your Ultimate AI 3D Model Generator</h2>
+          {/* --- ĐÃ SỬA: Tăng max-width và làm dịu màu chữ --- */}
+          <p className="font-roboto mt-5 text-xl text-neutral-700 max-w-3xl mx-auto">Powerful AI generation tools to help you unlock infinite possibilities.</p>
+        </div>
+
+        <div className="space-y-8">
+            <motion.div 
+              className="bg-blue-800 rounded-3xl p-8 lg:p-16 flex flex-col lg:flex-row items-center justify-between gap-12 mx-auto max-w-7xl"
+              initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5 }} variants={cardVariants}
+            >
+              <div className="w-full lg:w-5/12 bg-neutral-900 rounded-2xl p-6">
+                <Image src="/landing_page/image 10.png" alt="Image to 3D feature" width={400} height={500} className="w-full h-auto object-contain" />
+              </div>
+              <div className="w-full lg:w-6/12 text-white text-center lg:text-left">
+                <h3 className="font-be-vietnam-pro text-4xl font-bold">Image to 3D</h3>
+                <p className="font-roboto mt-6 text-lg max-w-md mx-auto lg:mx-0 leading-relaxed">
+                  Convert your photos or concept art images into 3D models with stunning details in just a matter of seconds.
+                </p>
+                <div className="mt-10 flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+                    <motion.button className="bg-neutral-900 text-white rounded-full px-8 py-3.5 text-base font-semibold font-be-vietnam-pro" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Learn more</motion.button>
+                    <motion.button className="bg-neutral-900 text-white rounded-full px-8 py-3.5 text-base font-semibold font-be-vietnam-pro" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Explore community</motion.button>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div 
+              className="bg-yellow-400 rounded-3xl p-8 lg:p-16 flex flex-col lg:flex-row items-center justify-between gap-12 mx-auto max-w-7xl"
+              initial="offscreen" whileInView="onscreen" viewport={{ once: true, amount: 0.5 }} variants={cardVariants}
+            >
+               <div className="w-full lg:w-6/12 text-neutral-900 text-center lg:text-left">
+                  <h3 className="font-be-vietnam-pro text-4xl font-bold">Text to 3D</h3>
+                  <p className="font-roboto mt-6 text-lg max-w-md mx-auto lg:mx-0 leading-relaxed">
+                    Text to 3D helps you conceptualize, iterate, and experiment with text prompts to create 3D models in seconds.
+                  </p>
+                  <div className="mt-10 flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+                    <motion.button className="bg-neutral-900 text-white rounded-full px-8 py-3.5 text-base font-semibold font-be-vietnam-pro" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Learn more</motion.button>
+                    <motion.button className="bg-neutral-900 text-white rounded-full px-8 py-3.5 text-base font-semibold font-be-vietnam-pro" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Explore community</motion.button>
+                  </div>
+              </div>
+              <div className="w-full lg:w-5/12 bg-neutral-900 rounded-2xl p-6">
+                <Image src="/landing_page/image 11.png" alt="Text to 3D feature" width={400} height={500} className="w-full h-auto object-contain" />
+              </div>
+            </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Features;
+
+===== .\components\sections\Hero.tsx =====
+"use client"; // --- ANIMATION: Cần thiết để sử dụng hook và animation ---
+import Image from "next/image";
+import { motion } from "framer-motion";
+
+const Hero = () => {
+  return (
+    <section className="relative min-h-[calc(100vh-5rem)] flex items-center pt-24 pb-24">
+      <div className="w-full max-w-screen-2xl mx-auto px-8">
+        <div className="flex justify-center">
+            <div className="flex w-full max-w-7xl flex-col items-center gap-y-16 lg:flex-row lg:justify-center lg:gap-x-32">
+                
+                {/* --- ANIMATION: Bọc text content vào motion.div --- */}
+                <motion.div 
+                  className="text-center lg:text-left"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                >
+                    <h1 className="font-be-vietnam-pro text-7xl font-extrabold text-neutral-900 leading-tight">
+                    The NO.1 AI 3D
+                    <br/>
+                    Model Generator
+                    <br/>
+                    For Everyone
+                    </h1>
+                    <p className="font-roboto mt-6 text-lg text-neutral-900 leading-relaxed max-w-md mx-auto lg:mx-0">
+                    Convert your photos or concept art images into 3D models with
+                    stunning details in just a matter of seconds.
+                    </p>
+                    <div className="mt-12 flex flex-col sm:flex-row gap-6 justify-center lg:justify-start">
+                    <motion.a 
+                      href="#" 
+                      className="text-center bg-blue-900 rounded-full px-8 py-4 text-white text-base font-semibold font-be-vietnam-pro"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                        START FOR FREE
+                    </motion.a>
+                    <motion.a 
+                      href="#" 
+                      className="inline-flex items-center justify-center bg-neutral-900 rounded-full px-8 py-4 text-neutral-100 text-base font-semibold font-be-vietnam-pro"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                        EXPLORE
+                        <span className="ml-2 font-bold">&gt;</span>
+                    </motion.a>
+                    </div>
+                </motion.div>
+
+                {/* --- ANIMATION: Thêm hiệu ứng cho card --- */}
+                <motion.div 
+                  className="flex-shrink-0"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                >
+                    <div className="relative bg-card-bg rounded-3xl shadow-2xl w-[480px] h-[600px] overflow-hidden">
+                        <Image
+                            src="/landing_page/image 4.png" 
+                            alt="AI 3D Model"
+                            width={500}
+                            height={600}
+                            className="w-full h-full object-cover"
+                            priority
+                        />
+                        <div className="absolute bottom-4 left-4 right-4 p-3 rounded-xl bg-white/30 backdrop-blur-sm flex justify-between items-center border border-white/20">
+                            <span className="font-roboto text-base font-medium text-blue-900">
+                            Ryo Yamada
+                            </span>
+                            <a href="#" className="text-sm font-semibold text-blue-900 hover:underline">
+                            Explore
+                            </a>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Hero;
+
+===== .\components\ui\avatar.tsx =====
+"use client"
+
+import * as React from "react"
+import * as AvatarPrimitive from "@radix-ui/react-avatar"
+
+import { cn } from "@/lib/utils"
+
+const Avatar = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Root
+    ref={ref}
+    className={cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className)}
+    {...props}
+  />
+))
+Avatar.displayName = AvatarPrimitive.Root.displayName
+
+const AvatarImage = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Image>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Image ref={ref} className={cn("aspect-square h-full w-full", className)} {...props} />
+))
+AvatarImage.displayName = AvatarPrimitive.Image.displayName
+
+const AvatarFallback = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Fallback>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Fallback
+    ref={ref}
+    className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted", className)}
+    {...props}
+  />
+))
+AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
+
+export { Avatar, AvatarImage, AvatarFallback }
+
+
+===== .\components\ui\breadcrumb.tsx =====
+import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { ChevronRight, MoreHorizontal } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
+
+const Breadcrumb = React.forwardRef<
+  HTMLElement,
+  React.ComponentPropsWithoutRef<'nav'> & {
+    separator?: React.ReactNode
+  }
+>(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />)
+Breadcrumb.displayName = 'Breadcrumb'
+
+const BreadcrumbList = React.forwardRef<
+  HTMLOListElement,
+  React.ComponentPropsWithoutRef<'ol'>
+>(({ className, ...props }, ref) => (
+  <ol
+    ref={ref}
+    className={cn(
+      'flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5',
+      className,
+    )}
+    {...props}
+  />
+))
+BreadcrumbList.displayName = 'BreadcrumbList'
+
+const BreadcrumbItem = React.forwardRef<
+  HTMLLIElement,
+  React.ComponentPropsWithoutRef<'li'>
+>(({ className, ...props }, ref) => (
+  <li
+    ref={ref}
+    className={cn('inline-flex items-center gap-1.5', className)}
+    {...props}
+  />
+))
+BreadcrumbItem.displayName = 'BreadcrumbItem'
+
+const BreadcrumbLink = React.forwardRef<
+  HTMLAnchorElement,
+  React.ComponentPropsWithoutRef<'a'> & {
+    asChild?: boolean
+  }
+>(({ asChild, className, ...props }, ref) => {
+  const Comp = asChild ? Slot : 'a'
+
+  return (
+    <Comp
+      ref={ref}
+      className={cn('transition-colors hover:text-foreground', className)}
+      {...props}
+    />
+  )
+})
+BreadcrumbLink.displayName = 'BreadcrumbLink'
+
+const BreadcrumbPage = React.forwardRef<
+  HTMLSpanElement,
+  React.ComponentPropsWithoutRef<'span'>
+>(({ className, ...props }, ref) => (
+  <span
+    ref={ref}
+    role="link"
+    aria-disabled="true"
+    aria-current="page"
+    className={cn('font-normal text-foreground', className)}
+    {...props}
+  />
+))
+BreadcrumbPage.displayName = 'BreadcrumbPage'
+
+const BreadcrumbSeparator = ({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<'li'>) => (
+  <li
+    role="presentation"
+    aria-hidden="true"
+    className={cn('[&>svg]:w-3.5 [&>svg]:h-3.5', className)}
+    {...props}
+  >
+    {children ?? <ChevronRight />}
+  </li>
+)
+BreadcrumbSeparator.displayName = 'BreadcrumbSeparator'
+
+const BreadcrumbEllipsis = ({
+  className,
+  ...props
+}: React.ComponentProps<'span'>) => (
+  <span
+    role="presentation"
+    aria-hidden="true"
+    className={cn('flex h-9 w-9 items-center justify-center', className)}
+    {...props}
+  >
+    <MoreHorizontal className="h-4 w-4" />
+    <span className="sr-only">More</span>
+  </span>
+)
+BreadcrumbEllipsis.displayName = 'BreadcrumbElipssis'
+
+export {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  BreadcrumbEllipsis,
+}
+
+
+===== .\components\ui\button.tsx =====
+import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
+
+// --- ĐÃ SỬA: Cập nhật style nền để đồng bộ với landing page ---
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-base font-semibold font-be-vietnam-pro ring-offset-background transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        // --- ĐÃ SỬA: Đổi `bg-primary` thành `bg-blue-900` để khớp chính xác ---
+        default: "bg-blue-900 text-white hover:bg-blue-900/90",
+        highlight: "bg-yellow-400 text-neutral-900 hover:bg-yellow-400/90",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
+        // --- ĐÃ SỬA: Đổi `bg-neutral-900` text-neutral-100 để khớp chính xác ---
+        secondary: "bg-neutral-900 text-neutral-100 hover:bg-neutral-900/90",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        // --- ĐÃ SỬA: Đặt padding mặc định giống hệt landing page ---
+        default: 'h-auto px-8 py-4',
+        sm: 'h-9 rounded-full px-4', // Giữ bo tròn cho size nhỏ
+        lg: 'h-12 rounded-full px-8', // Giữ bo tròn cho size lớn
+        icon: 'h-10 w-10',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  },
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'button'
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  },
+)
+Button.displayName = 'Button'
+
+export { Button, buttonVariants }
+
+===== .\components\ui\card.tsx =====
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)} {...props} />
+))
+Card.displayName = "Card"
+
+const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
+  ),
+)
+CardHeader.displayName = "CardHeader"
+
+const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, ...props }, ref) => (
+    <h3 ref={ref} className={cn("text-2xl font-semibold leading-none tracking-tight", className)} {...props} />
+  ),
+)
+CardTitle.displayName = "CardTitle"
+
+const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+  ),
+)
+CardDescription.displayName = "CardDescription"
+
+const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />,
+)
+CardContent.displayName = "CardContent"
+
+const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex items-center p-6 pt-0", className)} {...props} />
+  ),
+)
+CardFooter.displayName = "CardFooter"
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+
+
+===== .\components\ui\command.tsx =====
+'use client'
+
+import * as React from 'react'
+import { type DialogProps } from '@radix-ui/react-dialog'
+import { Command as CommandPrimitive } from 'cmdk'
+import { Search } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+
+const Command = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive
+    ref={ref}
+    className={cn(
+      'flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground',
+      className,
+    )}
+    {...props}
+  />
+))
+Command.displayName = CommandPrimitive.displayName
+
+const CommandDialog = ({ children, ...props }: DialogProps) => {
+  return (
+    <Dialog {...props}>
+      <DialogContent className="overflow-hidden p-0 shadow-lg">
+        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+          {children}
+        </Command>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const CommandInput = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Input>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
+>(({ className, ...props }, ref) => (
+  <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
+    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+    <CommandPrimitive.Input
+      ref={ref}
+      className={cn(
+        'flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+        className,
+      )}
+      {...props}
+    />
+  </div>
+))
+
+CommandInput.displayName = CommandPrimitive.Input.displayName
+
+const CommandList = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.List>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.List
+    ref={ref}
+    className={cn('max-h-[300px] overflow-y-auto overflow-x-hidden', className)}
+    {...props}
+  />
+))
+
+CommandList.displayName = CommandPrimitive.List.displayName
+
+const CommandEmpty = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Empty>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
+>((props, ref) => (
+  <CommandPrimitive.Empty
+    ref={ref}
+    className="py-6 text-center text-sm"
+    {...props}
+  />
+))
+
+CommandEmpty.displayName = CommandPrimitive.Empty.displayName
+
+const CommandGroup = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Group>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Group
+    ref={ref}
+    className={cn(
+      'overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground',
+      className,
+    )}
+    {...props}
+  />
+))
+
+CommandGroup.displayName = CommandPrimitive.Group.displayName
+
+const CommandSeparator = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Separator
+    ref={ref}
+    className={cn('-mx-1 h-px bg-border', className)}
+    {...props}
+  />
+))
+CommandSeparator.displayName = CommandPrimitive.Separator.displayName
+
+const CommandItem = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Item
+    ref={ref}
+    className={cn(
+      "relative flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[selected='true']:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      className,
+    )}
+    {...props}
+  />
+))
+
+CommandItem.displayName = CommandPrimitive.Item.displayName
+
+const CommandShortcut = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) => {
+  return (
+    <span
+      className={cn(
+        'ml-auto text-xs tracking-widest text-muted-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+CommandShortcut.displayName = 'CommandShortcut'
+
+export {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+  CommandSeparator,
+}
+
+
+===== .\components\ui\context-menu.tsx =====
+'use client'
+
+import * as React from 'react'
+import * as ContextMenuPrimitive from '@radix-ui/react-context-menu'
+import { Check, ChevronRight, Circle } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
+
+const ContextMenu = ContextMenuPrimitive.Root
+
+const ContextMenuTrigger = ContextMenuPrimitive.Trigger
+
+const ContextMenuGroup = ContextMenuPrimitive.Group
+
+const ContextMenuPortal = ContextMenuPrimitive.Portal
+
+const ContextMenuSub = ContextMenuPrimitive.Sub
+
+const ContextMenuRadioGroup = ContextMenuPrimitive.RadioGroup
+
+const ContextMenuSubTrigger = React.forwardRef<
+  React.ElementRef<typeof ContextMenuPrimitive.SubTrigger>,
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubTrigger> & {
+    inset?: boolean
+  }
+>(({ className, inset, children, ...props }, ref) => (
+  <ContextMenuPrimitive.SubTrigger
+    ref={ref}
+    className={cn(
+      'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
+      inset && 'pl-8',
+      className,
+    )}
+    {...props}
+  >
+    {children}
+    <ChevronRight className="ml-auto h-4 w-4" />
+  </ContextMenuPrimitive.SubTrigger>
+))
+ContextMenuSubTrigger.displayName = ContextMenuPrimitive.SubTrigger.displayName
+
+const ContextMenuSubContent = React.forwardRef<
+  React.ElementRef<typeof ContextMenuPrimitive.SubContent>,
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.SubContent>
+>(({ className, ...props }, ref) => (
+  <ContextMenuPrimitive.SubContent
+    ref={ref}
+    className={cn(
+      'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+      className,
+    )}
+    {...props}
+  />
+))
+ContextMenuSubContent.displayName = ContextMenuPrimitive.SubContent.displayName
+
+const ContextMenuContent = React.forwardRef<
+  React.ElementRef<typeof ContextMenuPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Content>
+>(({ className, ...props }, ref) => (
+  <ContextMenuPrimitive.Portal>
+    <ContextMenuPrimitive.Content
+      ref={ref}
+      className={cn(
+        'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+        className,
+      )}
+      {...props}
+    />
+  </ContextMenuPrimitive.Portal>
+))
+ContextMenuContent.displayName = ContextMenuPrimitive.Content.displayName
+
+const ContextMenuItem = React.forwardRef<
+  React.ElementRef<typeof ContextMenuPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Item> & {
+    inset?: boolean
+  }
+>(({ className, inset, ...props }, ref) => (
+  <ContextMenuPrimitive.Item
+    ref={ref}
+    className={cn(
+      'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      inset && 'pl-8',
+      className,
+    )}
+    {...props}
+  />
+))
+ContextMenuItem.displayName = ContextMenuPrimitive.Item.displayName
+
+const ContextMenuCheckboxItem = React.forwardRef<
+  React.ElementRef<typeof ContextMenuPrimitive.CheckboxItem>,
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.CheckboxItem>
+>(({ className, children, checked, ...props }, ref) => (
+  <ContextMenuPrimitive.CheckboxItem
+    ref={ref}
+    className={cn(
+      'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      className,
+    )}
+    checked={checked}
+    {...props}
+  >
+    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <ContextMenuPrimitive.ItemIndicator>
+        <Check className="h-4 w-4" />
+      </ContextMenuPrimitive.ItemIndicator>
+    </span>
+    {children}
+  </ContextMenuPrimitive.CheckboxItem>
+))
+ContextMenuCheckboxItem.displayName =
+  ContextMenuPrimitive.CheckboxItem.displayName
+
+const ContextMenuRadioItem = React.forwardRef<
+  React.ElementRef<typeof ContextMenuPrimitive.RadioItem>,
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.RadioItem>
+>(({ className, children, ...props }, ref) => (
+  <ContextMenuPrimitive.RadioItem
+    ref={ref}
+    className={cn(
+      'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      className,
+    )}
+    {...props}
+  >
+    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <ContextMenuPrimitive.ItemIndicator>
+        <Circle className="h-2 w-2 fill-current" />
+      </ContextMenuPrimitive.ItemIndicator>
+    </span>
+    {children}
+  </ContextMenuPrimitive.RadioItem>
+))
+ContextMenuRadioItem.displayName = ContextMenuPrimitive.RadioItem.displayName
+
+const ContextMenuLabel = React.forwardRef<
+  React.ElementRef<typeof ContextMenuPrimitive.Label>,
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Label> & {
+    inset?: boolean
+  }
+>(({ className, inset, ...props }, ref) => (
+  <ContextMenuPrimitive.Label
+    ref={ref}
+    className={cn(
+      'px-2 py-1.5 text-sm font-semibold text-foreground',
+      inset && 'pl-8',
+      className,
+    )}
+    {...props}
+  />
+))
+ContextMenuLabel.displayName = ContextMenuPrimitive.Label.displayName
+
+const ContextMenuSeparator = React.forwardRef<
+  React.ElementRef<typeof ContextMenuPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Separator>
+>(({ className, ...props }, ref) => (
+  <ContextMenuPrimitive.Separator
+    ref={ref}
+    className={cn('-mx-1 my-1 h-px bg-border', className)}
+    {...props}
+  />
+))
+ContextMenuSeparator.displayName = ContextMenuPrimitive.Separator.displayName
+
+const ContextMenuShortcut = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) => {
+  return (
+    <span
+      className={cn(
+        'ml-auto text-xs tracking-widest text-muted-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+ContextMenuShortcut.displayName = 'ContextMenuShortcut'
+
+export {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuCheckboxItem,
+  ContextMenuRadioItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuGroup,
+  ContextMenuPortal,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuRadioGroup,
+}
+
+
+===== .\components\ui\dialog.tsx =====
+'use client'
+
+import * as React from 'react'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { X } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
+
+const Dialog = DialogPrimitive.Root
+
+const DialogTrigger = DialogPrimitive.Trigger
+
+const DialogPortal = DialogPrimitive.Portal
+
+const DialogClose = DialogPrimitive.Close
+
+const DialogOverlay = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={cn(
+      'fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      className,
+    )}
+    {...props}
+  />
+))
+DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
+
+const DialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+        <X className="h-4 w-4" />
+        <span className="sr-only">Close</span>
+      </DialogPrimitive.Close>
+    </DialogPrimitive.Content>
+  </DialogPortal>
+))
+DialogContent.displayName = DialogPrimitive.Content.displayName
+
+const DialogHeader = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      'flex flex-col space-y-1.5 text-center sm:text-left',
+      className,
+    )}
+    {...props}
+  />
+)
+DialogHeader.displayName = 'DialogHeader'
+
+const DialogFooter = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2',
+      className,
+    )}
+    {...props}
+  />
+)
+DialogFooter.displayName = 'DialogFooter'
+
+const DialogTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={cn(
+      'text-lg font-semibold leading-none tracking-tight',
+      className,
+    )}
+    {...props}
+  />
+))
+DialogTitle.displayName = DialogPrimitive.Title.displayName
+
+const DialogDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={cn('text-sm text-muted-foreground', className)}
+    {...props}
+  />
+))
+DialogDescription.displayName = DialogPrimitive.Description.displayName
+
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+}
+
+
+===== .\components\ui\dropdown-menu.tsx =====
+'use client'
+
+import * as React from 'react'
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
+import { Check, ChevronRight, Circle } from 'lucide-react'
+
+import { cn } from '@/lib/utils'
+
+const DropdownMenu = DropdownMenuPrimitive.Root
+
+const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
+
+const DropdownMenuGroup = DropdownMenuPrimitive.Group
+
+const DropdownMenuPortal = DropdownMenuPrimitive.Portal
+
+const DropdownMenuSub = DropdownMenuPrimitive.Sub
+
+const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup
+
+const DropdownMenuSubTrigger = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
+    inset?: boolean
+  }
+>(({ className, inset, children, ...props }, ref) => (
+  <DropdownMenuPrimitive.SubTrigger
+    ref={ref}
+    className={cn(
+      'flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+      inset && 'pl-8',
+      className,
+    )}
+    {...props}
+  >
+    {children}
+    <ChevronRight className="ml-auto" />
+  </DropdownMenuPrimitive.SubTrigger>
+))
+DropdownMenuSubTrigger.displayName =
+  DropdownMenuPrimitive.SubTrigger.displayName
+
+const DropdownMenuSubContent = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
+>(({ className, ...props }, ref) => (
+  <DropdownMenuPrimitive.SubContent
+    ref={ref}
+    className={cn(
+      'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+      className,
+    )}
+    {...props}
+  />
+))
+DropdownMenuSubContent.displayName =
+  DropdownMenuPrimitive.SubContent.displayName
+
+const DropdownMenuContent = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
+>(({ className, sideOffset = 4, ...props }, ref) => (
+  <DropdownMenuPrimitive.Portal>
+    <DropdownMenuPrimitive.Content
+      ref={ref}
+      sideOffset={sideOffset}
+      className={cn(
+        // === THAY ĐỔI QUAN TRỌNG: Bỏ `bg-popover` và thêm nền đục ===
+        "z-50 min-w-[8rem] overflow-hidden rounded-md border p-1 text-popover-foreground shadow-md",
+        "bg-white dark:bg-zinc-900", // Thêm nền trắng (light) và nền xám rất đậm (dark)
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        className,
+      )}
+      {...props}
+    />
+  </DropdownMenuPrimitive.Portal>
+))
+DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName
+
+const DropdownMenuItem = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
+    inset?: boolean
+  }
+>(({ className, inset, ...props }, ref) => (
+  <DropdownMenuPrimitive.Item
+    ref={ref}
+    className={cn(
+      'relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+      inset && 'pl-8',
+      className,
+    )}
+    {...props}
+  />
+))
+DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName
+
+const DropdownMenuCheckboxItem = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.CheckboxItem>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.CheckboxItem>
+>(({ className, children, checked, ...props }, ref) => (
+  <DropdownMenuPrimitive.CheckboxItem
+    ref={ref}
+    className={cn(
+      'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      className,
+    )}
+    checked={checked}
+    {...props}
+  >
+    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <DropdownMenuPrimitive.ItemIndicator>
+        <Check className="h-4 w-4" />
+      </DropdownMenuPrimitive.ItemIndicator>
+    </span>
+    {children}
+  </DropdownMenuPrimitive.CheckboxItem>
+))
+DropdownMenuCheckboxItem.displayName =
+  DropdownMenuPrimitive.CheckboxItem.displayName
+
+const DropdownMenuRadioItem = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.RadioItem>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.RadioItem>
+>(({ className, children, ...props }, ref) => (
+  <DropdownMenuPrimitive.RadioItem
+    ref={ref}
+    className={cn(
+      'relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      className,
+    )}
+    {...props}
+  >
+    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <DropdownMenuPrimitive.ItemIndicator>
+        <Circle className="h-2 w-2 fill-current" />
+      </DropdownMenuPrimitive.ItemIndicator>
+    </span>
+    {children}
+  </DropdownMenuPrimitive.RadioItem>
+))
+DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName
+
+const DropdownMenuLabel = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Label>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & {
+    inset?: boolean
+  }
+>(({ className, inset, ...props }, ref) => (
+  <DropdownMenuPrimitive.Label
+    ref={ref}
+    className={cn(
+      'px-2 py-1.5 text-sm font-semibold',
+      inset && 'pl-8',
+      className,
+    )}
+    {...props}
+  />
+))
+DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName
+
+const DropdownMenuSeparator = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
+>(({ className, ...props }, ref) => (
+  <DropdownMenuPrimitive.Separator
+    ref={ref}
+    className={cn('-mx-1 my-1 h-px bg-muted', className)}
+    {...props}
+  />
+))
+DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName
+
+const DropdownMenuShortcut = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) => {
+  return (
+    <span
+      className={cn('ml-auto text-xs tracking-widest opacity-60', className)}
+      {...props}
+    />
+  )
+}
+DropdownMenuShortcut.displayName = 'DropdownMenuShortcut'
+
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuGroup,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+}
+
+===== .\components\ui\form.tsx =====
+'use client'
+
+import * as React from 'react'
+import * as LabelPrimitive from '@radix-ui/react-label'
+import { Slot } from '@radix-ui/react-slot'
+import {
+  Controller,
+  ControllerProps,
+  FieldPath,
+  FieldValues,
+  FormProvider,
+  useFormContext,
+} from 'react-hook-form'
+
+import { cn } from '@/lib/utils'
+import { Label } from '@/components/ui/label'
+
+const Form = FormProvider
+
+type FormFieldContextValue<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> = {
+  name: TName
+}
+
+const FormFieldContext = React.createContext<FormFieldContextValue>(
+  {} as FormFieldContextValue,
+)
+
+const FormField = <
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+>({
+  ...props
+}: ControllerProps<TFieldValues, TName>) => {
+  return (
+    <FormFieldContext.Provider value={{ name: props.name }}>
+      <Controller {...props} />
+    </FormFieldContext.Provider>
+  )
+}
+
+const useFormField = () => {
+  const fieldContext = React.useContext(FormFieldContext)
+  const itemContext = React.useContext(FormItemContext)
+  const { getFieldState, formState } = useFormContext()
+
+  const fieldState = getFieldState(fieldContext.name, formState)
+
+  if (!fieldContext) {
+    throw new Error('useFormField should be used within <FormField>')
+  }
+
+  const { id } = itemContext
+
+  return {
+    id,
+    name: fieldContext.name,
+    formItemId: `${id}-form-item`,
+    formDescriptionId: `${id}-form-item-description`,
+    formMessageId: `${id}-form-item-message`,
+    ...fieldState,
+  }
+}
+
+type FormItemContextValue = {
+  id: string
+}
+
+const FormItemContext = React.createContext<FormItemContextValue>(
+  {} as FormItemContextValue,
+)
+
+const FormItem = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
+  const id = React.useId()
+
+  return (
+    <FormItemContext.Provider value={{ id }}>
+      <div ref={ref} className={cn('space-y-2', className)} {...props} />
+    </FormItemContext.Provider>
+  )
+})
+FormItem.displayName = 'FormItem'
+
+const FormLabel = React.forwardRef<
+  React.ElementRef<typeof LabelPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
+>(({ className, ...props }, ref) => {
+  const { error, formItemId } = useFormField()
+
+  return (
+    <Label
+      ref={ref}
+      className={cn(error && 'text-destructive', className)}
+      htmlFor={formItemId}
+      {...props}
+    />
+  )
+})
+FormLabel.displayName = 'FormLabel'
+
+const FormControl = React.forwardRef<
+  React.ElementRef<typeof Slot>,
+  React.ComponentPropsWithoutRef<typeof Slot>
+>(({ ...props }, ref) => {
+  const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
+
+  return (
+    <Slot
+      ref={ref}
+      id={formItemId}
+      aria-describedby={
+        !error
+          ? `${formDescriptionId}`
+          : `${formDescriptionId} ${formMessageId}`
+      }
+      aria-invalid={!!error}
+      {...props}
+    />
+  )
+})
+FormControl.displayName = 'FormControl'
+
+const FormDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => {
+  const { formDescriptionId } = useFormField()
+
+  return (
+    <p
+      ref={ref}
+      id={formDescriptionId}
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
+})
+FormDescription.displayName = 'FormDescription'
+
+const FormMessage = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, children, ...props }, ref) => {
+  const { error, formMessageId } = useFormField()
+  const body = error ? String(error?.message) : children
+
+  if (!body) {
+    return null
+  }
+
+  return (
+    <p
+      ref={ref}
+      id={formMessageId}
+      className={cn('text-sm font-medium text-destructive', className)}
+      {...props}
+    >
+      {body}
+    </p>
+  )
+})
+FormMessage.displayName = 'FormMessage'
+
+export {
+  useFormField,
+  Form,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+  FormField,
+}
+
+===== .\components\ui\input.tsx =====
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+export type InputProps = React.InputHTMLAttributes<HTMLInputElement>
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type, ...props }, ref) => {
+  return (
+    <input
+      type={type}
+      className={cn(
+        "flex h-12 w-full rounded-md border border-input bg-background px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+Input.displayName = "Input"
+
+export { Input }
+
+===== .\components\ui\label.tsx =====
+"use client"
+
+import * as React from "react"
+import * as LabelPrimitive from "@radix-ui/react-label"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const labelVariants = cva("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70")
+
+const Label = React.forwardRef<
+  React.ElementRef<typeof LabelPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> & VariantProps<typeof labelVariants>
+>(({ className, ...props }, ref) => (
+  <LabelPrimitive.Root ref={ref} className={cn(labelVariants(), className)} {...props} />
+))
+Label.displayName = LabelPrimitive.Root.displayName
+
+export { Label }
+
+===== .\components\ui\progress.tsx =====
+'use client'
+
+import * as React from 'react'
+import * as ProgressPrimitive from '@radix-ui/react-progress'
+
+import { cn } from '@/lib/utils'
+
+const Progress = React.forwardRef<
+  React.ElementRef<typeof ProgressPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
+>(({ className, value, ...props }, ref) => (
+  <ProgressPrimitive.Root
+    ref={ref}
+    className={cn(
+      'relative h-4 w-full overflow-hidden rounded-full bg-secondary',
+      className,
+    )}
+    {...props}
+  >
+    <ProgressPrimitive.Indicator
+      className="h-full w-full flex-1 bg-primary transition-all"
+      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+    />
+  </ProgressPrimitive.Root>
+))
+Progress.displayName = ProgressPrimitive.Root.displayName
+
+export { Progress }
+
+
+===== .\components\ui\resizable.tsx =====
+'use client'
+
+import { GripVertical } from 'lucide-react'
+import * as ResizablePrimitive from 'react-resizable-panels'
+
+import { cn } from '@/lib/utils'
+
+const ResizablePanelGroup = ({
+  className,
+  ...props
+}: React.ComponentProps<typeof ResizablePrimitive.PanelGroup>) => (
+  <ResizablePrimitive.PanelGroup
+    className={cn(
+      'flex h-full w-full data-[panel-group-direction=vertical]:flex-col',
+      className,
+    )}
+    {...props}
+  />
+)
+
+const ResizablePanel = ResizablePrimitive.Panel
+
+const ResizableHandle = ({
+  withHandle,
+  className,
+  ...props
+}: React.ComponentProps<typeof ResizablePrimitive.PanelResizeHandle> & {
+  withHandle?: boolean
+}) => (
+  <ResizablePrimitive.PanelResizeHandle
+    className={cn(
+      'relative flex w-px items-center justify-center bg-border after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:-translate-y-1/2 data-[panel-group-direction=vertical]:after:translate-x-0 [&[data-panel-group-direction=vertical]>div]:rotate-90',
+      className,
+    )}
+    {...props}
+  >
+    {withHandle && (
+      <div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-border">
+        <GripVertical className="h-2.5 w-2.5" />
+      </div>
+    )}
+  </ResizablePrimitive.PanelResizeHandle>
+)
+
+export { ResizablePanelGroup, ResizablePanel, ResizableHandle }
+
+
+===== .\components\ui\select.tsx =====
+"use client"
+
+import * as React from "react"
+import * as SelectPrimitive from "@radix-ui/react-select"
+import { Check, ChevronDown, ChevronUp } from "lucide-react"
+
+import { cn } from "@/lib/utils"
+
+const Select = SelectPrimitive.Root
+
+const SelectGroup = SelectPrimitive.Group
+
+const SelectValue = SelectPrimitive.Value
+
+const SelectTrigger = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
+>(({ className, children, ...props }, ref) => (
+  <SelectPrimitive.Trigger
+    ref={ref}
+    className={cn(
+      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      className,
+    )}
+    {...props}
+  >
+    {children}
+    <SelectPrimitive.Icon asChild>
+      <ChevronDown className="h-4 w-4 opacity-50" />
+    </SelectPrimitive.Icon>
+  </SelectPrimitive.Trigger>
+))
+SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
+
+const SelectScrollUpButton = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.ScrollUpButton>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.ScrollUpButton
+    ref={ref}
+    className={cn("flex cursor-default items-center justify-center py-1", className)}
+    {...props}
+  >
+    <ChevronUp className="h-4 w-4" />
+  </SelectPrimitive.ScrollUpButton>
+))
+SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
+
+const SelectScrollDownButton = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.ScrollDownButton>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.ScrollDownButton
+    ref={ref}
+    className={cn("flex cursor-default items-center justify-center py-1", className)}
+    {...props}
+  >
+    <ChevronDown className="h-4 w-4" />
+  </SelectPrimitive.ScrollDownButton>
+))
+SelectScrollDownButton.displayName = SelectPrimitive.ScrollDownButton.displayName
+
+const SelectContent = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
+>(({ className, children, position = "popper", ...props }, ref) => (
+  <SelectPrimitive.Portal>
+    <SelectPrimitive.Content
+      ref={ref}
+      className={cn(
+        // === THAY ĐỔI QUAN TRỌNG: Bỏ `bg-popover` và thêm nền đục ===
+        "relative z-[110] max-h-96 min-w-[8rem] overflow-hidden rounded-md border text-popover-foreground shadow-md",
+        "bg-white dark:bg-zinc-900", // Thêm nền trắng (light) và nền xám rất đậm (dark)
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        position === "popper" &&
+          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+        className,
+      )}
+      position={position}
+      {...props}
+    >
+      <SelectPrimitive.Viewport
+        className={cn(
+          "p-1",
+          position === "popper" &&
+            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
+        )}
+      >
+        {children}
+      </SelectPrimitive.Viewport>
+    </SelectPrimitive.Content>
+  </SelectPrimitive.Portal>
+))
+SelectContent.displayName = SelectPrimitive.Content.displayName
+
+const SelectLabel = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Label>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.Label ref={ref} className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold", className)} {...props} />
+))
+SelectLabel.displayName = SelectPrimitive.Label.displayName
+
+const SelectItem = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
+>(({ className, children, ...props }, ref) => (
+  <SelectPrimitive.Item
+    ref={ref}
+    className={cn(
+      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      className,
+    )}
+    {...props}
+  >
+    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <SelectPrimitive.ItemIndicator>
+        <Check className="h-4 w-4" />
+      </SelectPrimitive.ItemIndicator>
+    </span>
+
+    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+  </SelectPrimitive.Item>
+))
+SelectItem.displayName = SelectPrimitive.Item.displayName
+
+const SelectSeparator = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.Separator ref={ref} className={cn("-mx-1 my-1 h-px bg-muted", className)} {...props} />
+))
+SelectSeparator.displayName = SelectPrimitive.Separator.displayName
+
+export {
+  Select,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectSeparator,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
+}
+
+===== .\components\ui\separator.tsx =====
+"use client"
+
+import * as React from "react"
+import * as SeparatorPrimitive from "@radix-ui/react-separator"
+
+import { cn } from "@/lib/utils"
+
+const Separator = React.forwardRef<
+  React.ElementRef<typeof SeparatorPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>
+>(({ className, orientation = "horizontal", decorative = true, ...props }, ref) => (
+  <SeparatorPrimitive.Root
+    ref={ref}
+    decorative={decorative}
+    orientation={orientation}
+    className={cn("shrink-0 bg-border", orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]", className)}
+    {...props}
+  />
+))
+Separator.displayName = SeparatorPrimitive.Root.displayName
+
+export { Separator }
+
+
+===== .\components\ui\slider.tsx =====
+"use client"
+
+import * as React from "react"
+import * as SliderPrimitive from "@radix-ui/react-slider"
+
+import { cn } from "@/lib/utils"
+
+const Slider = React.forwardRef<
+  React.ElementRef<typeof SliderPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <SliderPrimitive.Root
+    ref={ref}
+    className={cn("relative flex w-full touch-none select-none items-center", className)}
+    {...props}
+  >
+    <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
+      <SliderPrimitive.Range className="absolute h-full bg-primary" />
+    </SliderPrimitive.Track>
+    <SliderPrimitive.Thumb className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
+  </SliderPrimitive.Root>
+))
+Slider.displayName = SliderPrimitive.Root.displayName
+
+export { Slider }
+
+
+===== .\components\ui\sonner.tsx =====
+'use client'
+
+import { Toaster as Sonner } from 'sonner'
+
+type ToasterProps = React.ComponentProps<typeof Sonner>
+
+const Toaster = ({ ...props }: ToasterProps) => {
+  return (
+    <Sonner
+      className="toaster group"
+      toastOptions={{
+        classNames: {
+          toast:
+            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+          description: 'group-[.toast]:text-muted-foreground',
+          actionButton:
+            'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
+          cancelButton:
+            'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
+        },
+      }}
+      {...props}
+    />
+  )
+}
+
+export { Toaster }
+
+===== .\components\ui\textarea.tsx =====
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>
+
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ className, ...props }, ref) => {
+  return (
+    <textarea
+      className={cn(
+        "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        className,
+      )}
+      ref={ref}
+      {...props}
+    />
+  )
+})
+Textarea.displayName = "Textarea"
+
+export { Textarea }
+
+
+===== .\components\ui\tooltip.tsx =====
+'use client'
+
+import * as React from 'react'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
+
+import { cn } from '@/lib/utils'
+
+const TooltipProvider = TooltipPrimitive.Provider
+
+const Tooltip = TooltipPrimitive.Root
+
+const TooltipTrigger = TooltipPrimitive.Trigger
+
+const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
+>(({ className, sideOffset = 4, ...props }, ref) => (
+  <TooltipPrimitive.Content
+    ref={ref}
+    sideOffset={sideOffset}
+    className={cn(
+      'z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+      className,
+    )}
+    {...props}
+  />
+))
+TooltipContent.displayName = TooltipPrimitive.Content.displayName
+
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+
+
+===== .\components\workspace\AssetLibraryPanel.tsx =====
+"use client";
+
+import type { FC } from 'react';
+import { Search, ChevronLeft, ChevronRight, PanelRightClose, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+
+interface AssetLibraryPanelProps {
+  onToggle: () => void;
+}
+
+export const AssetLibraryPanel: FC<AssetLibraryPanelProps> = ({ onToggle }) => (
+  // --- ĐÃ SỬA: Áp dụng Card, bỏ Glassmorphism và thêm viền màu vàng ---
+  <Card className="flex flex-col h-full overflow-hidden border-t-4 border-t-yellow-400">
+    <div className="p-4 flex justify-between items-center shrink-0">
+        <div>
+            <h2 className="text-xl font-bold">Asset Library</h2>
+            <p className="text-sm text-muted-foreground">Manage your generated models.</p>
+        </div>
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={onToggle} className="h-8 w-8">
+                <PanelRightClose className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Collapse Panel</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+    </div>
+    
+    <div className="flex-1 flex flex-col gap-6 overflow-y-auto p-4 pt-0">
+      <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input type="text" placeholder="Search assets..." className="w-full pl-9" />
+      </div>
+      <div className="flex-1 flex flex-col items-center justify-center text-center text-sm text-muted-foreground p-6 rounded-lg bg-yellow-400/10">
+          <Sparkles className="h-12 w-12 text-yellow-400 mb-4" />
+          <p className="font-bold text-lg text-foreground">Your Creative Library Awaits</p>
+          <p className="mt-1 mb-6 max-w-xs mx-auto">Generate your first 3D model to see it here.</p>
+          <Button variant="highlight" className="rounded-full">Start Generating</Button>
+      </div>
+    </div>
+
+    <div className="mt-auto p-2 border-t flex items-center justify-center gap-2 bg-card rounded-b-lg shrink-0">
+      <Button variant="ghost" size="icon" disabled><ChevronLeft className="h-5 w-5" /></Button>
+      <span className="text-sm font-medium text-muted-foreground">1 / 1</span>
+      <Button variant="ghost" size="icon" disabled><ChevronRight className="h-5 w-5" /></Button>
+    </div>
+  </Card>
+);
+
+===== .\components\workspace\ControlsPanel.tsx =====
+"use client";
+
+import { useState, type FC } from 'react';
+import { Bot, ChevronDown, Loader2, Upload, PanelLeftClose } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+
+interface SegmentedControlProps<T extends string> {
+  options: { label: string; value: T }[];
+  value: T;
+  onValueChange: (value: T) => void;
+  className?: string;
+}
+
+// --- ĐÃ SỬA: Thiết kế lại hoàn toàn SegmentedControl để khớp với hình ảnh ---
+const SegmentedControl = <T extends string>({ options, value, onValueChange, className }: SegmentedControlProps<T>) => (
+  <div className={cn("flex items-center w-full p-1 rounded-lg bg-muted", className)}>
+    {options.map((option) => (
+      <button
+        key={option.value}
+        onClick={() => onValueChange(option.value)}
+        className={cn(
+          "flex-1 text-muted-foreground text-sm font-semibold py-1.5 rounded-md transition-all duration-200",
+          value === option.value && "bg-background shadow-sm text-foreground"
+        )}
+      >
+        {option.label}
+      </button>
+    ))}
+  </div>
+);
+
+interface ControlsPanelProps {
+  onToggle: () => void;
+}
+
+export const ControlsPanel: FC<ControlsPanelProps> = ({ onToggle }) => {
+  const [mode, setMode] = useState<'text' | 'image'>('text');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setGenerationProgress(0);
+    const interval = setInterval(() => {
+      setGenerationProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setIsGenerating(false);
+          toast.success("Model generated successfully!");
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 300);
+  };
+
+  return (
+    // --- ĐÃ SỬA: Áp dụng Card, bỏ Glassmorphism và thêm viền màu xanh ---
+    <Card className="flex flex-col h-full overflow-hidden border-t-4 border-t-blue-800">
+      <div className="p-4 flex justify-between items-center shrink-0">
+          <div>
+            <h2 className="text-xl font-bold">Controls</h2>
+            <p className="text-sm text-muted-foreground">Generate your 3D model.</p>
+          </div>
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={onToggle} className="h-8 w-8">
+                  <PanelLeftClose className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Collapse Panel</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+      </div>
+
+      <div className="flex-1 flex flex-col gap-6 overflow-y-auto p-4 pt-0">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Input Mode</Label>
+              <SegmentedControl
+                options={[{ label: 'Text to 3D', value: 'text' }, { label: 'Image to 3D', value: 'image' }]}
+                value={mode}
+                onValueChange={setMode}
+              />
+            </div>
+
+            {mode === 'text' && (
+              <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <Label htmlFor="prompt">Prompt</Label>
+                <Textarea
+                  id="prompt"
+                  placeholder="e.g., a photorealistic, high-poly model of a futuristic spaceship..."
+                  className="min-h-[144px]"
+                />
+              </motion.div>
+            )}
+            
+            {mode === 'image' && (
+              <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <Label>Upload Image</Label>
+                <div className="group border-2 border-dashed h-36 rounded-lg flex flex-col items-center justify-center text-center p-4 cursor-pointer hover:border-primary transition-colors bg-secondary/50 hover:bg-accent">
+                  <Upload className="h-8 w-8 text-muted-foreground mb-2 transition-colors group-hover:text-primary" />
+                  <p className="text-sm text-muted-foreground">Formats: png, jpg, webp</p>
+                </div>
+              </motion.div>
+            )}
+            
+            <div className="space-y-2">
+              <Label>AI Model</Label>
+              <Select defaultValue="standard">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a model" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard V1</SelectItem>
+                  <SelectItem value="premium">Premium V2</SelectItem>
+                  <SelectItem value="experimental">Experimental</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-3 pt-2">
+              <div className="flex justify-between items-center">
+                  <Label>Level of Detail</Label>
+                  <span className="text-sm font-medium">50%</span>
+              </div>
+              {/* --- ĐÃ SỬA: Trả Slider về mặc định --- */}
+              <Slider defaultValue={[50]} max={100} step={1} className="flex-1" />
+            </div>
+          </div>
+      </div>
+
+      <div className="mt-auto p-4 border-t space-y-3 bg-card rounded-b-lg shrink-0">
+        <div className="flex justify-between items-center text-sm text-muted-foreground">
+          <span>Cost: 1 model</span>
+          <span>10 tokens</span>
+        </div>
+        {isGenerating && <Progress value={generationProgress} className="mb-2 h-2" />}
+        {/* --- ĐÃ SỬA: Bỏ gradient, đổi thành bo góc `rounded-lg` --- */}
+        <Button 
+          size="lg" 
+          className="w-full font-bold h-12 text-base rounded-lg"
+          onClick={handleGenerate} 
+          disabled={isGenerating}
+        >
+          {isGenerating ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <Bot className="h-5 w-5 mr-2" />}
+          {isGenerating ? 'Generating...' : 'Generate Model'}
+        </Button>
+      </div>
+    </Card>
+  );
+};
+
+===== .\components\workspace\ViewerPanel.tsx =====
+"use client";
+
+import type { FC } from 'react';
+import ModelViewer from '@/components/ModelViewer';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { Download, Maximize, RotateCw } from 'lucide-react';
+import { toast } from 'sonner';
+
+export const ViewerPanel: FC<{ modelUrl: string }> = ({ modelUrl }) => (
+    <ContextMenu>
+        {/* --- ĐÃ SỬA: Bỏ Card, dùng div đơn giản với bo góc và nền --- */}
+        <ContextMenuTrigger className="h-full w-full">
+            <div className="relative overflow-hidden h-full bg-background rounded-lg shadow-inner">
+                <div 
+                  className="absolute inset-0 z-0" 
+                  style={{ 
+                      backgroundImage: 'linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px)', 
+                      backgroundSize: '30px 30px',
+                      opacity: 0.5
+                  }}
+                />
+                <div className="absolute inset-0 z-10">
+                  <ModelViewer modelUrl={modelUrl} />
+                </div>
+                 <div className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/50 px-2 py-1 rounded">
+                    Right-click for options
+                </div>
+            </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+            <ContextMenuItem onClick={() => toast.info("View has been reset.")}>
+                <RotateCw className="mr-2 h-4 w-4" />
+                Reset View
+            </ContextMenuItem>
+            <ContextMenuItem>
+                <Maximize className="mr-2 h-4 w-4" />
+                Toggle Fullscreen
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem>
+                <Download className="mr-2 h-4 w-4" />
+                Export as GLB...
+            </ContextMenuItem>
+        </ContextMenuContent>
+    </ContextMenu>
+);
+
+===== .\lib\utils.ts =====
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+
+===== DIRECTORY TREE =====
+./
+    eslint.config.mjs
+    next-env.d.ts
+    next.config.ts
+    package.json
+    postcss.config.mjs
+    tailwind.config.ts
+    tsconfig.json
+    app/
+        globals.css
+        layout.tsx
+        page.tsx
+        forgot-password/
+            page.tsx
+        login/
+            page.tsx
+        register/
+            page.tsx
+        workspace/
+            page.tsx
+    components/
+        Footer.tsx
+        Header.tsx
+        ModelViewer.tsx
+        ThemeToggle.tsx
+        dashboard-layout/
+            layout.tsx
+            sidebar.tsx
+            top-nav.tsx
+        layout/
+        sections/
+            CommunityShowcase.tsx
+            Cta.tsx
+            Features.tsx
+            Hero.tsx
+        ui/
+            avatar.tsx
+            breadcrumb.tsx
+            button.tsx
+            card.tsx
+            command.tsx
+            context-menu.tsx
+            dialog.tsx
+            dropdown-menu.tsx
+            form.tsx
+            input.tsx
+            label.tsx
+            progress.tsx
+            resizable.tsx
+            select.tsx
+            separator.tsx
+            slider.tsx
+            sonner.tsx
+            textarea.tsx
+            tooltip.tsx
+        workspace/
+            AssetLibraryPanel.tsx
+            ControlsPanel.tsx
+            ViewerPanel.tsx
+    lib/
+        utils.ts
+    public/
+        model.glb
+        landing_page/
+            image 10.png
+            image 11.png
+            image 13.png
+            image 14.png
+            image 15.png
+            image 16.png
+            image 17.png
+            image 18.png
+            image 19.png
+            image 20.png
+            image 21.png
+            image 22.png
+            image 23.png
+            image 4.png
+            image 9.png
+        logo/
+            dark.png
+    utils/
