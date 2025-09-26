@@ -1,36 +1,90 @@
+/* app/globals.css */
+
 @import "tailwindcss";
 
-/* --- ĐÃ SỬA: Xóa bỏ các luật @apply bị lỗi --- */
 @layer base {
   :root {
-    --background: 220 13% 97%; /* stone-50 */
-    --foreground: 240 4% 9%;   /* neutral-900 */
-
-    --card: 220 13% 97%;
-    --card-foreground: 240 4% 9%;
-
-    --popover: 220 13% 97%;
-    --popover-foreground: 240 4% 9%;
-    
-    --primary: 224 76% 38%; /* blue-900 */
-    --primary-foreground: 210 40% 98%; /* neutral-100 */
-
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 4% 9%;
-    
-    --muted: 240 5% 90%;
-    --muted-foreground: 240 4% 46%;
-
-    --accent: 240 5% 90%;
-    --accent-foreground: 240 4% 9%;
-
-    --destructive: 0 84% 60%;
+    /* --- HỆ THỐNG DESIGN SYSTEM TỪ LOVABLE.DEV --- */
+    --background: 0 0% 100%;
+    --background-subtle: 240 20% 99%;
+    --foreground: 240 10% 3.9%;
+    --card: 255 255 255 / 0.8;
+    --card-border: 240 20% 90%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 258 90% 66%;
+    --primary-hover: 258 100% 70%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 258 90% 66% / 0.2;
+    --secondary: 240 20% 96%;
+    --secondary-hover: 240 15% 92%;
+    --secondary-foreground: 240 10% 3.9%;
+    --accent: 45 93% 47%;
+    --accent-hover: 45 100% 55%;
+    --accent-foreground: 0 0% 100%;
+    --muted: 240 20% 96%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+    --border: 240 20% 90%;
+    --input: 240 20% 96%;
+    --input-focus: 258 90% 66%;
+    --ring: 258 90% 66%;
+    --radius: 1rem;
 
-    --border: 240 4% 80%;
-    --input: 240 4% 80%;
-    --ring: 224 76% 38%;
+    --gradient-primary: linear-gradient(135deg, hsl(258 90% 66%) 0%, hsl(276 85% 60%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(240 20% 96%) 0%, hsl(240 15% 92%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(45 93% 47%) 0%, hsl(38 85% 50%) 100%);
+    --gradient-bg: radial-gradient(ellipse at top, hsl(258 90% 66% / 0.08) 0%, transparent 50%), 
+                   radial-gradient(ellipse at bottom, hsl(276 85% 60% / 0.05) 0%, transparent 50%),
+                   linear-gradient(180deg, hsl(240 50% 98%) 0%, hsl(240 30% 96%) 100%);
 
-    --radius: 0.75rem;
+    --shadow-soft: 0 2px 10px hsl(240 20% 70% / 0.1);
+    --shadow-medium: 0 8px 30px hsl(240 20% 60% / 0.12);
+    --shadow-large: 0 20px 60px hsl(240 20% 50% / 0.15);
+    --shadow-glow: 0 0 50px hsl(258 90% 66% / 0.25);
+  }
+
+  .dark {
+    /* Dark mode (fallback) */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 8% / 0.8;
+    --card-border: 240 15% 15%;
+    --card-foreground: 0 0% 98%;
+    --muted: 240 15% 15%;
+    --muted-foreground: 240 5% 64.9%;
+    --border: 240 15% 15%;
+    --input: 240 15% 15%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    background: var(--gradient-bg), hsl(var(--background));
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(240, 240, 250, 0.3);
+    box-shadow: 0 8px 32px rgba(240, 240, 250, 0.15);
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(240, 240, 250, 0.2);
+    box-shadow: var(--shadow-medium);
   }
 }

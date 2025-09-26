@@ -1,164 +1,111 @@
+// components/workspace/ControlsPanel.tsx
 "use client";
 
-import { useState, type FC } from 'react';
-import { Bot, ChevronDown, Loader2, Upload, PanelLeftClose } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { cn } from '@/lib/utils';
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-
-interface SegmentedControlProps<T extends string> {
-  options: { label: string; value: T }[];
-  value: T;
-  onValueChange: (value: T) => void;
-  className?: string;
-}
-
-// --- ĐÃ SỬA: Thiết kế lại hoàn toàn SegmentedControl để khớp với hình ảnh ---
-const SegmentedControl = <T extends string>({ options, value, onValueChange, className }: SegmentedControlProps<T>) => (
-  <div className={cn("flex items-center w-full p-1 rounded-lg bg-muted", className)}>
-    {options.map((option) => (
-      <button
-        key={option.value}
-        onClick={() => onValueChange(option.value)}
-        className={cn(
-          "flex-1 text-muted-foreground text-sm font-semibold py-1.5 rounded-md transition-all duration-200",
-          value === option.value && "bg-background shadow-sm text-foreground"
-        )}
-      >
-        {option.label}
-      </button>
-    ))}
-  </div>
-);
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sparkles, Image as ImageIcon, Type, PanelLeftClose } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ControlsPanelProps {
   onToggle: () => void;
 }
 
-export const ControlsPanel: FC<ControlsPanelProps> = ({ onToggle }) => {
-  const [mode, setMode] = useState<'text' | 'image'>('text');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState(0);
-
-  const handleGenerate = () => {
-    setIsGenerating(true);
-    setGenerationProgress(0);
-    const interval = setInterval(() => {
-      setGenerationProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsGenerating(false);
-          toast.success("Model generated successfully!");
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 300);
-  };
+export const ControlsPanel = ({ onToggle }: ControlsPanelProps) => {
+  const [prompt, setPrompt] = useState("");
+  const [detailLevel, setDetailLevel] = useState([50]);
+  const [inputMode, setInputMode] = useState("text");
 
   return (
-    // --- ĐÃ SỬA: Áp dụng Card, bỏ Glassmorphism và thêm viền màu xanh ---
-    <Card className="flex flex-col h-full overflow-hidden border-t-4 border-t-blue-800">
-      <div className="p-4 flex justify-between items-center shrink-0">
-          <div>
-            <h2 className="text-xl font-bold">Controls</h2>
-            <p className="text-sm text-muted-foreground">Generate your 3D model.</p>
-          </div>
-          <TooltipProvider delayDuration={0}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={onToggle} className="h-8 w-8">
-                  <PanelLeftClose className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p>Collapse Panel</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-      </div>
-
-      <div className="flex-1 flex flex-col gap-6 overflow-y-auto p-4 pt-0">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Input Mode</Label>
-              <SegmentedControl
-                options={[{ label: 'Text to 3D', value: 'text' }, { label: 'Image to 3D', value: 'image' }]}
-                value={mode}
-                onValueChange={setMode}
-              />
-            </div>
-
-            {mode === 'text' && (
-              <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <Label htmlFor="prompt">Prompt</Label>
-                <Textarea
-                  id="prompt"
-                  placeholder="e.g., a photorealistic, high-poly model of a futuristic spaceship..."
-                  className="min-h-[144px]"
-                />
-              </motion.div>
-            )}
-            
-            {mode === 'image' && (
-              <motion.div className="space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <Label>Upload Image</Label>
-                <div className="group border-2 border-dashed h-36 rounded-lg flex flex-col items-center justify-center text-center p-4 cursor-pointer hover:border-primary transition-colors bg-secondary/50 hover:bg-accent">
-                  <Upload className="h-8 w-8 text-muted-foreground mb-2 transition-colors group-hover:text-primary" />
-                  <p className="text-sm text-muted-foreground">Formats: png, jpg, webp</p>
-                </div>
-              </motion.div>
-            )}
-            
-            <div className="space-y-2">
-              <Label>AI Model</Label>
-              <Select defaultValue="standard">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a model" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="standard">Standard V1</SelectItem>
-                  <SelectItem value="premium">Premium V2</SelectItem>
-                  <SelectItem value="experimental">Experimental</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-3 pt-2">
-              <div className="flex justify-between items-center">
-                  <Label>Level of Detail</Label>
-                  <span className="text-sm font-medium">50%</span>
-              </div>
-              {/* --- ĐÃ SỬA: Trả Slider về mặc định --- */}
-              <Slider defaultValue={[50]} max={100} step={1} className="flex-1" />
-            </div>
-          </div>
-      </div>
-
-      <div className="mt-auto p-4 border-t space-y-3 bg-card rounded-b-lg shrink-0">
-        <div className="flex justify-between items-center text-sm text-muted-foreground">
-          <span>Cost: 1 model</span>
-          <span>10 tokens</span>
+    <div className="glass-card rounded-lg flex flex-col h-full">
+      <div className="p-4 border-b border-card-border/50 flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-semibold">Controls</h2>
+          <p className="text-sm text-muted-foreground">Generate your model.</p>
         </div>
-        {isGenerating && <Progress value={generationProgress} className="mb-2 h-2" />}
-        {/* --- ĐÃ SỬA: Bỏ gradient, đổi thành bo góc `rounded-lg` --- */}
-        <Button 
-          size="lg" 
-          className="w-full font-bold h-12 text-base rounded-lg"
-          onClick={handleGenerate} 
-          disabled={isGenerating}
-        >
-          {isGenerating ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <Bot className="h-5 w-5 mr-2" />}
-          {isGenerating ? 'Generating...' : 'Generate Model'}
+        <Button variant="ghost" size="icon" onClick={onToggle} className="hover:bg-black/[.08] dark:hover:bg-white/[.08]">
+          <PanelLeftClose className="h-4 w-4" />
         </Button>
       </div>
-    </Card>
+      <div className="p-4 space-y-6 flex-1 overflow-y-auto">
+        <Tabs value={inputMode} onValueChange={setInputMode} className="w-full">
+          <TabsList className="grid grid-cols-2 w-full bg-black/[.08] dark:bg-white/[.08] p-1 h-auto rounded-lg">
+            <TabsTrigger
+              value="text"
+              className={cn(
+                "flex items-center gap-2 rounded-md transition-all text-sm h-8",
+                inputMode === 'text' 
+                  ? 'bg-gradient-primary text-primary-foreground shadow-md' 
+                  : 'bg-transparent text-muted-foreground'
+              )}
+            >
+              <Type className="w-4 h-4 mr-1" />
+              Text to 3D
+            </TabsTrigger>
+            <TabsTrigger
+              value="image"
+              className={cn(
+                "flex items-center gap-2 rounded-md transition-all text-sm h-8",
+                inputMode === 'image' 
+                  ? 'bg-gradient-primary text-primary-foreground shadow-md' 
+                  : 'bg-transparent text-muted-foreground'
+              )}
+            >
+              <ImageIcon className="w-4 h-4 mr-1" />
+              Image to 3D
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="text" className="mt-4">
+            <label className="text-sm font-medium">Prompt</label>
+            <Textarea
+              placeholder="e.g., a futuristic spaceship..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className="min-h-24 mt-2 border-0 bg-black/[.08] dark:bg-white/[.08] focus-visible:ring-1 focus-visible:ring-ring"
+            />
+          </TabsContent>
+          <TabsContent value="image" className="mt-4">
+             <label className="text-sm font-medium">Upload Image</label>
+             <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-black/[.04] dark:bg-white/[.04] hover:border-primary transition-colors cursor-pointer mt-2">
+                <ImageIcon className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Drag & drop or click to upload</p>
+             </div>
+          </TabsContent>
+        </Tabs>
+        <div>
+          <label className="text-sm font-medium">AI Model</label>
+          <Select defaultValue="standard">
+            <SelectTrigger className="mt-2 glass"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="standard">Standard V1</SelectItem>
+              <SelectItem value="advanced">Advanced V2</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">Level of Detail</label>
+            <Badge variant="secondary">{detailLevel[0]}%</Badge>
+          </div>
+          <Slider value={detailLevel} onValueChange={setDetailLevel} max={100} step={10} />
+        </div>
+      </div>
+      <div className="p-4 border-t border-card-border/50 space-y-4">
+        <div className="text-sm text-muted-foreground space-y-1 glass p-3 rounded-md">
+          <div className="flex justify-between"><span>Cost:</span><span className="font-medium">1 model</span></div>
+          <div className="flex justify-between"><span>Tokens:</span><span className="font-medium">10 tokens</span></div>
+        </div>
+        {/* === THAY ĐỔI: Áp dụng variant="default" để có màu xanh === */}
+        <Button variant="default" size="lg" className="w-full h-12 text-base font-medium">
+          <Sparkles className="w-5 h-5 mr-2" />
+          Generate Model
+        </Button>
+      </div>
+    </div>
   );
-};
+}
