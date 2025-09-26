@@ -4,7 +4,6 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
-// --- THAY ĐỔI LỚN: Định nghĩa lại các biến thể theo chuẩn landing page ---
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap rounded-full text-base font-semibold font-heading ring-offset-background transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
@@ -17,7 +16,10 @@ const buttonVariants = cva(
         // Nút nhấn màu vàng (yellow-400)
         accent: "bg-accent text-accent-foreground hover:bg-accent-hover",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input bg-transparent hover:bg-muted",
+
+        // --- SỬA ĐỔI QUAN TRỌNG: Làm cho viền của nút outline đậm hơn để khớp với hình ảnh ---
+        outline: "border border-foreground/80 bg-transparent hover:bg-muted",
+
         ghost: "hover:bg-muted",
         link: "text-primary underline-offset-4 hover:underline",
       },

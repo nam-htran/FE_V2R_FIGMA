@@ -13,10 +13,13 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 258 90% 66%;
-    --primary-hover: 258 100% 70%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 258 90% 66% / 0.2;
+
+    /* --- ĐIỀU CHỈNH QUAN TRỌNG: Đồng bộ màu Primary với Landing Page --- */
+    --primary: 222 47% 11%;        /* Màu xanh dương đậm (blue-900) */
+    --primary-hover: 222 47% 16%;  /* Màu xanh đậm hơn khi hover */
+    --primary-foreground: 0 0% 100%; /* Chữ trắng */
+    --primary-glow: 222 47% 11% / 0.2;
+
     --secondary: 240 20% 96%;
     --secondary-hover: 240 15% 92%;
     --secondary-foreground: 240 10% 3.9%;
@@ -29,21 +32,21 @@
     --destructive-foreground: 210 40% 98%;
     --border: 240 20% 90%;
     --input: 240 20% 96%;
-    --input-focus: 258 90% 66%;
-    --ring: 258 90% 66%;
+    --input-focus: 222 47% 11%;
+    --ring: 222 47% 11%;
     --radius: 1rem;
 
-    --gradient-primary: linear-gradient(135deg, hsl(258 90% 66%) 0%, hsl(276 85% 60%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(222 47% 16%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(240 20% 96%) 0%, hsl(240 15% 92%) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(45 93% 47%) 0%, hsl(38 85% 50%) 100%);
-    --gradient-bg: radial-gradient(ellipse at top, hsl(258 90% 66% / 0.08) 0%, transparent 50%), 
-                   radial-gradient(ellipse at bottom, hsl(276 85% 60% / 0.05) 0%, transparent 50%),
+    --gradient-bg: radial-gradient(ellipse at top, hsl(222 47% 11% / 0.08) 0%, transparent 50%), 
+                   radial-gradient(ellipse at bottom, hsl(222 47% 16% / 0.05) 0%, transparent 50%),
                    linear-gradient(180deg, hsl(240 50% 98%) 0%, hsl(240 30% 96%) 100%);
 
     --shadow-soft: 0 2px 10px hsl(240 20% 70% / 0.1);
     --shadow-medium: 0 8px 30px hsl(240 20% 60% / 0.12);
     --shadow-large: 0 20px 60px hsl(240 20% 50% / 0.15);
-    --shadow-glow: 0 0 50px hsl(258 90% 66% / 0.25);
+    --shadow-glow: 0 0 50px hsl(222 47% 11% / 0.25);
   }
 
   .dark {

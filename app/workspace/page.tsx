@@ -34,7 +34,7 @@ export default function WorkspacePage() {
           onResize={setLeftPanelSize}
           className={cn("p-4 transition-all duration-300 ease-in-out", isLeftPanelCollapsed && "p-2")}
         >
-          <div className="h-full w-full glass-card rounded-lg flex flex-col">
+          <div className="h-full w-full glass-card rounded-lg flex flex-col relative">
             {isLeftPanelCollapsed ? (
                 <div className="flex h-full items-center justify-center">
                     <Button variant="ghost" size="icon" onClick={() => setLeftPanelSize(25)}>
@@ -43,10 +43,11 @@ export default function WorkspacePage() {
                 </div>
             ) : (
                 <>
-                    <div className="p-4 border-b border-card-border/50">
+                    <div className="p-4 border-b border-card-border/50 shrink-0">
                         <h2 className="text-xl font-semibold">Controls</h2>
                     </div>
-                    <div className="p-6 space-y-6 flex-1 overflow-y-auto">
+                    
+                    <div className="p-6 space-y-6 flex-1 overflow-y-auto pb-6">
                         {/* TABS SECTION */}
                         <Tabs value={inputMode} onValueChange={setInputMode} className="w-full">
                             <TabsList className="grid grid-cols-2 w-full bg-black/[.08] dark:bg-white/[.08] p-1 h-10 rounded-full">
@@ -94,8 +95,7 @@ export default function WorkspacePage() {
                         </div>
                     </div>
 
-                    {/* === FOOTER SECTION === */}
-                    <div className="p-6 border-t border-card-border/50 space-y-4">
+                    <div className="absolute bottom-0 left-0 w-full p-6 border-t border-card-border/50 space-y-4 bg-card/80 backdrop-blur-sm rounded-b-lg">
                         <div className="text-sm space-y-2 bg-black/[.08] dark:bg-white/[.08] p-4 rounded-xl">
                             <div className="flex justify-between text-muted-foreground">
                               <span>Cost:</span> <span className="font-medium text-foreground">1 model</span>
@@ -105,11 +105,10 @@ export default function WorkspacePage() {
                             </div>
                         </div>
                         
-                        {/* === PERBAIKAN: Mengubah 'variant' dan 'size' ke nilai yang valid === */}
+                        {/* --- SỬA ĐỔI CUỐI CÙNG: Ghi đè style bằng className của Tailwind --- */}
                         <Button
-                            variant="default"
                             size="lg"
-                            className="w-full"
+                            className="w-full bg-blue-900 text-white hover:bg-blue-950"
                         >
                             <Sparkles className="w-5 h-5 mr-2" />
                             Generate 3D Model
