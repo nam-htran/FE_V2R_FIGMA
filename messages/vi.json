@@ -1,0 +1,61 @@
+{
+  "Header": {
+    "home": "Trang chủ",
+    "community": "Cộng đồng",
+    "features": "Tính năng",
+    "pricing": "Bảng giá",
+    "log_in": "Đăng nhập",
+    "start_for_free": "Bắt đầu miễn phí"
+  },
+  "Hero": {
+    "title": "Trình Tạo Mô Hình 3D AI SỐ 1 Cho Mọi Người",
+    "description": "Chuyển đổi ảnh hoặc hình ảnh concept của bạn thành mô hình 3D với chi tiết tuyệt đẹp chỉ trong vài giây.",
+    "start_for_free": "BẮT ĐẦU MIỄN PHÍ",
+    "explore": "KHÁM PHÁ"
+  },
+  "ImageGallery": {
+    "title": "Bước vào Thế giới Tưởng tượng 3D",
+    "description": "Khám phá và tải xuống nhiều mô hình 3D độc đáo từ cộng đồng sôi động của chúng tôi.",
+    "load_more": "Tải thêm"
+  },
+  "WorkflowCTA": {
+    "title": "Mở khóa quy trình làm việc 3D nhanh hơn",
+    "description": "Thay đổi quy trình thiết kế của bạn với V2R. Hãy thử ngay bây giờ và chứng kiến sự sáng tạo của bạn trở nên sống động một cách dễ dàng!",
+    "start_for_free": "BẮT ĐẦU MIỄN PHÍ",
+    "explore": "KHÁM PHÁ"
+  },
+  "Footer": {
+    "subscribe_title": "Đăng ký nhận thông tin cập nhật",
+    "subscribe_description": "Tham gia bản tin của chúng tôi để luôn cập nhật những tin tức mới nhất",
+    "email_placeholder": "Nhập email của bạn",
+    "subscribe_button": "Đăng ký",
+    "features_title": "Tính năng",
+    "text_to_3d": "Văn bản sang 3D",
+    "image_to_3d": "Hình ảnh sang 3D",
+    "product_title": "Sản phẩm",
+    "pricing": "Bảng giá",
+    "community": "Cộng đồng",
+    "plugin": "Plugin",
+    "status": "Trạng thái",
+    "company_title": "Công ty",
+    "about": "Về chúng tôi",
+    "contact": "Liên hệ"
+  },
+  "Sidebar": {
+    "text_to_3d": "Văn bản sang 3D",
+    "image_to_3d": "Hình ảnh sang 3D",
+    "image_label": "Hình ảnh",
+    "uploader_title": "Hình ảnh của bạn ở đây",
+    "uploader_formats": "Định dạng: .png, .jpg, .jpeg, .webp",
+    "name_label": "Tên",
+    "name_placeholder": "Dự án chưa có tên",
+    "model_label": "Mô hình AI",
+    "symmetry_label": "Đối xứng",
+    "symmetry_off": "Tắt",
+    "symmetry_auto": "Tự động",
+    "symmetry_on": "Bật",
+    "cost_info_model": "1 mô hình",
+    "cost_info_tokens": "10 tokens",
+    "generate_button": "Tạo"
+  }
+}
