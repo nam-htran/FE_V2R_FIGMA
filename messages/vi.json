@@ -96,5 +96,83 @@
     "search": "Tìm kiếm",
     "upload": "Tải lên",
     "my_library": "Thư viện của tôi"
+  },
+  "Pricing": {
+    "title": "Nâng cấp",
+    "subtitle": "Bắt đầu sử dụng miễn phí. Nâng cấp để nhận giá ưu đãi và thêm nhiều quyền lợi khác.",
+    "basic": {
+      "name": "Basic",
+      "price": "199.000đ",
+      "price_period": "tháng",
+      "cta_button": "Đăng ký",
+      "features": [
+        "10 Mô hình",
+        "Truy cập cộng đồng",
+        "Hỗ trợ qua email"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "499.000đ",
+      "price_period": "tháng",
+      "cta_button": "Đăng ký",
+      "features": [
+        "30 Mô hình",
+        "API access",
+        "Hỗ trợ ưu tiên",
+        "Plugin tích hợp"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "4.990.000đ",
+      "price_period": "tháng",
+      "cta_button": "Liên hệ",
+      "features": [
+        "Không giới hạn mô hình",
+        "Quản lý đội nhóm",
+        "Hỗ trợ riêng biệt",
+        "Bảo mật nâng cao"
+      ]
+    },
+    "Pricing": {
+      "title": "Upgrade",
+      "subtitle": "Start for free. Upgrade to get special prices and more benefits.",
+      "basic": {
+        "name": "Basic",
+        "price": "$9",
+        "price_period": "month",
+        "cta_button": "Sign Up",
+        "features": [
+          "10 Models",
+          "Community Access",
+          "Email Support"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "$25",
+        "price_period": "month",
+        "cta_button": "Sign Up",
+        "features": [
+          "30 Models",
+          "API Access",
+          "Priority Support",
+          "Integration Plugin"
+        ]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "$99",
+        "price_period": "month",
+        "cta_button": "Contact Us",
+        "features": [
+          "Unlimited Models",
+          "Team Management",
+          "Dedicated Support",
+          "Advanced Security"
+        ]
+      }
+    }
   }
 }
