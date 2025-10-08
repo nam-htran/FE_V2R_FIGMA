@@ -24,3 +24,10 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* CẬP NHẬT: Thêm CSS để buộc Leva dropdown mở lên trên */
+/* [data-leva-root] là selector ổn định cho container của Leva */
+[data-leva-root] .leva-c-hPncDm { /* Đây là class của panel nổi */
+  bottom: calc(100% + 8px) !important; /* Đẩy panel lên trên + 8px khoảng cách */
+  top: auto !important; /* Tắt định vị top mặc định */
+}

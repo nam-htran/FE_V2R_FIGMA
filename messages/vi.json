@@ -57,5 +57,44 @@
     "cost_info_model": "1 mô hình",
     "cost_info_tokens": "10 tokens",
     "generate_button": "Tạo"
+  },
+  "Login": {
+    "welcome": "Chào mừng đến với V2R",
+    "get_started": "Nhập Email của bạn để bắt đầu",
+    "email_placeholder": "Email",
+    "password_placeholder": "Mật khẩu",
+    "continue_button": "Tiếp tục",
+    "forgot_password": "Quên mật khẩu",
+    "or": "Hoặc",
+    "continue_with_google": "Tiếp tục với Google",
+    "no_account": "Chưa có tài khoản?",
+    "register_now": "Đăng ký ngay",
+    "terms_prefix": "Bằng việc tiếp tục, bạn đồng ý với",
+    "terms_of_use": "Điều khoản sử dụng",
+    "terms_and": "và",
+    "privacy_policy": "Chính sách bảo mật"
+  },
+  "Register": {
+    "welcome": "Chào mừng đến với V2R",
+    "get_started": "Nhập Email của bạn để bắt đầu",
+    "email_placeholder": "Email",
+    "password_placeholder": "Mật khẩu",
+    "confirm_password_placeholder": "Xác nhận mật khẩu",
+    "continue_button": "Tiếp tục",
+    "have_account": "Đã có tài khoản?",
+    "login_now": "Đăng nhập",
+    "terms_prefix": "Bằng việc tiếp tục, bạn đồng ý với",
+    "terms_of_use": "Điều khoản sử dụng",
+    "terms_and": "và",
+    "privacy_policy": "Chính sách bảo mật"
+  },
+  "Workspace": {
+    "new_project": "Dự án mới",
+    "your_library": "Thư viện của bạn",
+    "upgrade_account": "Nâng cấp tài khoản",
+    "user_free_tier": "Miễn phí",
+    "search": "Tìm kiếm",
+    "upload": "Tải lên",
+    "my_library": "Thư viện của tôi"
   }
 }

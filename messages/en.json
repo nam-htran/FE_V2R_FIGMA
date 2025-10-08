@@ -57,5 +57,44 @@
     "cost_info_model": "1 model",
     "cost_info_tokens": "10 tokens",
     "generate_button": "Generate"
+  },
+  "Login": {
+    "welcome": "Welcome to V2R",
+    "get_started": "Enter your Email to get started",
+    "email_placeholder": "Email",
+    "password_placeholder": "Password",
+    "continue_button": "Continue",
+    "forgot_password": "Forgot password",
+    "or": "Or",
+    "continue_with_google": "Continue with Google",
+    "no_account": "Don't have an account?",
+    "register_now": "Register now",
+    "terms_prefix": "By continuing, you agree to our",
+    "terms_of_use": "Terms of Use",
+    "terms_and": "and",
+    "privacy_policy": "Privacy Policy"
+  },
+    "Register": {
+    "welcome": "Welcome to V2R",
+    "get_started": "Enter your Email to get started",
+    "email_placeholder": "Email",
+    "password_placeholder": "Password",
+    "confirm_password_placeholder": "Confirm Password",
+    "continue_button": "Continue",
+    "have_account": "Already have an account?",
+    "login_now": "Log In",
+    "terms_prefix": "By continuing, you agree to our",
+    "terms_of_use": "Terms of Use",
+    "terms_and": "and",
+    "privacy_policy": "Privacy Policy"
+  },
+  "Workspace": {
+    "new_project": "New Project",
+    "your_library": "Your Library",
+    "upgrade_account": "Upgrade Account",
+    "user_free_tier": "Free",
+    "search": "Search",
+    "upload": "Upload",
+    "my_library": "My Library"
   }
 }

@@ -1,9 +1,11 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
-import { Inter, Unbounded, Be_Vietnam_Pro } from 'next/font/google';
+import { Inter, Unbounded } from 'next/font/google';
 import '../globals.css';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+// 1. Import component Providers mới
+import { Providers } from '../providers';
 
 // Font setup
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -27,7 +29,10 @@ export default async function RootLayout({ children, params }: {children: React.
     <html lang={locale}>
       <body className={`${inter.variable} ${unbounded.variable} bg-stone-50 font-inter`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
-        <main>{children}</main>
+          {/* 2. Sử dụng component Providers ở đây */}
+          <Providers>
+            <main>{children}</main>
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

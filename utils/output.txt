@@ -98,7 +98,6 @@ module.exports = {
         // Cú pháp này cho phép bạn dùng class như font-inter, font-unbounded
         inter: ['var(--font-inter)', 'sans-serif'],
         unbounded: ['var(--font-unbounded)', 'sans-serif'],
-        'be-vietnam-pro': ['var(--font-be-vietnam-pro)', 'sans-serif'],
       },
     },
   },
@@ -135,6 +134,13 @@ module.exports = {
 }
 
 
+===== .\i18n\navigation.ts =====
+import {createNavigation} from 'next-intl/navigation';
+import {routing} from './routing';
+
+export const {Link, getPathname, redirect, usePathname, useRouter} =
+  createNavigation(routing);
+
 ===== .\i18n\request.ts =====
 import {hasLocale} from 'next-intl';
 import {getRequestConfig} from 'next-intl/server';
@@ -149,7 +155,7 @@ export default getRequestConfig(async ({requestLocale}) => {
 
   return {
     locale,
-    messages: (await import(`../../messages/${locale}.json`)).default
+    messages: (await import(`../messages/${locale}.json`)).default
   };
 });
 
@@ -160,10 +166,29 @@ export const routing = defineRouting({
   locales: ['en', 'vi'],
   defaultLocale: 'vi',
   pathnames: {
+    // Các đường dẫn đã có
     '/': '/',
     '/pathnames': {
       vi: '/pfadnamen'
-    }
+    },
+
+    // --- BỔ SUNG CÁC ĐƯỜNG DẪN MỚI TẠI ĐÂY ---
+    '/login': '/login',
+    '/register': '/register',
+    '/forgot-password': '/forgot-password',
+    '/terms': '/terms',
+    '/privacy': '/privacy',
+    
+    // Thêm luôn các đường dẫn từ Header và Footer để tránh lỗi sau này
+    '/community': '/community',
+    '/features': '/features',
+    '/pricing': '/pricing',
+    '/start': '/start',
+    '/plugin': '/plugin',
+    '/status': '/status',
+    '/about': '/about',
+    '/contact': '/contact',
+    '/workspace': '/workspace',
   }
 });
 
@@ -227,6 +252,45 @@ export const routing = defineRouting({
     "cost_info_model": "1 model",
     "cost_info_tokens": "10 tokens",
     "generate_button": "Generate"
+  },
+  "Login": {
+    "welcome": "Welcome to V2R",
+    "get_started": "Enter your Email to get started",
+    "email_placeholder": "Email",
+    "password_placeholder": "Password",
+    "continue_button": "Continue",
+    "forgot_password": "Forgot password",
+    "or": "Or",
+    "continue_with_google": "Continue with Google",
+    "no_account": "Don't have an account?",
+    "register_now": "Register now",
+    "terms_prefix": "By continuing, you agree to our",
+    "terms_of_use": "Terms of Use",
+    "terms_and": "and",
+    "privacy_policy": "Privacy Policy"
+  },
+    "Register": {
+    "welcome": "Welcome to V2R",
+    "get_started": "Enter your Email to get started",
+    "email_placeholder": "Email",
+    "password_placeholder": "Password",
+    "confirm_password_placeholder": "Confirm Password",
+    "continue_button": "Continue",
+    "have_account": "Already have an account?",
+    "login_now": "Log In",
+    "terms_prefix": "By continuing, you agree to our",
+    "terms_of_use": "Terms of Use",
+    "terms_and": "and",
+    "privacy_policy": "Privacy Policy"
+  },
+  "Workspace": {
+    "new_project": "New Project",
+    "your_library": "Your Library",
+    "upgrade_account": "Upgrade Account",
+    "user_free_tier": "Free",
+    "search": "Search",
+    "upload": "Upload",
+    "my_library": "My Library"
   }
 }
 
@@ -290,6 +354,45 @@ export const routing = defineRouting({
     "cost_info_model": "1 mô hình",
     "cost_info_tokens": "10 tokens",
     "generate_button": "Tạo"
+  },
+  "Login": {
+    "welcome": "Chào mừng đến với V2R",
+    "get_started": "Nhập Email của bạn để bắt đầu",
+    "email_placeholder": "Email",
+    "password_placeholder": "Mật khẩu",
+    "continue_button": "Tiếp tục",
+    "forgot_password": "Quên mật khẩu",
+    "or": "Hoặc",
+    "continue_with_google": "Tiếp tục với Google",
+    "no_account": "Chưa có tài khoản?",
+    "register_now": "Đăng ký ngay",
+    "terms_prefix": "Bằng việc tiếp tục, bạn đồng ý với",
+    "terms_of_use": "Điều khoản sử dụng",
+    "terms_and": "và",
+    "privacy_policy": "Chính sách bảo mật"
+  },
+  "Register": {
+    "welcome": "Chào mừng đến với V2R",
+    "get_started": "Nhập Email của bạn để bắt đầu",
+    "email_placeholder": "Email",
+    "password_placeholder": "Mật khẩu",
+    "confirm_password_placeholder": "Xác nhận mật khẩu",
+    "continue_button": "Tiếp tục",
+    "have_account": "Đã có tài khoản?",
+    "login_now": "Đăng nhập",
+    "terms_prefix": "Bằng việc tiếp tục, bạn đồng ý với",
+    "terms_of_use": "Điều khoản sử dụng",
+    "terms_and": "và",
+    "privacy_policy": "Chính sách bảo mật"
+  },
+  "Workspace": {
+    "new_project": "Dự án mới",
+    "your_library": "Thư viện của bạn",
+    "upgrade_account": "Nâng cấp tài khoản",
+    "user_free_tier": "Miễn phí",
+    "search": "Tìm kiếm",
+    "upload": "Tải lên",
+    "my_library": "Thư viện của tôi"
   }
 }
 
@@ -303,7 +406,7 @@ export default createMiddleware({
 });
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)']
 };
 
 
@@ -335,23 +438,41 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* CẬP NHẬT: Thêm CSS để buộc Leva dropdown mở lên trên */
+/* [data-leva-root] là selector ổn định cho container của Leva */
+[data-leva-root] .leva-c-hPncDm { /* Đây là class của panel nổi */
+  bottom: calc(100% + 8px) !important; /* Đẩy panel lên trên + 8px khoảng cách */
+  top: auto !important; /* Tắt định vị top mặc định */
+}
+
+===== .\src\app\providers.tsx =====
+"use client";
+
+import { AuthProvider } from "@/context/AuthContext";
+import { ReactNode } from "react";
+
+// Component này sẽ đóng vai trò là điểm vào phía client cho các provider
+export function Providers({ children }: { children: ReactNode }) {
+  return (
+    <AuthProvider>
+      {children}
+    </AuthProvider>
+  );
+}
 
 ===== .\src\app\[locale]\layout.tsx =====
 // app/layout.tsx
 import type { Metadata } from 'next';
-import { Inter, Unbounded, Be_Vietnam_Pro } from 'next/font/google';
+import { Inter, Unbounded } from 'next/font/google';
 import '../globals.css';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+// 1. Import component Providers mới
+import { Providers } from '../providers';
 
 // Font setup
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const unbounded = Unbounded({ subsets: ['latin'], variable: '--font-unbounded' });
-const beVietnamPro = Be_Vietnam_Pro({ 
-  subsets: ['latin'], 
-  weight: ['400', '600', '700'],
-  variable: '--font-be-vietnam-pro'
-});
 
 export const metadata: Metadata = {
   title: 'Vision2Realty',
@@ -364,13 +485,17 @@ interface RootLayoutProps {
   params: { locale: string };
 }
 
-export default async function RootLayout({ children, params }: RootLayoutProps) {
+export default async function RootLayout({ children, params }: {children: React.ReactNode, params: Promise<{locale: string}>}) {
+  const {locale} = await params;
   const messages = await getMessages();
   return (
-    <html lang={params.locale}>
-      <body className={`${inter.variable} ${unbounded.variable} ${beVietnamPro.variable} bg-stone-50 font-inter`}>
-        <NextIntlClientProvider locale={params.locale} messages={messages}>
-        <main>{children}</main>
+    <html lang={locale}>
+      <body className={`${inter.variable} ${unbounded.variable} bg-stone-50 font-inter`}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {/* 2. Sử dụng component Providers ở đây */}
+          <Providers>
+            <main>{children}</main>
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>
@@ -398,37 +523,224 @@ export default function Home() {
   );
 }
 
+===== .\src\app\[locale]\login\page.tsx =====
+"use client";
+
+import { Icon } from '@iconify/react';
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import { Link } from '../../../../i18n/navigation';
+import { useAuth } from '@/context/AuthContext'; // 1. Import useAuth
+import React from 'react';
+
+export default function LoginPage() {
+  const t = useTranslations('Login');
+  const { login } = useAuth(); // 2. Lấy hàm login
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault(); // Ngăn form submit lại trang
+    login(); // 3. Gọi hàm login để cập nhật trạng thái và chuyển hướng
+  };
+
+  return (
+    <main className="flex items-center justify-center min-h-screen bg-neutral-800">
+      <div className="w-full max-w-sm mx-auto bg-stone-900 text-white rounded-2xl shadow-lg p-8">
+        
+        <div className="text-center mb-4">
+          <Image src="/logo/light.png" alt="V2R Logo" width={50} height={31} className="mx-auto mb-6" />
+          <h1 className="text-xl font-semibold font-['Unbounded']">{t('welcome')}</h1>
+          <p className="text-sm text-gray-300 font-['Inter'] mt-2">{t('get_started')}</p>
+        </div>
+
+        {/* 4. Gắn sự kiện onSubmit */}
+        <form className="space-y-4" onSubmit={handleLogin}>
+          <div>
+            <input 
+              type="email" 
+              placeholder={t('email_placeholder')}
+              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 font-['Inter'] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <input 
+              type="password" 
+              placeholder={t('password_placeholder')}
+              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 font-['Inter'] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button 
+            type="submit"
+            className="w-full h-10 bg-blue-800 rounded-lg text-sm font-bold font-['Unbounded'] hover:bg-blue-700 transition-colors"
+          >
+            {t('continue_button')}
+          </button>
+        </form>
+
+        <div className="text-center mt-4">
+          <Link href="/forgot-password" className="text-xs text-cyan-300 hover:underline font-semibold font-['Inter']">
+            {t('forgot_password')}
+          </Link>
+        </div>
+        
+        <div className="flex items-center my-6">
+          <hr className="w-full border-zinc-700" />
+          <span className="px-2 text-xs text-stone-300 font-['Inter']">{t('or')}</span>
+          <hr className="w-full border-zinc-700" />
+        </div>
+
+        <button className="w-full h-10 mt-4 bg-white text-black rounded-lg text-sm font-semibold font-['Inter'] flex items-center justify-center hover:bg-gray-200 transition-colors">
+          <Icon icon="flat-color-icons:google" className="w-5 h-5 mr-2" />
+          {t('continue_with_google')}
+        </button>
+
+        <div className="flex justify-center space-x-4 mt-6">
+            <Link href="/" className="w-9 h-9 bg-white rounded-full flex items-center justify-center" aria-label="Continue with Facebook">
+                <Icon icon="logos:facebook" className="w-full h-full" />
+            </Link>
+            <Link href="/" className="w-9 h-9 bg-black rounded-full flex items-center justify-center border border-gray-600" aria-label="Continue with X">
+                <Icon icon="fa6-brands:square-x-twitter" className="w-full h-full" />
+            </Link>
+            <Link href="/" className="w-9 h-9 bg-[#5865F2] rounded-full flex items-center justify-center" aria-label="Continue with Discord">
+                <Icon icon="skill-icons:discord" className="w-full h-full" />
+            </Link>
+            <Link href="/" className="w-9 h-9 bg-[#26A5E4] rounded-full flex items-center justify-center" aria-label="Continue with Telegram">
+                <Icon icon="streamline-color:telegram-flat" className="w-full h-full" />
+            </Link>
+        </div>
+
+        <div className="text-center text-xs text-white font-medium font-['Inter'] mt-6">
+          {t('no_account')}{' '}
+          <Link href="/register" className="text-cyan-300 hover:underline">
+            {t('register_now')}
+          </Link>
+        </div>
+
+        <div className="text-center text-zinc-400 text-[9px] font-medium font-['Inter'] mt-8">
+          <span>{t('terms_prefix')} </span>
+          <Link href="/terms" className="text-cyan-300 hover:underline">{t('terms_of_use')}</Link>
+          <span> {t('terms_and')} </span>
+          <Link href="/privacy" className="text-cyan-300 hover:underline">{t('privacy_policy')}</Link>
+          <span>.</span>
+        </div>
+
+      </div>
+    </main>
+  );
+}
+
+===== .\src\app\[locale]\register\page.tsx =====
+"use client";
+
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import { Link } from '@/../i18n/navigation';
+
+export default function RegisterPage() {
+  const t = useTranslations('Register');
+
+  return (
+    <main className="flex items-center justify-center min-h-screen bg-neutral-800">
+      <div className="w-full max-w-sm mx-auto bg-stone-900 text-white rounded-2xl shadow-lg p-8">
+        
+        <div className="text-center mb-4">
+          <Image src="/logo/light.png" alt="V2R Logo" width={50} height={31} className="mx-auto mb-6" />
+          <h1 className="text-xl font-semibold font-['Unbounded']">{t('welcome')}</h1>
+          <p className="text-sm text-gray-300 font-['Inter'] mt-2">{t('get_started')}</p>
+        </div>
+
+        <form className="space-y-4">
+          <div>
+            <input 
+              type="email" 
+              placeholder={t('email_placeholder')}
+              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <input 
+              type="password" 
+              placeholder={t('password_placeholder')}
+              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+           <div>
+            <input 
+              type="password" 
+              placeholder={t('confirm_password_placeholder')}
+              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button 
+            type="submit"
+            className="w-full h-10 bg-blue-800 rounded-lg text-sm font-bold font-['Unbounded'] hover:bg-blue-700 transition-colors"
+          >
+            {t('continue_button')}
+          </button>
+        </form>
+
+        <div className="text-center text-xs text-white font-medium font-['Inter'] mt-6">
+          {t('have_account')}{' '}
+          <Link href="/login" className="text-cyan-300 hover:underline font-semibold">
+            {t('login_now')}
+          </Link>
+        </div>
+
+        <div className="text-center text-zinc-400 text-[9px] font-medium font-roboto mt-8">
+          <span>{t('terms_prefix')} </span>
+          <Link href="/terms" className="text-cyan-300 hover:underline">{t('terms_of_use')}</Link>
+          <span> {t('terms_and')} </span>
+          <Link href="/privacy" className="text-cyan-300 hover:underline">{t('privacy_policy')}</Link>
+          <span>.</span>
+        </div>
+
+      </div>
+    </main>
+  );
+}
+
 ===== .\src\app\[locale]\workspace\page.tsx =====
-"use client"; // Chuyển thành Client Component để sử dụng hooks
+"use client";
 
 import { useState } from "react";
 import { Icon } from "@iconify/react";
 import Sidebar from "@/components/workspace/Sidebar";
 import ViewPanel from "@/components/workspace/ViewPanel";
+import LibraryPanel from "@/components/workspace/LibraryPanel"; 
 
 export default function WorkspacePage() {
-  // State để quản lý trạng thái đóng/mở của sidebar
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  // CẬP NHẬT: Thêm state để quản lý trạng thái thu gọn của LibraryPanel
+  const [isLibraryPanelCollapsed, setIsLibraryPanelCollapsed] = useState(false);
 
   return (
-    // Thêm 'relative' để định vị nút hamburger
-    <main className="relative flex w-screen h-screen overflow-hidden bg-gray-100">
-      <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
-
-      {/* Nút Hamburger để mở sidebar trên màn hình nhỏ */}
-      {/* Nút này sẽ được ẩn trên màn hình lớn (lg:hidden) */}
+    <main className="flex w-screen h-screen overflow-hidden bg-neutral-900">
+      
       <button
-        onClick={() => setIsSidebarOpen(true)}
+        onClick={() => setMobileSidebarOpen(true)}
         className="absolute top-4 left-4 z-30 lg:hidden p-2 bg-gray-700/50 text-white rounded-md"
         aria-label="Open sidebar"
       >
         <Icon icon="mdi:menu" width={24} />
       </button>
 
-      {/* ViewPanel giờ đây sẽ nằm trong một container linh hoạt */}
-      <div className="flex-1">
+      <Sidebar 
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={setIsSidebarCollapsed}
+        isSidebarOpen={isMobileSidebarOpen}
+        setIsSidebarOpen={setMobileSidebarOpen}
+      />
+
+      <div className="flex-1 flex flex-col relative overflow-hidden">
         <ViewPanel />
       </div>
+
+      {/* CẬP NHẬT: Truyền props isCollapsed và setIsCollapsed cho LibraryPanel */}
+      <LibraryPanel 
+        isCollapsed={isLibraryPanelCollapsed}
+        setIsCollapsed={setIsLibraryPanelCollapsed}
+      />
+      
     </main>
   );
 }
@@ -457,9 +769,9 @@ const Footer: FC = () => {
               placeholder={t('email_placeholder')}
               className="w-full sm:w-80 h-11 px-4 rounded-[10px] bg-white text-stone-500 font-['Inter']" 
             />
-            <button className="bg-blue-800 text-white text-lg font-medium font-['Unbounded'] rounded-[10px] h-11 px-8">
-              {t('subscribe_button')}
-            </button>
+        <button className="bg-blue-800 text-white text-lg font-medium font-['Unbounded'] rounded-[10px] h-11 px-8 whitespace-nowrap">
+          {t('subscribe_button')}
+        </button>
           </form>
         </div>
         
@@ -492,7 +804,7 @@ const Footer: FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 flex justify-between items-center">
-         <Image src="/logo/dark.png" alt="Logo" width={90} height={56} />
+         <Image src="/logo/dark.png" alt="Logo" width={50} height={50} />
       </div>
     </footer>
   );
@@ -503,19 +815,25 @@ export default Footer;
 ===== .\src\components\Header.tsx =====
 "use client";
 
+import { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '../../i18n/navigation'; // Sử dụng Link từ next-intl
 import { useTranslations } from 'next-intl';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useAuth } from '@/context/AuthContext'; // 1. Import useAuth hook
+import { Icon } from '@iconify/react';
 
 const Header = () => {
   const t = useTranslations('Header');
+  const { isAuthenticated, logout } = useAuth(); // 2. Lấy trạng thái và hàm logout
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
     <header className="absolute top-0 left-0 w-full z-10">
       <nav className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24">
         <div className="flex items-center">
           <Link href="/">
-            <Image src="/logo/dark.png" alt="Logo" width={90} height={56} />
+            <Image src="/logo/dark.png" alt="Logo" width={50} height={50} />
           </Link>
         </div>
         <div className="hidden md:flex items-center space-x-8 text-gray-800 font-['Unbounded'] text-lg">
@@ -525,8 +843,35 @@ const Header = () => {
           <Link href="/pricing">{t('pricing')}</Link>
         </div>
         <div className="hidden md:flex items-center space-x-4">
-          <Link href="/login" className="text-gray-800 font-['Unbounded'] text-lg">{t('log_in')}</Link>
-          <Link href="/start" className="bg-neutral-900 text-neutral-100 rounded-xl px-6 py-2.5 font-['Unbounded'] text-lg">{t('start_for_free')}</Link>
+          <LanguageSwitcher />
+
+          {/* 3. Hiển thị có điều kiện */}
+          {isAuthenticated ? (
+            <div className="relative">
+              <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="w-10 h-10 bg-zinc-300 rounded-full flex items-center justify-center">
+                <Icon icon="mdi:user" className="w-6 h-6 text-black" />
+              </button>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                  <Link href="/workspace" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Workspace</Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Log Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link href="/login" className="text-gray-800 font-['Unbounded'] text-lg">{t('log_in')}</Link>
+              <Link href="/start" className="bg-neutral-900 text-neutral-100 rounded-xl px-6 py-2.5 font-['Unbounded'] text-lg">{t('start_for_free')}</Link>
+            </>
+          )}
         </div>
       </nav>
     </header>
@@ -656,6 +1001,94 @@ const ImageGallery: FC = () => {
 
 export default ImageGallery;
 
+===== .\src\components\LanguageSwitcher.tsx =====
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { useLocale } from "next-intl";
+import { usePathname, Link } from "../../i18n/navigation";
+import { Icon } from '@iconify/react';
+
+export default function LanguageSwitcher() {
+  // State để quản lý trạng thái mở/đóng của dropdown
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Hook để lấy thông tin ngôn ngữ và đường dẫn
+  const locale = useLocale();
+  const pathname = usePathname();
+
+  // Ref để tham chiếu đến phần tử div chính của component
+  const switcherRef = useRef<HTMLDivElement>(null);
+
+  // Danh sách các ngôn ngữ để dễ dàng mở rộng trong tương lai
+  const languages = [
+    { code: 'en', name: 'English' },
+    { code: 'vi', name: 'Tiếng Việt' }
+  ];
+
+  // Logic để đóng dropdown khi người dùng nhấp ra bên ngoài
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (switcherRef.current && !switcherRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    // Thêm event listener khi component được mount
+    document.addEventListener('mousedown', handleClickOutside);
+
+    // Dọn dẹp event listener khi component bị unmount
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [switcherRef]);
+
+  return (
+    // Container chính, cần 'relative' để định vị menu dropdown
+    <div ref={switcherRef} className="relative">
+      {/* Nút bấm để mở/đóng dropdown */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-center p-2 rounded-md hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+        aria-haspopup="true"
+        aria-expanded={isOpen}
+      >
+        <Icon icon="ph:globe" className="w-6 h-6 text-gray-700" />
+        <span className="mx-2 font-bold font-['Unbounded'] text-gray-800">{locale.toUpperCase()}</span>
+        <Icon 
+          icon="mdi:chevron-down" 
+          className={`w-5 h-5 text-gray-700 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
+        />
+      </button>
+
+      {/* Menu dropdown */}
+      {isOpen && (
+        <div 
+          className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-xl z-20 py-1"
+          role="menu"
+        >
+          {languages.map((lang) => (
+            <Link
+              key={lang.code}
+              href={pathname}
+              locale={lang.code}
+              onClick={() => setIsOpen(false)} // Đóng dropdown sau khi chọn
+              className={`
+                block w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-100
+                font-['Unbounded']
+                ${locale === lang.code ? 'font-bold bg-gray-100' : 'font-normal'}
+              `}
+              role="menuitem"
+            >
+              {lang.name}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 ===== .\src\components\WorkflowCTA.tsx =====
 "use client";
 
@@ -668,8 +1101,8 @@ const WorkflowCTA: FC = () => {
   return (
     <section className="py-20 text-center">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl font-bold font-['Be_Vietnam_Pro'] text-neutral-900">{t('title')}</h2>
-        <p className="mt-4 text-xl font-['Robotto'] text-neutral-900">
+        <h2 className="text-4xl font-bold font-['Inter'] text-neutral-900">{t('title')}</h2>
+        <p className="mt-4 text-xl font-['Inter'] text-neutral-900">
           {t('description')}
         </p>
         <div className="mt-8 flex justify-center items-center space-x-4">
@@ -690,6 +1123,138 @@ const WorkflowCTA: FC = () => {
 
 export default WorkflowCTA;
 
+===== .\src\components\workspace\LibraryPanel.tsx =====
+"use client";
+
+import { useState, type FC } from 'react';
+import { Icon } from '@iconify/react';
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+
+interface LibraryPanelProps {
+  isCollapsed: boolean;
+  setIsCollapsed: (isCollapsed: boolean) => void;
+}
+
+const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, setIsCollapsed }) => {
+  const t = useTranslations('Workspace');
+
+  const libraryItems = Array(15).fill('/landing-page/image 13.png');
+  const itemsPerPage = 6;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.ceil(libraryItems.length / itemsPerPage);
+  const currentItems = libraryItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  return (
+    // CẬP NHẬT: Định vị tuyệt đối và thêm overflow-hidden
+    <aside 
+      className={`absolute top-0 right-0 h-full bg-neutral-950 flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out font-['Inter'] overflow-hidden ${
+        isCollapsed ? 'w-14 p-2' : 'w-96 p-6'
+      }`}
+    >
+      
+      {/* Header (không đổi) */}
+      <div className={`flex items-center mb-4 flex-shrink-0 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+        {!isCollapsed && (
+          <h2 className="text-lg font-semibold text-white whitespace-nowrap">{t('my_library')}</h2>
+        )}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="text-gray-400 hover:text-white"
+          aria-label={isCollapsed ? 'Expand panel' : 'Collapse panel'}
+        >
+          <Icon icon={isCollapsed ? "mdi:arrow-left" : "mdi:arrow-right"} width={20} />
+        </button>
+      </div>
+
+      {/* Wrapper chống reflow cho nội dung mở rộng */}
+      <div className={`transition-opacity duration-200 ease-in-out ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
+        <div className="w-[calc(24rem-3rem)] flex flex-col flex-grow gap-y-5" style={{height: 'calc(100vh - 4.5rem)'}}>
+          <div className="flex items-center gap-x-4">
+            <div className="relative flex-grow">
+              <Icon 
+                icon="mdi:search" 
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" 
+              />
+              <input 
+                type="text" 
+                placeholder={t('search')}
+                className="w-full h-12 bg-neutral-800 rounded-lg pl-12 pr-4 text-base text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-700"
+              />
+            </div>
+            <button className="w-36 h-12 bg-blue-800 rounded-lg text-base font-semibold text-white flex items-center justify-center gap-x-2 hover:bg-blue-700 transition-colors flex-shrink-0">
+              <Icon icon="mdi:upload" className="w-6 h-6" />
+              {t('upload')}
+            </button>
+          </div>
+
+          <div className="h-12 bg-neutral-800 rounded-lg flex items-center justify-between px-4">
+              <Icon icon="mdi:folder-outline" className="w-6 h-6 text-white" />
+              <Icon icon="mdi:arrow-expand-all" className="w-5 h-5 text-white" />
+          </div>
+
+          <div className="flex-grow bg-neutral-900 rounded-xl p-4 flex flex-col min-h-0">
+            <div className="flex-grow overflow-y-auto pr-2">
+              <div className="grid grid-cols-3 gap-4">
+                {currentItems.map((src, index) => (
+                  <div key={index} className="w-full aspect-square bg-neutral-800 rounded-xl overflow-hidden relative">
+                    <Image 
+                      src={src} 
+                      alt={`Library item ${index + 1}`} 
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      className="opacity-70"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center gap-x-2 flex-shrink-0">
+              <button 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="w-9 h-9 bg-neutral-800 rounded-md flex items-center justify-center text-white disabled:opacity-50"
+              >
+                  <Icon icon="mdi:chevron-left" className="w-6 h-6" />
+              </button>
+              <div className="px-4 py-1.5 bg-neutral-800 rounded-md text-sm text-white">
+                  {currentPage} / {totalPages}
+              </div>
+              <button 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="w-9 h-9 bg-neutral-800 rounded-md flex items-center justify-center text-white disabled:opacity-50"
+              >
+                  <Icon icon="mdi:chevron-right" className="w-6 h-6" />
+              </button>
+          </div>
+        </div>
+      </div>
+
+
+      {/* Dạng thu gọn */}
+      <div className={`absolute top-14 left-0 right-0 transition-opacity duration-200 ease-in-out flex flex-col items-center space-y-1 ${isCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-neutral-800 cursor-pointer" title={t('search')}>
+          <Icon icon="mdi:search" className="w-6 h-6 text-gray-300" />
+        </div>
+        <div className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-neutral-800 cursor-pointer" title={t('upload')}>
+          <Icon icon="mdi:upload" className="w-6 h-6 text-gray-300" />
+        </div>
+        <div className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-neutral-800 cursor-pointer" title={t('my_library')}>
+          <Icon icon="mdi:folder-multiple-image" className="w-6 h-6 text-gray-300" />
+        </div>
+      </div>
+    </aside>
+  );
+};
+
+export default LibraryPanel;
+
 ===== .\src\components\workspace\Sidebar.tsx =====
 "use client";
 
@@ -699,98 +1264,148 @@ import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 
 interface SidebarProps {
+  isCollapsed: boolean;
+  setIsCollapsed: (isCollapsed: boolean) => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
-const Sidebar: FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
+const Sidebar: FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isSidebarOpen, setIsSidebarOpen }) => {
   const t = useTranslations('Sidebar');
+  const tWorkspace = useTranslations('Workspace');
+
+  const NavItem = ({ icon, text }: { icon: string; text: string }) => (
+    <a
+      href="#"
+      className={`block flex items-center rounded-md hover:bg-neutral-800 transition-colors ${
+        isCollapsed ? 'w-10 h-10 justify-center' : 'p-2 text-neutral-100'
+      }`}
+    >
+      <Icon icon={icon} className="w-6 h-6 text-gray-300 flex-shrink-0" />
+      {!isCollapsed && <span className="ml-3 text-sm font-medium whitespace-nowrap">{text}</span>}
+    </a>
+  );
 
   return (
     <>
-      {/* Lớp phủ (Overlay) */}
       <div
         className={`fixed inset-0 bg-black/60 z-40 lg:hidden transition-opacity ${
           isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsSidebarOpen(false)}
         aria-hidden="true"
-      ></div>
+      />
 
-      {/* Sidebar */}
       <div
         className={`
-          fixed top-0 left-0 h-full bg-black text-white p-6 overflow-y-auto z-50
-          transition-transform duration-300 ease-in-out
-          w-full sm:w-96 lg:w-[360px]
-          lg:relative lg:translate-x-0
+          bg-neutral-950 text-white flex flex-col h-full z-50
+          transition-all duration-300 ease-in-out font-['Inter']
+          ${isCollapsed ? 'w-14' : 'w-96'} {/* Cập nhật chiều rộng khi mở rộng */}
+          fixed lg:relative top-0 left-0 
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          lg:translate-x-0
         `}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <Image src="/logo/light.png" alt="Logo" width={40} height={25} />
-          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-white">
-            <Icon icon="mdi:close" width={28} />
-          </button>
+        <div className={`flex flex-col flex-grow min-h-0 ${isCollapsed ? 'p-2' : 'p-4'}`}>
+           {/* Header */}
+          <div className={`flex items-center mb-6 ${isCollapsed ? 'justify-center flex-col space-y-4' : 'justify-between'}`}>
+            {!isCollapsed && <Image src="/logo/light.png" alt="Logo" width={40} height={25} />}
+            {isCollapsed && <Image src="/logo/light.png" alt="Logo" width={30} height={19} />}
+
+            <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden lg:block text-gray-400 hover:text-white">
+              <Icon icon={isCollapsed ? "mdi:arrow-right" : "mdi:arrow-left"} width={20} />
+            </button>
+            <button onClick={() => setIsSidebarOpen(false)} className={`lg:hidden text-white ${isCollapsed ? 'hidden' : ''}`}>
+              <Icon icon="mdi:close" width={28} />
+            </button>
+          </div>
+          
+          {/* Nav Items */}
+          <nav className={`${isCollapsed ? 'flex flex-col items-center space-y-1' : ''}`}>
+            <NavItem icon="mdi:plus-box" text={tWorkspace('new_project')} />
+            <NavItem icon="mdi:folder-multiple-image" text={tWorkspace('your_library')} />
+            <NavItem icon="mdi:crown" text={tWorkspace('upgrade_account')} />
+          </nav>
+          
+          {/* ====== NỘI DUNG CHI TIẾT KHI MỞ RỘNG ====== */}
+          {!isCollapsed && (
+            <div className="flex flex-col flex-grow overflow-y-auto mt-4 pr-1">
+              <hr className="border-zinc-700 mb-4" />
+              
+              {/* Mode Toggle */}
+              <div className="flex bg-neutral-800 rounded-xl p-1 mb-6">
+                <button className="flex-1 p-2 rounded-lg text-neutral-400 font-bold text-sm">{t('text_to_3d')}</button>
+                <button className="flex-1 p-2 bg-blue-800 text-white rounded-lg font-bold text-sm">{t('image_to_3d')}</button>
+              </div>
+
+              {/* Image Uploader */}
+              <div className="mb-5">
+                <label className="text-sm font-normal mb-2 block">{t('image_label')}</label>
+                <div className="w-full h-40 bg-neutral-900 border border-neutral-700 rounded-xl flex flex-col justify-center items-center text-center p-4">
+                  <Icon icon="icon-park-outline:upload-picture" className="w-10 h-10 text-neutral-500 mb-2" />
+                  <p className="text-neutral-400 text-base font-semibold">{t('uploader_title')}</p>
+                  <p className="text-neutral-500 text-xs font-normal mt-1">{t('uploader_formats')}</p>
+                </div>
+              </div>
+
+              {/* Project Name */}
+              <div className="mb-5">
+                <label className="text-sm font-normal mb-2 block">{t('name_label')}</label>
+                <input
+                  type="text"
+                  placeholder={t('name_placeholder')}
+                  className="w-full h-11 bg-neutral-800 rounded-xl px-4 text-neutral-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
+                />
+              </div>
+
+              {/* AI Model */}
+              <div className="mb-5">
+                <label className="text-sm font-normal mb-2 block">{t('model_label')}</label>
+                <div className="flex items-center justify-between p-2 h-11 bg-neutral-800 rounded-xl">
+                  <span className="text-white text-sm">V2R</span>
+                  <Icon icon="mdi:chevron-down" className="text-white w-5 h-5" />
+                </div>
+              </div>
+
+              {/* Symmetry */}
+              <div className="mb-6">
+                <label className="text-sm font-normal mb-2 block">{t('symmetry_label')}</label>
+                <div className="flex bg-neutral-800 rounded-lg p-1">
+                  <button className="flex-1 text-neutral-400 font-bold p-1.5 text-sm rounded-md">{t('symmetry_off')}</button>
+                  <button className="flex-1 bg-blue-800 text-white rounded-md font-bold p-1.5 text-sm">{t('symmetry_auto')}</button>
+                  <button className="flex-1 text-neutral-400 font-bold p-1.5 text-sm rounded-md">{t('symmetry_on')}</button>
+                </div>
+              </div>
+
+              {/* Cost Info */}
+              <div className="flex justify-center items-center space-x-3 mb-4 text-sm font-light text-neutral-300">
+                <span>{t('cost_info_model')}</span>
+                <div className="w-px h-5 bg-neutral-600"></div>
+                <span>{t('cost_info_tokens')}</span>
+              </div>
+
+              {/* Generate Button */}
+              <button className="w-full h-11 bg-blue-800 rounded-xl text-neutral-100 text-base font-semibold font-['Unbounded'] hover:bg-blue-700 transition-colors">
+                {t('generate_button')}
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Mode Toggle */}
-        <div className="flex bg-stone-50 text-black rounded-xl p-1 mb-6">
-          <button className="flex-1 p-2.5 rounded-lg text-neutral-400 font-bold text-sm">{t('text_to_3d')}</button>
-          <button className="flex-1 p-2.5 bg-blue-900 text-white rounded-lg font-bold text-sm">{t('image_to_3d')}</button>
-        </div>
-
-        {/* Image Uploader */}
-        <div className="mb-5">
-          <label className="text-sm font-normal font-['Inter'] mb-2 block">{t('image_label')}</label>
-          <div className="w-full h-60 bg-stone-50 rounded-xl border border-neutral-600 flex flex-col justify-center items-center text-center p-4">
-            <Icon icon="icon-park-outline:upload-picture" className="w-12 h-12 text-stone-500 mb-3" />
-            <p className="text-stone-500 text-lg font-semibold font-['Inter']">{t('uploader_title')}</p>
-            <p className="text-neutral-500 text-xs font-normal font-['Inter'] mt-1">{t('uploader_formats')}</p>
+        {/* User Profile Section */}
+        <div className={`border-t border-zinc-700 flex-shrink-0 ${isCollapsed ? 'p-2' : 'p-4'}`}>
+          <div className={`flex items-center ${isCollapsed ? 'justify-center' : ''}`}>
+            <div className="w-10 h-10 bg-zinc-300 rounded-full flex items-center justify-center flex-shrink-0">
+              <Icon icon="mdi:user" className="w-6 h-6 text-black" />
+            </div>
+            {!isCollapsed && (
+              <div className="ml-3">
+                <p className="text-sm font-semibold text-white">PhuongBT</p>
+                <p className="text-sm font-light text-gray-300">{tWorkspace('user_free_tier')}</p>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Project Name */}
-        <div className="mb-5">
-          <label className="text-sm font-normal font-['Inter'] mb-2 block">{t('name_label')}</label>
-          <input
-            type="text"
-            placeholder={t('name_placeholder')}
-            className="w-full h-12 bg-stone-50 rounded-xl px-4 text-neutral-500 text-sm"
-          />
-        </div>
-
-        {/* AI Model */}
-        <div className="mb-5">
-          <label className="text-sm font-normal font-['Inter'] mb-2 block">{t('model_label')}</label>
-          <div className="flex items-center justify-between p-1.5 bg-neutral-800 rounded-lg">
-            <span className="text-white text-sm">V2R</span>
-            <button className="text-xs">▼</button>
-          </div>
-        </div>
-
-        {/* Symmetry */}
-        <div className="mb-6">
-          <label className="text-sm font-normal font-['Inter'] mb-2 block">{t('symmetry_label')}</label>
-          <div className="flex bg-stone-50 rounded-md p-1">
-            <button className="flex-1 text-zinc-600 font-bold p-1.5 text-sm">{t('symmetry_off')}</button>
-            <button className="flex-1 bg-blue-900 text-white rounded-md font-bold p-1.5 text-sm">{t('symmetry_auto')}</button>
-            <button className="flex-1 text-zinc-600 font-bold p-1.5 text-sm">{t('symmetry_on')}</button>
-          </div>
-        </div>
-
-        {/* Cost Info */}
-        <div className="flex justify-center items-center space-x-3 mb-3 text-sm font-light">
-          <span>{t('cost_info_model')}</span>
-          <div className="w-px h-5 bg-white"></div>
-          <span>{t('cost_info_tokens')}</span>
-        </div>
-
-        {/* Generate Button */}
-        <button className="w-full h-11 bg-blue-900 rounded-2xl text-neutral-100 text-lg font-semibold font-['Unbounded']">
-          {t('generate_button')}
-        </button>
       </div>
     </>
   );
@@ -799,7 +1414,6 @@ const Sidebar: FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
 export default Sidebar;
 
 ===== .\src\components\workspace\ViewPanel.tsx =====
-// components/workspace/ViewPanel.tsx
 "use client";
 
 import { Suspense, type FC, useEffect, useRef } from 'react';
@@ -809,8 +1423,6 @@ import { useControls, Leva } from 'leva';
 import * as THREE from 'three';
 
 // --- TYPE GUARD ---
-// Hàm này kiểm tra xem một Object3D có phải là Mesh hay không
-// và thông báo cho TypeScript biết điều đó.
 function isMesh(obj: THREE.Object3D): obj is THREE.Mesh {
   return (obj as THREE.Mesh).isMesh;
 }
@@ -818,7 +1430,6 @@ function isMesh(obj: THREE.Object3D): obj is THREE.Mesh {
 
 // --- CÁC COMPONENT PHỤ ---
 
-// Component Loader hiển thị trong khi chờ tải
 const Loader: FC = () => {
   return (
     <Html center>
@@ -827,13 +1438,11 @@ const Loader: FC = () => {
   );
 };
 
-// Component Model đơn giản, chỉ có nhiệm vụ render scene
 const Model: FC = () => {
   const { scene } = useGLTF('/3D-model/model.glb');
   return <primitive object={scene} />;
 };
 
-// Component Wireframe chuyên render khung lưới
 interface WireframeProps {
   show: boolean;
   thickness: number;
@@ -846,7 +1455,6 @@ const ModelWireframe: FC<WireframeProps> = ({ show, thickness, color }) => {
   return (
     <>
       {Object.values(nodes).map((node: THREE.Object3D, index) => (
-        // Sử dụng Type Guard để đảm bảo node là một Mesh
         isMesh(node) && (
           <mesh key={index} geometry={node.geometry}>
             <meshBasicMaterial transparent opacity={0} /> 
@@ -863,7 +1471,6 @@ const ModelWireframe: FC<WireframeProps> = ({ show, thickness, color }) => {
   );
 };
 
-// Component Container: Chứa logic xoay/scale và render cả Model lẫn Wireframe
 interface ModelRendererProps {
   scale: number;
   rotation: [number, number, number];
@@ -875,7 +1482,6 @@ interface ModelRendererProps {
 const ModelRenderer: FC<ModelRendererProps> = (props) => {
   const groupRef = useRef<THREE.Group>(null!);
 
-  // Logic tự động xoay được đặt ở đây, áp dụng cho group cha chung
   useFrame((state, delta) => {
     if (props.autoRotate && groupRef.current) {
       groupRef.current.rotation.y += delta * 0.2;
@@ -896,7 +1502,6 @@ const ModelRenderer: FC<ModelRendererProps> = (props) => {
 
 useGLTF.preload('/3D-model/model.glb');
 
-// Component chuyên cập nhật fov của camera
 const CameraUpdater: FC<{ fov: number }> = ({ fov }) => {
   const { camera } = useThree();
   useEffect(() => {
@@ -908,7 +1513,6 @@ const CameraUpdater: FC<{ fov: number }> = ({ fov }) => {
   return null;
 };
 
-// Định nghĩa options và types cho Environment
 const environmentOptions = ['city', 'sunset', 'dawn', 'park', 'apartment', 'studio', 'warehouse'] as const;
 type EnvironmentPreset = typeof environmentOptions[number];
 
@@ -916,9 +1520,8 @@ type EnvironmentPreset = typeof environmentOptions[number];
 // --- COMPONENT CHÍNH ---
 
 const ViewPanel: FC = () => {
-  // Leva controls
   const sceneControls = useControls('Scene', {
-    backgroundColor: '#555555',
+    backgroundColor: '#000000',
     environment: { value: 'city', options: environmentOptions },
     intensity: { value: 0.8, min: 0, max: 2, step: 0.1 },
   });
@@ -950,38 +1553,43 @@ const ViewPanel: FC = () => {
   });
 
   return (
-    <div className="flex-grow h-full bg-neutral-500 relative">
-      <Leva collapsed />
+    <div className="flex-grow h-full bg-neutral-900 relative">
+      {/* CẬP NHẬT: Áp dụng các lớp responsive cho Leva panel */}
+      <div className="absolute bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:w-[300px] md:-translate-x-1/2 z-10">
+        <Leva 
+          fill 
+          oneLineLabels 
+          collapsed 
+        />
+      </div>
+
       <Canvas 
         dpr={[1, 2]} 
         camera={{ position: [0, 1.5, 6] }} 
-        style={{ position: "absolute" }}
+        style={{ position: "absolute", width: '100%', height: '100%' }} // Đảm bảo Canvas fill parent
         shadows
       >
         <color attach="background" args={[sceneControls.backgroundColor]} />
         <CameraUpdater fov={cameraControls.fov} />
 
-        {/* Ánh sáng và Môi trường */}
         <ambientLight intensity={sceneControls.intensity / 2} />
         <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
         <Environment preset={sceneControls.environment as EnvironmentPreset} />
         
-        {/* Lưới nền có thể bật/tắt */}
         {helperControls.showGrid && (
           <Grid
             infiniteGrid
             position={[0, -0.5, 0]}
             sectionSize={1}
             cellSize={0.5}
-            sectionColor={"#888888"}
-            cellColor={"#555555"}
+            sectionColor={"#444444"}
+            cellColor={"#222222"}
             fadeDistance={25}
             fadeStrength={1}
           />
         )}
 
         <Suspense fallback={<Loader />}>
-          {/* Sử dụng component container mới */}
           <ModelRenderer 
             scale={modelControls.scale}
             rotation={modelControls.rotation}
@@ -1000,6 +1608,55 @@ const ViewPanel: FC = () => {
 
 export default ViewPanel;
 
+===== .\src\context\AuthContext.tsx =====
+"use client";
+
+import { createContext, useContext, useState, ReactNode } from 'react';
+import { useRouter } from '../../i18n/navigation';
+
+// Định nghĩa các giá trị mà Context sẽ cung cấp
+interface AuthContextType {
+  isAuthenticated: boolean;
+  login: () => void;
+  logout: () => void;
+}
+
+// Tạo Context với giá trị mặc định
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Tạo Provider component
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+
+  const login = () => {
+    // Trong một ứng dụng thực tế, bạn sẽ xử lý logic đăng nhập ở đây
+    // Sau đó cập nhật trạng thái và chuyển hướng
+    setIsAuthenticated(true);
+    router.push('/workspace'); // Chuyển hướng đến trang workspace sau khi đăng nhập
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    router.push('/'); // Chuyển hướng về trang chủ sau khi đăng xuất
+  };
+
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// Tạo một custom hook để dễ dàng sử dụng Context
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
 ===== DIRECTORY TREE =====
 ./
     .eslintrc.json
@@ -1012,6 +1669,7 @@ export default ViewPanel;
     tailwind.config.ts
     tsconfig.json
     i18n/
+        navigation.ts
         request.ts
         routing.ts
     messages/
@@ -1047,9 +1705,14 @@ export default ViewPanel;
         middleware.ts
         app/
             globals.css
+            providers.tsx
             [locale]/
                 layout.tsx
                 page.tsx
+                login/
+                    page.tsx
+                register/
+                    page.tsx
                 workspace/
                     page.tsx
         components/
@@ -1057,8 +1720,12 @@ export default ViewPanel;
             Header.tsx
             Hero.tsx
             ImageGallery.tsx
+            LanguageSwitcher.tsx
             WorkflowCTA.tsx
             workspace/
+                LibraryPanel.tsx
                 Sidebar.tsx
                 ViewPanel.tsx
+        context/
+            AuthContext.tsx
     utils/
