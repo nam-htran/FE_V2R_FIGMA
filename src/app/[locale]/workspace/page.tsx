@@ -30,12 +30,9 @@ export default function WorkspacePage() {
         setIsSidebarOpen={setMobileSidebarOpen}
       />
 
+      {/* CẬP NHẬT: Gỡ bỏ class transition không cần thiết */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
-        {/* CẬP NHẬT: Truyền trạng thái của các panel vào ViewPanel */}
-        <ViewPanel 
-          isSidebarCollapsed={isSidebarCollapsed}
-          isLibraryPanelCollapsed={isLibraryPanelCollapsed}
-        />
+        <ViewPanel />
       </div>
 
       <LibraryPanel 

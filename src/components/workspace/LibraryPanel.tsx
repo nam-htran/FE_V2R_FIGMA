@@ -1,3 +1,4 @@
+// ===== .\src\components\workspace\LibraryPanel.tsx =====
 "use client";
 
 import { useState, type FC } from 'react';
@@ -23,14 +24,13 @@ const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, setIsCollapsed }) =>
   );
 
   return (
-    // CẬP NHẬT: Định vị tuyệt đối và thêm overflow-hidden
     <aside 
-      className={`absolute top-0 right-0 h-full bg-neutral-950 flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out font-['Inter'] overflow-hidden ${
+      className={`h-full bg-neutral-950 flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out font-['Inter'] overflow-hidden ${
         isCollapsed ? 'w-14 p-2' : 'w-96 p-6'
       }`}
     >
       
-      {/* Header (không đổi) */}
+      {/* Header không thay đổi */}
       <div className={`flex items-center mb-4 flex-shrink-0 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
         {!isCollapsed && (
           <h2 className="text-lg font-semibold text-white whitespace-nowrap">{t('my_library')}</h2>
@@ -44,8 +44,14 @@ const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, setIsCollapsed }) =>
         </button>
       </div>
 
-      {/* Wrapper chống reflow cho nội dung mở rộng */}
-      <div className={`transition-opacity duration-200 ease-in-out ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
+      {/* CẬP NHẬT: Thay vì gỡ bỏ, chúng ta sẽ ẩn nội dung bằng opacity */}
+      <div 
+        className={`
+          flex flex-col flex-grow gap-y-5 transition-opacity duration-200 ease-in-out
+          ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+        `}
+      >
+        {/* Nội dung bên trong không thay đổi, chỉ bỏ điều kiện render bên ngoài */}
         <div className="w-[calc(24rem-3rem)] flex flex-col flex-grow gap-y-5" style={{height: 'calc(100vh - 4.5rem)'}}>
           <div className="flex items-center gap-x-4">
             <div className="relative flex-grow">
@@ -110,9 +116,13 @@ const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, setIsCollapsed }) =>
         </div>
       </div>
 
-
-      {/* Dạng thu gọn */}
-      <div className={`absolute top-14 left-0 right-0 transition-opacity duration-200 ease-in-out flex flex-col items-center space-y-1 ${isCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      {/* CẬP NHẬT: Dùng opacity để hiện các icon khi thu gọn */}
+      <div 
+        className={`
+          flex flex-col items-center space-y-1 mt-10 transition-opacity duration-200 ease-in-out
+          ${isCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+        `}
+      >
         <div className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-neutral-800 cursor-pointer" title={t('search')}>
           <Icon icon="mdi:search" className="w-6 h-6 text-gray-300" />
         </div>

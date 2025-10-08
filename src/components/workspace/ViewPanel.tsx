@@ -1,4 +1,4 @@
-// ===== .\src\components\workspace\ViewPanel.tsx =====
+// ===== .\src/components\workspace\ViewPanel.tsx =====
 "use client";
 
 import { Suspense, type FC, useEffect, useRef, useState } from 'react';
@@ -7,10 +7,11 @@ import { OrbitControls, useGLTF, Html, Environment, Grid, Edges } from '@react-t
 import { useControls, Leva } from 'leva';
 import * as THREE from 'three';
 
-// --- TYPE GUARD (Không thay đổi) ---
+// --- TYPE GUARD ---
 function isMesh(obj: THREE.Object3D): obj is THREE.Mesh {
   return (obj as THREE.Mesh).isMesh;
 }
+
 
 // --- CÁC COMPONENT PHỤ (Không thay đổi) ---
 const Loader: FC = () => <Html center><div className="text-white text-lg font-sans">Loading 3D Model...</div></Html>;
@@ -36,74 +37,57 @@ const CameraUpdater: FC<{ fov: number }> = ({ fov }) => {
 const environmentOptions = ['city', 'sunset', 'dawn', 'park', 'apartment', 'studio', 'warehouse'] as const;
 type EnvironmentPreset = typeof environmentOptions[number];
 
-// --- INTERFACE CHO PROPS MỚI ---
-interface ViewPanelProps {
-  isSidebarCollapsed: boolean;
-  isLibraryPanelCollapsed: boolean;
-}
-
 // --- COMPONENT CHÍNH ---
-const ViewPanel: FC<ViewPanelProps> = ({ isSidebarCollapsed, isLibraryPanelCollapsed }) => {
-  // Các useControls không thay đổi
+// CẬP NHẬT: Không cần nhận props về trạng thái panel nữa
+const ViewPanel: FC = () => {
   const sceneControls = useControls('Scene', { backgroundColor: '#000000', environment: { value: 'city', options: environmentOptions }, intensity: { value: 0.8, min: 0, max: 2, step: 0.1 } });
   const modelControls = useControls('Model', { scale: { value: 1, min: 0.1, max: 5, step: 0.05 }, rotation: [0, 0, 0] });
   const cameraControls = useControls('Camera', { fov: { value: 45, min: 10, max: 120, step: 1 } });
   const helperControls = useControls('Helpers', { autoRotate: true, showGrid: true, showWireframe: false, polyThickness: { value: 1, min: 0.1, max: 10, step: 0.1, render: (get) => get('Helpers.showWireframe') }, polyColor: { value: '#ffffff', render: (get) => get('Helpers.showWireframe') } });
 
-  // CẬP NHẬT: Toàn bộ logic tính toán vị trí
+  const viewPanelRef = useRef<HTMLDivElement>(null);
   const [levaStyle, setLevaStyle] = useState<React.CSSProperties>({
-    opacity: 0,
+    opacity: 0, 
     position: 'fixed',
     zIndex: 10
   });
 
   useEffect(() => {
-    // Hàm tính toán và cập nhật vị trí
+    const viewPanelElement = viewPanelRef.current;
+    if (!viewPanelElement) return;
+
     const updatePosition = () => {
-      // Chiều rộng (rem) của các panel từ Tailwind CSS (w-96 -> 24rem, w-14 -> 3.5rem)
-      const SIDEBAR_WIDTH_OPEN = 24 * 16; // 384px
-      const SIDEBAR_WIDTH_COLLAPSED = 3.5 * 16; // 56px
-      const LIBRARY_WIDTH_OPEN = 24 * 16; // 384px
-      const LIBRARY_WIDTH_COLLAPSED = 3.5 * 16; // 56px
-      const LEVA_WIDTH = 300; // Chiều rộng ước tính của Leva panel
-
-      // Xác định chiều rộng thực tế của các panel đang chiếm dụng không gian
-      const leftOffset = isSidebarCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_OPEN;
-      // LibraryPanel khi thu gọn vẫn chiếm không gian, khi mở thì đè lên
-      const rightOffset = isLibraryPanelCollapsed ? LIBRARY_WIDTH_COLLAPSED : LIBRARY_WIDTH_OPEN;
-
-      // Chiều rộng của toàn bộ cửa sổ
-      const windowWidth = window.innerWidth;
+      const rect = viewPanelElement.getBoundingClientRect();
+      const levaWidth = 300; 
       
-      // Tính chiều rộng của không gian hiển thị ViewPanel thực tế
-      const availableWidth = windowWidth - leftOffset - rightOffset;
-
-      // Tính toán vị trí 'left' để căn giữa Leva trong không gian đó
-      const newLeft = leftOffset + (availableWidth / 2) - (LEVA_WIDTH / 2);
+      const newLeft = rect.left + (rect.width / 2) - (levaWidth / 2);
       
       setLevaStyle({
         position: 'fixed',
         left: `${newLeft}px`,
         bottom: '1rem',
-        width: `${LEVA_WIDTH}px`,
+        width: `${levaWidth}px`,
         zIndex: 10,
-        opacity: 1,
-        transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)' // Hiệu ứng mượt mà
+        opacity: 1, 
+        transition: 'left 0.2s ease-out'
       });
     };
     
-    // Gọi hàm lần đầu và mỗi khi cửa sổ resize hoặc trạng thái panel thay đổi
     updatePosition();
-    window.addEventListener('resize', updatePosition);
     
-    // Dọn dẹp
+    const resizeObserver = new ResizeObserver(updatePosition);
+    resizeObserver.observe(viewPanelElement);
+    
     return () => {
-      window.removeEventListener('resize', updatePosition);
+      resizeObserver.unobserve(viewPanelElement);
     };
-  }, [isSidebarCollapsed, isLibraryPanelCollapsed]); // Chạy lại hiệu ứng khi trạng thái panel thay đổi
+  }, []); 
 
   return (
-    <div className="flex-grow h-full bg-neutral-900 relative">
+    // CẬP NHẬT: Gắn ref vào div cha của ViewPanel (nằm trong workspace/page.tsx)
+    // Code bên trong ViewPanel.tsx không cần thay đổi cấu trúc JSX
+    // Chỉ cần đảm bảo thẻ cha của nó có ref
+    <div ref={viewPanelRef} className="flex-grow h-full bg-neutral-900 relative">
       <div style={levaStyle}>
         <Leva 
           fill 
