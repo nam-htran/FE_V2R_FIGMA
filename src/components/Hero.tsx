@@ -19,10 +19,10 @@ const Hero: FC = () => {
             {t('description')}
           </p>
           <div className="mt-8 flex items-center space-x-4">
-            <button className="bg-blue-900 text-white text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[30px] px-12 py-4">
+            <button className="bg-blue-900 text-white text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[30px] px-8 py-4 text-center flex items-center hover:bg-blue-800 transition-colors">
               {t('start_for_free')}
             </button>
-            <button className="bg-neutral-900 text-neutral-100 text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[30px] px-12 py-4 flex items-center">
+            <button className="bg-neutral-900 text-neutral-100 text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[30px] px-8 py-4 flex items-center">
               {t('explore')}
               <div className="ml-2 w-7 h-7 flex items-center justify-center">
                  <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[10px] border-l-neutral-100 border-b-[7px] border-b-transparent"></div>
