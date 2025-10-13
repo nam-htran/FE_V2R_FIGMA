@@ -65,6 +65,7 @@ export default withNextIntl(nextConfig);
     "leva": "^0.10.0",
     "next": "15.5.4",
     "next-intl": "^4.3.9",
+    "next-themes": "^0.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "three": "^0.180.0"
@@ -87,6 +88,7 @@ export default withNextIntl(nextConfig);
 // tailwind.config.js or tailwind.config.ts
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -291,6 +293,45 @@ export const routing = defineRouting({
     "search": "Search",
     "upload": "Upload",
     "my_library": "My Library"
+  },
+  "Pricing": {
+    "title": "Upgrade",
+    "subtitle": "Start for free. Upgrade to get special prices and more benefits.",
+    "basic": {
+      "name": "Basic",
+      "price": "$9",
+      "price_period": "month",
+      "cta_button": "Sign Up",
+      "features": [
+        "10 Models",
+        "Community Access",
+        "Email Support"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "$25",
+      "price_period": "month",
+      "cta_button": "Sign Up",
+      "features": [
+        "30 Models",
+        "API Access",
+        "Priority Support",
+        "Integration Plugin"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "$99",
+      "price_period": "month",
+      "cta_button": "Contact Us",
+      "features": [
+        "Unlimited Models",
+        "Team Management",
+        "Dedicated Support",
+        "Advanced Security"
+      ]
+    }
   }
 }
 
@@ -393,6 +434,84 @@ export const routing = defineRouting({
     "search": "Tìm kiếm",
     "upload": "Tải lên",
     "my_library": "Thư viện của tôi"
+  },
+  "Pricing": {
+    "title": "Nâng cấp",
+    "subtitle": "Bắt đầu sử dụng miễn phí. Nâng cấp để nhận giá ưu đãi và thêm nhiều quyền lợi khác.",
+    "basic": {
+      "name": "Basic",
+      "price": "199.000đ",
+      "price_period": "tháng",
+      "cta_button": "Đăng ký",
+      "features": [
+        "10 Mô hình",
+        "Truy cập cộng đồng",
+        "Hỗ trợ qua email"
+      ]
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "499.000đ",
+      "price_period": "tháng",
+      "cta_button": "Đăng ký",
+      "features": [
+        "30 Mô hình",
+        "API access",
+        "Hỗ trợ ưu tiên",
+        "Plugin tích hợp"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "price": "4.990.000đ",
+      "price_period": "tháng",
+      "cta_button": "Liên hệ",
+      "features": [
+        "Không giới hạn mô hình",
+        "Quản lý đội nhóm",
+        "Hỗ trợ riêng biệt",
+        "Bảo mật nâng cao"
+      ]
+    },
+    "Pricing": {
+      "title": "Upgrade",
+      "subtitle": "Start for free. Upgrade to get special prices and more benefits.",
+      "basic": {
+        "name": "Basic",
+        "price": "$9",
+        "price_period": "month",
+        "cta_button": "Sign Up",
+        "features": [
+          "10 Models",
+          "Community Access",
+          "Email Support"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "$25",
+        "price_period": "month",
+        "cta_button": "Sign Up",
+        "features": [
+          "30 Models",
+          "API Access",
+          "Priority Support",
+          "Integration Plugin"
+        ]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "$99",
+        "price_period": "month",
+        "cta_button": "Contact Us",
+        "features": [
+          "Unlimited Models",
+          "Team Management",
+          "Dedicated Support",
+          "Advanced Security"
+        ]
+      }
+    }
   }
 }
 
@@ -435,7 +554,6 @@ export const config = {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 /* CẬP NHẬT: Thêm CSS để buộc Leva dropdown mở lên trên */
@@ -461,46 +579,44 @@ export function Providers({ children }: { children: ReactNode }) {
 }
 
 ===== .\src\app\[locale]\layout.tsx =====
-// app/layout.tsx
-import type { Metadata } from 'next';
-import { Inter, Unbounded } from 'next/font/google';
-import '../globals.css';
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
-// 1. Import component Providers mới
-import { Providers } from '../providers';
+import { ThemeProvider } from "@/context/ThemeProvider";
+import { Providers } from "../providers";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
+import { Inter, Unbounded } from "next/font/google";
+import "../globals.css";
 
-// Font setup
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const unbounded = Unbounded({ subsets: ['latin'], variable: '--font-unbounded' });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const unbounded = Unbounded({ subsets: ["latin"], variable: "--font-unbounded" });
 
-export const metadata: Metadata = {
-  title: 'Vision2Realty',
-  description: 'The NO.1 AI 3D Model Generator for Everyone',
-};
-
-// Định nghĩa kiểu cho props của layout
-interface RootLayoutProps {
+export default async function RootLayout({
+  children,
+  params,
+}: {
   children: React.ReactNode;
-  params: { locale: string };
-}
-
-export default async function RootLayout({ children, params }: {children: React.ReactNode, params: Promise<{locale: string}>}) {
-  const {locale} = await params;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const messages = await getMessages();
+
   return (
-    <html lang={locale}>
-      <body className={`${inter.variable} ${unbounded.variable} bg-stone-50 font-inter`}>
+    <html lang={locale} suppressHydrationWarning>
+      <body
+        className={`${inter.variable} ${unbounded.variable} font-inter`}
+        suppressHydrationWarning
+      >
         <NextIntlClientProvider locale={locale} messages={messages}>
-          {/* 2. Sử dụng component Providers ở đây */}
-          <Providers>
-            <main>{children}</main>
-          </Providers>
+          <ThemeProvider>
+            <Providers>
+              <main>{children}</main>
+            </Providers>
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>
   );
 }
+
 
 ===== .\src\app\[locale]\page.tsx =====
 "use client";
@@ -510,6 +626,7 @@ import Hero from "@/components/Hero";
 import ImageGallery from "@/components/ImageGallery";
 import WorkflowCTA from "@/components/WorkflowCTA";
 import Header from "@/components/Header";
+import Pricing from "@/components/Pricing";
 
 export default function Home() {
   return (
@@ -517,6 +634,7 @@ export default function Home() {
       <Header />
       <Hero />
       <ImageGallery />
+      <Pricing />
       <WorkflowCTA />
       <Footer />
     </>
@@ -699,48 +817,156 @@ export default function RegisterPage() {
 }
 
 ===== .\src\app\[locale]\workspace\page.tsx =====
+// ===== .\src\app\[locale]\workspace\page.tsx =====
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import Sidebar from "@/components/workspace/Sidebar";
 import ViewPanel from "@/components/workspace/ViewPanel";
-import LibraryPanel from "@/components/workspace/LibraryPanel"; 
+import LibraryPanel from "@/components/workspace/LibraryPanel";
+
+const TRANSITION_DURATION_MS = 200;
 
 export default function WorkspacePage() {
+  const [sidebarWidth, setSidebarWidth] = useState(288);
+  const [libraryPanelWidth, setLibraryPanelWidth] = useState(384);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  // CẬP NHẬT: Thêm state để quản lý trạng thái thu gọn của LibraryPanel
   const [isLibraryPanelCollapsed, setIsLibraryPanelCollapsed] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const mainRef = useRef<HTMLElement>(null);
+  const isResizingSidebar = useRef(false);
+  const isResizingLibrary = useRef(false);
+  const transitionTimeoutRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
+      mainRef.current.style.setProperty('--library-panel-width', `${libraryPanelWidth}px`);
+    }
+  }, [sidebarWidth, libraryPanelWidth]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!mainRef.current) return;
+    if (isResizingSidebar.current) {
+      const newWidth = Math.max(200, Math.min(e.clientX, 500));
+      mainRef.current.style.setProperty('--sidebar-width', `${newWidth}px`);
+    }
+    if (isResizingLibrary.current) {
+      const newWidth = Math.max(300, Math.min(window.innerWidth - e.clientX, 600));
+      mainRef.current.style.setProperty('--library-panel-width', `${newWidth}px`);
+    }
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    if (mainRef.current) {
+      if (isResizingSidebar.current) {
+        const finalWidth = parseInt(mainRef.current.style.getPropertyValue('--sidebar-width'), 10);
+        setSidebarWidth(finalWidth);
+      }
+      if (isResizingLibrary.current) {
+        const finalWidth = parseInt(mainRef.current.style.getPropertyValue('--library-panel-width'), 10);
+        setLibraryPanelWidth(finalWidth);
+      }
+    }
+    isResizingSidebar.current = false;
+    isResizingLibrary.current = false;
+    document.body.classList.remove('cursor-col-resize');
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
+
+  const triggerCollapse = (
+    collapseSetter: React.Dispatch<React.SetStateAction<boolean>>,
+    widthSetter: React.Dispatch<React.SetStateAction<number>>,
+    isCollapsed: boolean,
+    collapsedWidth: number,
+    expandedWidth: number
+  ) => {
+    setIsTransitioning(true);
+    const nextState = !isCollapsed;
+    collapseSetter(nextState);
+    widthSetter(nextState ? collapsedWidth : expandedWidth);
+
+    if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+    transitionTimeoutRef.current = setTimeout(() => {
+      setIsTransitioning(false);
+    }, TRANSITION_DURATION_MS);
+  };
+
+  const toggleSidebarCollapse = () => {
+    triggerCollapse(setIsSidebarCollapsed, setSidebarWidth, isSidebarCollapsed, 56, 288);
+  };
+
+  const toggleLibraryPanelCollapse = () => {
+    triggerCollapse(setIsLibraryPanelCollapsed, setLibraryPanelWidth, isLibraryPanelCollapsed, 56, 384);
+  };
+
+  const startResizing = (panel: 'sidebar' | 'library') => (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (panel === 'sidebar' && isSidebarCollapsed) {
+      toggleSidebarCollapse();
+      return;
+    }
+    if (panel === 'library' && isLibraryPanelCollapsed) {
+      toggleLibraryPanelCollapse();
+      return;
+    }
+
+    setIsTransitioning(false);
+    if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+    if (panel === 'sidebar') isResizingSidebar.current = true;
+    if (panel === 'library') isResizingLibrary.current = true;
+    document.body.classList.add('cursor-col-resize');
+  };
 
   return (
-    <main className="flex w-screen h-screen overflow-hidden bg-neutral-900">
-      
+    <main ref={mainRef} className="flex w-screen h-screen overflow-hidden bg-neutral-900 select-none">
       <button
         onClick={() => setMobileSidebarOpen(true)}
-        className="absolute top-4 left-4 z-30 lg:hidden p-2 bg-gray-700/50 text-white rounded-md"
+        className="absolute top-4 left-4 z-50 lg:hidden p-2 bg-gray-700/50 text-white rounded-md"
         aria-label="Open sidebar"
       >
         <Icon icon="mdi:menu" width={24} />
       </button>
 
-      <Sidebar 
+      <Sidebar
+        isTransitioning={isTransitioning}
         isCollapsed={isSidebarCollapsed}
-        setIsCollapsed={setIsSidebarCollapsed}
+        setIsCollapsed={toggleSidebarCollapse}
         isSidebarOpen={isMobileSidebarOpen}
         setIsSidebarOpen={setMobileSidebarOpen}
       />
 
-      <div className="flex-1 flex flex-col relative overflow-hidden">
+      <div
+        onMouseDown={startResizing('sidebar')}
+        className={`w-1.5 h-full cursor-col-resize flex-shrink-0 z-40 ${isSidebarCollapsed ? 'pointer-events-none' : ''}`}
+      />
+
+      <div className="flex-1 relative min-w-0">
         <ViewPanel />
       </div>
 
-      {/* CẬP NHẬT: Truyền props isCollapsed và setIsCollapsed cho LibraryPanel */}
-      <LibraryPanel 
-        isCollapsed={isLibraryPanelCollapsed}
-        setIsCollapsed={setIsLibraryPanelCollapsed}
+      <div
+        onMouseDown={startResizing('library')}
+        className={`w-1.5 h-full cursor-col-resize flex-shrink-0 z-40 ${isLibraryPanelCollapsed ? 'pointer-events-none' : ''}`}
       />
-      
+
+      <LibraryPanel
+        isTransitioning={isTransitioning}
+        isCollapsed={isLibraryPanelCollapsed}
+        setIsCollapsed={toggleLibraryPanelCollapse}
+      />
     </main>
   );
 }
@@ -902,10 +1128,10 @@ const Hero: FC = () => {
             {t('description')}
           </p>
           <div className="mt-8 flex items-center space-x-4">
-            <button className="bg-blue-900 text-white text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[30px] px-12 py-4">
+            <button className="bg-blue-900 text-white text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[30px] px-8 py-4 text-center flex items-center hover:bg-blue-800 transition-colors">
               {t('start_for_free')}
             </button>
-            <button className="bg-neutral-900 text-neutral-100 text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[30px] px-12 py-4 flex items-center">
+            <button className="bg-neutral-900 text-neutral-100 text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[30px] px-8 py-4 flex items-center">
               {t('explore')}
               <div className="ml-2 w-7 h-7 flex items-center justify-center">
                  <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[10px] border-l-neutral-100 border-b-[7px] border-b-transparent"></div>
@@ -1089,6 +1315,106 @@ export default function LanguageSwitcher() {
   );
 }
 
+===== .\src\components\Pricing.tsx =====
+// ===== .\src\components\Pricing.tsx =====
+"use client";
+
+import { useTranslations } from 'next-intl';
+import { Icon } from '@iconify/react';
+import type { FC } from 'react';
+
+// Component con cho mỗi thẻ giá, được thiết kế lại để khớp với hình ảnh
+const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => {
+  const t = useTranslations(`Pricing.${plan}`);
+  const isPro = plan === 'pro';
+
+  return (
+    <div 
+      className={`
+        flex flex-col p-8 rounded-2xl border transition-all duration-300
+        ${isPro 
+          ? 'bg-neutral-900 text-white border-blue-700 shadow-2xl lg:scale-105 lg:z-10' 
+          : 'bg-white text-neutral-900 border-gray-200 shadow-lg'
+        }
+      `}
+    >
+      {/* Tên gói */}
+      <h3 className="text-2xl font-bold font-['Inter']">{t('name')}</h3>
+      
+      {/* CẬP NHẬT: Thêm 'whitespace-nowrap' để ngăn xuống dòng */}
+      <div className="flex items-baseline mt-8 mb-10 whitespace-nowrap">
+        <span className="text-5xl font-bold font-['Inter'] tracking-tight">{t('price')}</span>
+        <span className={`text-lg font-medium ml-1 ${isPro ? 'text-gray-400' : 'text-gray-500'}`}>
+          /{t('price_period')}
+        </span>
+      </div>
+
+      {/* Nút CTA */}
+      <button 
+        className={`
+          w-full h-12 rounded-lg text-base font-semibold transition-colors
+          ${isPro 
+            ? 'bg-blue-700 text-white hover:bg-blue-600' 
+            : 'bg-neutral-900 text-white hover:bg-neutral-700'
+          }
+        `}
+      >
+        {t('cta_button')}
+      </button>
+
+      {/* Đường kẻ ngang */}
+      <hr className={`my-8 ${isPro ? 'border-zinc-700' : 'border-gray-300'}`} />
+
+      {/* Danh sách tính năng */}
+      <ul className="space-y-4 flex-grow">
+        {t.raw('features').map((feature: string, index: number) => (
+          <li key={index} className="flex items-center text-base font-medium font-['Inter']">
+            <div 
+              className={`
+                w-6 h-6 mr-3 rounded-full flex items-center justify-center flex-shrink-0
+                ${isPro ? 'bg-blue-700' : 'bg-neutral-900'}
+              `}
+            >
+              <Icon icon="mdi:check" className="w-4 h-4 text-white" />
+            </div>
+            {feature}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+
+const Pricing: FC = () => {
+  const t = useTranslations('Pricing');
+
+  return (
+    <section className="bg-white py-20 lg:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Phần tiêu đề đã được ẩn đi để khớp với ảnh thứ 2, bạn có thể mở lại nếu cần */}
+        
+        <div className="text-center">
+          <h1 className="text-4xl font-bold font-['Unbounded'] text-neutral-900">{t('title')}</h1>
+          <p className="mt-4 max-w-2xl mx-auto text-lg font-medium font-['Inter'] text-neutral-600">
+            {t('subtitle')}
+          </p>
+        </div>
+       
+
+        {/* Căn giữa các thẻ trên màn hình lớn */}
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-center">
+          <PricingCard plan="basic" />
+          <PricingCard plan="pro" />
+          <PricingCard plan="enterprise" />
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Pricing;
+
 ===== .\src\components\WorkflowCTA.tsx =====
 "use client";
 
@@ -1124,20 +1450,31 @@ const WorkflowCTA: FC = () => {
 export default WorkflowCTA;
 
 ===== .\src\components\workspace\LibraryPanel.tsx =====
+// ===== .\src\components\workspace\LibraryPanel.tsx =====
 "use client";
 
-import { useState, type FC } from 'react';
+import { useState, type FC, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 interface LibraryPanelProps {
+  isTransitioning: boolean;
   isCollapsed: boolean;
-  setIsCollapsed: (isCollapsed: boolean) => void;
+  setIsCollapsed: () => void;
 }
 
-const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, setIsCollapsed }) => {
+const LibraryPanel: FC<LibraryPanelProps> = ({ isTransitioning, isCollapsed, setIsCollapsed }) => {
   const t = useTranslations('Workspace');
+  const { theme, resolvedTheme } = useTheme();
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const activeTheme = !mounted ? "dark" : (resolvedTheme || theme || "dark");
+  const isLight = activeTheme === 'light';
+  
+  const themeClass = (light: string, dark: string) => isLight ? light : dark;
 
   const libraryItems = Array(15).fill('/landing-page/image 13.png');
   const itemsPerPage = 6;
@@ -1149,58 +1486,64 @@ const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, setIsCollapsed }) =>
   );
 
   return (
-    // CẬP NHẬT: Định vị tuyệt đối và thêm overflow-hidden
     <aside 
-      className={`absolute top-0 right-0 h-full bg-neutral-950 flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out font-['Inter'] overflow-hidden ${
-        isCollapsed ? 'w-14 p-2' : 'w-96 p-6'
-      }`}
+      style={{ width: 'var(--library-panel-width)' }}
+      className={`
+        h-full relative flex flex-col flex-shrink-0 z-30
+        ${isTransitioning ? 'transition-width duration-200 ease-out' : ''}
+        ${themeClass('bg-white text-black border-l border-gray-200', 'bg-neutral-950 text-white border-l border-zinc-700')}
+        ${isCollapsed ? 'p-2' : 'p-6'}
+      `}
     >
-      
-      {/* Header (không đổi) */}
       <div className={`flex items-center mb-4 flex-shrink-0 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
         {!isCollapsed && (
-          <h2 className="text-lg font-semibold text-white whitespace-nowrap">{t('my_library')}</h2>
+          <h2 className={`text-lg font-semibold whitespace-nowrap ${themeClass('text-black', 'text-white')}`}>{t('my_library')}</h2>
         )}
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="text-gray-400 hover:text-white"
+          onClick={setIsCollapsed}
+          className={`${themeClass('text-gray-600 hover:text-black', 'text-gray-400 hover:text-white')}`}
           aria-label={isCollapsed ? 'Expand panel' : 'Collapse panel'}
         >
           <Icon icon={isCollapsed ? "mdi:arrow-left" : "mdi:arrow-right"} width={20} />
         </button>
       </div>
 
-      {/* Wrapper chống reflow cho nội dung mở rộng */}
-      <div className={`transition-opacity duration-200 ease-in-out ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
-        <div className="w-[calc(24rem-3rem)] flex flex-col flex-grow gap-y-5" style={{height: 'calc(100vh - 4.5rem)'}}>
+      <div 
+        className={`
+          flex flex-col flex-grow min-w-0 overflow-hidden gap-y-5
+          transition-opacity duration-200 ease-in-out
+          ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+        `}
+      >
           <div className="flex items-center gap-x-4">
             <div className="relative flex-grow">
               <Icon 
                 icon="mdi:search" 
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" 
+                className={`absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 ${themeClass('text-gray-500', 'text-gray-400')}`}
               />
               <input 
                 type="text" 
                 placeholder={t('search')}
-                className="w-full h-12 bg-neutral-800 rounded-lg pl-12 pr-4 text-base text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-700"
+                className={`
+                  w-full h-12 rounded-lg pl-12 pr-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-700
+                  ${themeClass('bg-indigo-100 text-black placeholder:text-gray-500', 'bg-neutral-800 text-white placeholder:text-gray-400')}
+                `}
               />
             </div>
-            <button className="w-36 h-12 bg-blue-800 rounded-lg text-base font-semibold text-white flex items-center justify-center gap-x-2 hover:bg-blue-700 transition-colors flex-shrink-0">
+            <button className="w-36 h-12 bg-blue-900 rounded-lg text-base font-semibold text-white flex items-center justify-center gap-x-2 hover:bg-blue-800 transition-colors flex-shrink-0">
               <Icon icon="mdi:upload" className="w-6 h-6" />
               {t('upload')}
             </button>
           </div>
-
-          <div className="h-12 bg-neutral-800 rounded-lg flex items-center justify-between px-4">
-              <Icon icon="mdi:folder-outline" className="w-6 h-6 text-white" />
-              <Icon icon="mdi:arrow-expand-all" className="w-5 h-5 text-white" />
+          <div className={`h-12 rounded-lg flex items-center justify-between px-4 ${themeClass('bg-indigo-100', 'bg-neutral-800')}`}>
+              <Icon icon="mdi:folder-outline" className={`w-6 h-6 ${themeClass('text-black', 'text-white')}`} />
+              <Icon icon="mdi:arrow-expand-all" className={`w-5 h-5 ${themeClass('text-black', 'text-white')}`} />
           </div>
-
-          <div className="flex-grow bg-neutral-900 rounded-xl p-4 flex flex-col min-h-0">
+          <div className={`flex-grow rounded-xl p-4 flex flex-col min-h-0 ${themeClass('bg-indigo-100', 'bg-neutral-900')}`}>
             <div className="flex-grow overflow-y-auto pr-2">
               <div className="grid grid-cols-3 gap-4">
                 {currentItems.map((src, index) => (
-                  <div key={index} className="w-full aspect-square bg-neutral-800 rounded-xl overflow-hidden relative">
+                  <div key={index} className={`w-full aspect-square rounded-xl overflow-hidden relative ${themeClass('bg-white', 'bg-neutral-800')}`}>
                     <Image 
                       src={src} 
                       alt={`Library item ${index + 1}`} 
@@ -1213,40 +1556,44 @@ const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, setIsCollapsed }) =>
               </div>
             </div>
           </div>
-
           <div className="flex items-center justify-center gap-x-2 flex-shrink-0">
               <button 
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="w-9 h-9 bg-neutral-800 rounded-md flex items-center justify-center text-white disabled:opacity-50"
+                className={`w-9 h-9 rounded-md flex items-center justify-center disabled:opacity-50
+                  ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}
+                `}
               >
                   <Icon icon="mdi:chevron-left" className="w-6 h-6" />
               </button>
-              <div className="px-4 py-1.5 bg-neutral-800 rounded-md text-sm text-white">
+              <div className={`px-4 py-1.5 rounded-md text-sm ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}`}>
                   {currentPage} / {totalPages}
               </div>
               <button 
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="w-9 h-9 bg-neutral-800 rounded-md flex items-center justify-center text-white disabled:opacity-50"
+                className={`w-9 h-9 rounded-md flex items-center justify-center disabled:opacity-50
+                  ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}
+                `}
               >
                   <Icon icon="mdi:chevron-right" className="w-6 h-6" />
               </button>
           </div>
-        </div>
       </div>
-
-
-      {/* Dạng thu gọn */}
-      <div className={`absolute top-14 left-0 right-0 transition-opacity duration-200 ease-in-out flex flex-col items-center space-y-1 ${isCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-neutral-800 cursor-pointer" title={t('search')}>
-          <Icon icon="mdi:search" className="w-6 h-6 text-gray-300" />
+      <div 
+        className={`
+          flex flex-col items-center space-y-1 mt-10 transition-opacity duration-200 ease-in-out
+          ${isCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+        `}
+      >
+        <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('search')}>
+          <Icon icon="mdi:search" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} />
         </div>
-        <div className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-neutral-800 cursor-pointer" title={t('upload')}>
-          <Icon icon="mdi:upload" className="w-6 h-6 text-gray-300" />
+        <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('upload')}>
+          <Icon icon="mdi:upload" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} />
         </div>
-        <div className="w-10 h-10 flex items-center justify-center rounded-md hover:bg-neutral-800 cursor-pointer" title={t('my_library')}>
-          <Icon icon="mdi:folder-multiple-image" className="w-6 h-6 text-gray-300" />
+        <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('my_library')}>
+          <Icon icon="mdi:folder-multiple-image" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} />
         </div>
       </div>
     </aside>
@@ -1256,156 +1603,197 @@ const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, setIsCollapsed }) =>
 export default LibraryPanel;
 
 ===== .\src\components\workspace\Sidebar.tsx =====
+// ===== .\src\components\workspace\Sidebar.tsx =====
 "use client";
 
-import { type FC } from 'react';
-import Image from 'next/image';
-import { Icon } from '@iconify/react';
-import { useTranslations } from 'next-intl';
+import { type FC, useEffect, useState } from "react";
+import Image from "next/image";
+import { Icon } from "@iconify/react";
+import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 
 interface SidebarProps {
+  isTransitioning: boolean;
   isCollapsed: boolean;
-  setIsCollapsed: (isCollapsed: boolean) => void;
+  setIsCollapsed: () => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
-const Sidebar: FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isSidebarOpen, setIsSidebarOpen }) => {
-  const t = useTranslations('Sidebar');
-  const tWorkspace = useTranslations('Workspace');
+const Sidebar: FC<SidebarProps> = ({
+  isTransitioning,
+  isCollapsed,
+  setIsCollapsed,
+  isSidebarOpen,
+  setIsSidebarOpen,
+}) => {
+  const t = useTranslations("Sidebar");
+  const tWorkspace = useTranslations("Workspace");
+  const { theme, resolvedTheme, setTheme } = useTheme();
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const activeTheme = !mounted ? "dark" : (resolvedTheme || theme || "dark");
+  const themeClass = (light: string, dark: string) => activeTheme === "light" ? light : dark;
 
   const NavItem = ({ icon, text }: { icon: string; text: string }) => (
     <a
       href="#"
-      className={`block flex items-center rounded-md hover:bg-neutral-800 transition-colors ${
-        isCollapsed ? 'w-10 h-10 justify-center' : 'p-2 text-neutral-100'
-      }`}
+      className={`block flex items-center rounded-md transition-colors ${
+        isCollapsed ? "w-10 h-10 justify-center" : "p-2"
+      } ${themeClass("hover:bg-indigo-100 text-black", "hover:bg-neutral-800 text-white")}`}
     >
-      <Icon icon={icon} className="w-6 h-6 text-gray-300 flex-shrink-0" />
-      {!isCollapsed && <span className="ml-3 text-sm font-medium whitespace-nowrap">{text}</span>}
+      <Icon
+        icon={icon}
+        className={`w-6 h-6 flex-shrink-0 ${themeClass("text-zinc-700", "text-gray-300")}`}
+      />
+      {!isCollapsed && (
+        <span className={`ml-3 text-sm font-medium whitespace-nowrap ${themeClass("text-black", "text-white")}`}>
+          {text}
+        </span>
+      )}
     </a>
   );
 
   return (
     <>
       <div
-        className={`fixed inset-0 bg-black/60 z-40 lg:hidden transition-opacity ${
-          isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-40 bg-black/30 lg:hidden transition-opacity ${isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={() => setIsSidebarOpen(false)}
         aria-hidden="true"
       />
 
       <div
+        style={{ width: 'var(--sidebar-width)' }}
         className={`
-          bg-neutral-950 text-white flex flex-col h-full z-50
-          transition-all duration-300 ease-in-out font-['Inter']
-          ${isCollapsed ? 'w-14' : 'w-96'} {/* Cập nhật chiều rộng khi mở rộng */}
-          fixed lg:relative top-0 left-0 
-          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          lg:translate-x-0
+          flex flex-col h-full z-30 font-['Inter'] flex-shrink-0
+          fixed lg:relative top-0 left-0
+          ${isTransitioning ? 'transition-width duration-200 ease-out' : ''}
+          transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0
+          ${themeClass("bg-white text-black border-r border-gray-200", "bg-neutral-950 text-white border-r border-zinc-700")}
         `}
       >
-        <div className={`flex flex-col flex-grow min-h-0 ${isCollapsed ? 'p-2' : 'p-4'}`}>
-           {/* Header */}
-          <div className={`flex items-center mb-6 ${isCollapsed ? 'justify-center flex-col space-y-4' : 'justify-between'}`}>
-            {!isCollapsed && <Image src="/logo/light.png" alt="Logo" width={40} height={25} />}
-            {isCollapsed && <Image src="/logo/light.png" alt="Logo" width={30} height={19} />}
-
-            <button onClick={() => setIsCollapsed(!isCollapsed)} className="hidden lg:block text-gray-400 hover:text-white">
-              <Icon icon={isCollapsed ? "mdi:arrow-right" : "mdi:arrow-left"} width={20} />
-            </button>
-            <button onClick={() => setIsSidebarOpen(false)} className={`lg:hidden text-white ${isCollapsed ? 'hidden' : ''}`}>
-              <Icon icon="mdi:close" width={28} />
-            </button>
-          </div>
-          
-          {/* Nav Items */}
-          <nav className={`${isCollapsed ? 'flex flex-col items-center space-y-1' : ''}`}>
-            <NavItem icon="mdi:plus-box" text={tWorkspace('new_project')} />
-            <NavItem icon="mdi:folder-multiple-image" text={tWorkspace('your_library')} />
-            <NavItem icon="mdi:crown" text={tWorkspace('upgrade_account')} />
-          </nav>
-          
-          {/* ====== NỘI DUNG CHI TIẾT KHI MỞ RỘNG ====== */}
-          {!isCollapsed && (
-            <div className="flex flex-col flex-grow overflow-y-auto mt-4 pr-1">
-              <hr className="border-zinc-700 mb-4" />
-              
-              {/* Mode Toggle */}
-              <div className="flex bg-neutral-800 rounded-xl p-1 mb-6">
-                <button className="flex-1 p-2 rounded-lg text-neutral-400 font-bold text-sm">{t('text_to_3d')}</button>
-                <button className="flex-1 p-2 bg-blue-800 text-white rounded-lg font-bold text-sm">{t('image_to_3d')}</button>
-              </div>
-
-              {/* Image Uploader */}
-              <div className="mb-5">
-                <label className="text-sm font-normal mb-2 block">{t('image_label')}</label>
-                <div className="w-full h-40 bg-neutral-900 border border-neutral-700 rounded-xl flex flex-col justify-center items-center text-center p-4">
-                  <Icon icon="icon-park-outline:upload-picture" className="w-10 h-10 text-neutral-500 mb-2" />
-                  <p className="text-neutral-400 text-base font-semibold">{t('uploader_title')}</p>
-                  <p className="text-neutral-500 text-xs font-normal mt-1">{t('uploader_formats')}</p>
-                </div>
-              </div>
-
-              {/* Project Name */}
-              <div className="mb-5">
-                <label className="text-sm font-normal mb-2 block">{t('name_label')}</label>
-                <input
-                  type="text"
-                  placeholder={t('name_placeholder')}
-                  className="w-full h-11 bg-neutral-800 rounded-xl px-4 text-neutral-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700"
-                />
-              </div>
-
-              {/* AI Model */}
-              <div className="mb-5">
-                <label className="text-sm font-normal mb-2 block">{t('model_label')}</label>
-                <div className="flex items-center justify-between p-2 h-11 bg-neutral-800 rounded-xl">
-                  <span className="text-white text-sm">V2R</span>
-                  <Icon icon="mdi:chevron-down" className="text-white w-5 h-5" />
-                </div>
-              </div>
-
-              {/* Symmetry */}
-              <div className="mb-6">
-                <label className="text-sm font-normal mb-2 block">{t('symmetry_label')}</label>
-                <div className="flex bg-neutral-800 rounded-lg p-1">
-                  <button className="flex-1 text-neutral-400 font-bold p-1.5 text-sm rounded-md">{t('symmetry_off')}</button>
-                  <button className="flex-1 bg-blue-800 text-white rounded-md font-bold p-1.5 text-sm">{t('symmetry_auto')}</button>
-                  <button className="flex-1 text-neutral-400 font-bold p-1.5 text-sm rounded-md">{t('symmetry_on')}</button>
-                </div>
-              </div>
-
-              {/* Cost Info */}
-              <div className="flex justify-center items-center space-x-3 mb-4 text-sm font-light text-neutral-300">
-                <span>{t('cost_info_model')}</span>
-                <div className="w-px h-5 bg-neutral-600"></div>
-                <span>{t('cost_info_tokens')}</span>
-              </div>
-
-              {/* Generate Button */}
-              <button className="w-full h-11 bg-blue-800 rounded-xl text-neutral-100 text-base font-semibold font-['Unbounded'] hover:bg-blue-700 transition-colors">
-                {t('generate_button')}
+        <div className={`flex flex-col flex-grow min-h-0 ${isCollapsed ? "p-2" : "p-4"}`}>
+          {/* ===== BẮT ĐẦU SỬA LỖI HEADER ===== */}
+          <div className={`flex items-center mb-6 ${isCollapsed ? 'flex-col gap-y-4' : 'justify-between'}`}>
+            <Image
+              src={activeTheme === "light" ? "/logo/dark.png" : "/logo/light.png"}
+              alt="Logo"
+              width={isCollapsed ? 30 : 40}
+              height={isCollapsed ? 19 : 25}
+            />
+            <div className="flex items-center">
+              <button
+                onClick={setIsCollapsed}
+                className={`hidden lg:block ${themeClass("text-gray-600 hover:text-black", "text-gray-400 hover:text-white")}`}
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                <Icon icon={isCollapsed ? "mdi:arrow-right" : "mdi:arrow-left"} width={20} />
+              </button>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className={`lg:hidden ${isCollapsed ? "hidden" : ""} ${themeClass("text-black", "text-white")}`}
+                aria-label="Close sidebar"
+              >
+                <Icon icon="mdi:close" width={28} />
               </button>
             </div>
-          )}
-        </div>
+          </div>
+          {/* ===== KẾT THÚC SỬA LỖI HEADER ===== */}
 
-        {/* User Profile Section */}
-        <div className={`border-t border-zinc-700 flex-shrink-0 ${isCollapsed ? 'p-2' : 'p-4'}`}>
-          <div className={`flex items-center ${isCollapsed ? 'justify-center' : ''}`}>
-            <div className="w-10 h-10 bg-zinc-300 rounded-full flex items-center justify-center flex-shrink-0">
-              <Icon icon="mdi:user" className="w-6 h-6 text-black" />
-            </div>
+          <nav className={`${isCollapsed ? "flex flex-col items-center space-y-1" : ""}`}>
+            <NavItem icon="mdi:plus-box" text={tWorkspace("new_project")} />
+            <NavItem icon="mdi:folder-multiple-image" text={tWorkspace("your_library")} />
+            <NavItem icon="mdi:crown" text={tWorkspace("upgrade_account")} />
+          </nav>
+
+          <div className="flex-grow min-w-0 overflow-hidden">
             {!isCollapsed && (
-              <div className="ml-3">
-                <p className="text-sm font-semibold text-white">PhuongBT</p>
-                <p className="text-sm font-light text-gray-300">{tWorkspace('user_free_tier')}</p>
+              <div className="flex flex-col h-full overflow-y-auto mt-4 pr-1">
+                {/* ... Nội dung form không đổi ... */}
+                <hr className={`${themeClass("border-gray-300", "border-zinc-700")} mb-4`} />
+                <div className={`${themeClass("bg-indigo-50", "bg-neutral-800")} rounded-xl p-1 mb-6 flex`}>
+                  <button className={`flex-1 p-2 rounded-lg text-sm font-bold ${themeClass("text-zinc-700", "text-neutral-400")}`}>
+                    {t("text_to_3d")}
+                  </button>
+                  <button className="flex-1 p-2 bg-blue-900 text-white rounded-lg font-bold text-sm">
+                    {t("image_to_3d")}
+                  </button>
+                </div>
+                <div className="mb-5">
+                  <label className={`text-sm font-normal mb-2 block ${themeClass("text-black", "text-white")}`}>
+                    {t("image_label")}
+                  </label>
+                  <div className={`${themeClass("bg-indigo-100 border-indigo-200", "bg-neutral-900 border-neutral-700")} border rounded-xl w-full h-40 flex flex-col justify-center items-center text-center p-4`}>
+                    <Icon icon="icon-park-outline:upload-picture" className={`w-10 h-10 mb-2 ${themeClass("text-stone-500","text-neutral-500")}`} />
+                    <p className={`text-base font-semibold ${themeClass("text-stone-600","text-neutral-300")}`}>{t("uploader_title")}</p>
+                    <p className={`text-xs font-normal mt-1 ${themeClass("text-neutral-500","text-neutral-400")}`}>{t("uploader_formats")}</p>
+                  </div>
+                </div>
+                <div className="mb-5">
+                  <label className={`text-sm font-normal mb-2 block ${themeClass("text-black","text-white")}`}>{t("name_label")}</label>
+                  <input
+                    type="text"
+                    placeholder={t("name_placeholder")}
+                    className={`${themeClass("bg-indigo-100 placeholder:text-zinc-500 text-black","bg-neutral-800 placeholder:text-gray-400 text-white")} w-full h-11 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700`}
+                  />
+                </div>
+                <div className="mb-5">
+                  <label className={`text-sm font-normal mb-2 block ${themeClass("text-black","text-white")}`}>{t("model_label")}</label>
+                  <div className={`${themeClass("bg-indigo-100","bg-neutral-800")} flex items-center justify-between p-2 h-11 rounded-xl px-4`}>
+                    <span className={`${themeClass("text-black","text-white")} text-sm`}>V2R</span>
+                    <Icon icon="mdi:chevron-down" className={`${themeClass("text-black","text-white")} w-5 h-5`} />
+                  </div>
+                </div>
+                <div className="mb-6">
+                  <label className={`text-sm font-normal mb-2 block ${themeClass("text-black","text-white")}`}>{t("symmetry_label")}</label>
+                  <div className={`${themeClass("bg-indigo-100","bg-neutral-800")} rounded-lg p-1 flex`}>
+                    <button className={`flex-1 p-1.5 text-sm rounded-md font-bold ${themeClass("text-zinc-600","text-neutral-400")}`}>{t("symmetry_off")}</button>
+                    <button className="flex-1 bg-blue-900 text-white rounded-md font-bold p-1.5 text-sm">{t("symmetry_auto")}</button>
+                    <button className={`flex-1 p-1.5 text-sm rounded-md font-bold ${themeClass("text-zinc-600","text-neutral-400")}`}>{t("symmetry_on")}</button>
+                  </div>
+                </div>
+                <div className={`flex justify-center items-center space-x-3 mb-4 text-sm font-light ${themeClass("text-neutral-600","text-neutral-300")}`}>
+                  <span>{t("cost_info_model")}</span>
+                  <div className={`${themeClass("bg-neutral-400","bg-neutral-600")} w-px h-5`} />
+                  <span>{t("cost_info_tokens")}</span>
+                </div>
+                <button className="w-full h-11 bg-blue-900 rounded-xl text-neutral-100 text-base font-semibold font-['Unbounded'] hover:bg-blue-700 transition-colors">
+                  {t("generate_button")}
+                </button>
               </div>
             )}
           </div>
         </div>
+
+        {/* ===== BẮT ĐẦU SỬA LỖI FOOTER ===== */}
+        <div className={`border-t ${themeClass("border-gray-200","border-zinc-700")} flex-shrink-0 ${isCollapsed ? "p-2" : "p-4"}`}>
+          <div className={`flex items-center ${isCollapsed ? 'flex-col justify-center gap-y-2' : 'justify-between'}`}>
+            <div className="flex items-center min-w-0">
+              <div className={`${themeClass("bg-zinc-300","bg-zinc-600")} w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0`}>
+                <Icon icon="mdi:user" className={`${themeClass("text-black","text-white")} w-6 h-6`} />
+              </div>
+              {!isCollapsed && (
+                <div className="ml-3 overflow-hidden">
+                  <p className={`text-black dark:text-white text-sm font-semibold truncate`}>PhuongBT</p>
+                  <p className={`text-stone-500 dark:text-gray-300 text-sm font-light truncate`}>{tWorkspace("user_free_tier")}</p>
+                </div>
+              )}
+            </div>
+            
+            <button
+              onClick={() => setTheme(activeTheme === "light" ? "dark" : "light")}
+              className={`flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center transition-colors
+                ${themeClass("bg-indigo-100 text-neutral-900 hover:bg-indigo-200", "bg-neutral-800 text-white hover:bg-neutral-700")}
+              `}
+              title="Toggle theme"
+            >
+              <Icon icon={activeTheme === "light" ? "mdi:weather-night" : "mdi:white-balance-sunny"} width={isCollapsed ? 16 : 18} />
+            </button>
+          </div>
+        </div>
+        {/* ===== KẾT THÚC SỬA LỖI FOOTER ===== */}
       </div>
     </>
   );
@@ -1416,30 +1804,29 @@ export default Sidebar;
 ===== .\src\components\workspace\ViewPanel.tsx =====
 "use client";
 
-import { Suspense, type FC, useEffect, useRef } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Html, Environment, Grid, Edges } from '@react-three/drei';
-import { useControls, Leva } from 'leva';
-import * as THREE from 'three';
+import { Suspense, type FC, useEffect, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls, useGLTF, Html, Environment, Grid, Edges } from "@react-three/drei";
+import { Leva } from "leva";
+import { useTheme } from "next-themes";
+import * as THREE from "three";
 
 // --- TYPE GUARD ---
 function isMesh(obj: THREE.Object3D): obj is THREE.Mesh {
   return (obj as THREE.Mesh).isMesh;
 }
 
-
-// --- CÁC COMPONENT PHỤ ---
-
-const Loader: FC = () => {
-  return (
-    <Html center>
-      <div className="text-white text-lg font-sans">Loading 3D Model...</div>
-    </Html>
-  );
-};
+// --- COMPONENTS PHỤ ---
+const Loader: FC = () => (
+  <Html center>
+    <div className="text-neutral-800 dark:text-white text-lg font-sans">
+      Loading 3D Model...
+    </div>
+  </Html>
+);
 
 const Model: FC = () => {
-  const { scene } = useGLTF('/3D-model/model.glb');
+  const { scene } = useGLTF("/3D-model/model.glb");
   return <primitive object={scene} />;
 };
 
@@ -1449,24 +1836,19 @@ interface WireframeProps {
   color: string;
 }
 const ModelWireframe: FC<WireframeProps> = ({ show, thickness, color }) => {
-  const { nodes } = useGLTF('/3D-model/model.glb');
+  const { nodes } = useGLTF("/3D-model/model.glb");
   if (!show) return null;
-
   return (
     <>
-      {Object.values(nodes).map((node: THREE.Object3D, index) => (
-        isMesh(node) && (
-          <mesh key={index} geometry={node.geometry}>
-            <meshBasicMaterial transparent opacity={0} /> 
-            <Edges
-              scale={1}
-              threshold={15}
-              color={color}
-              linewidth={thickness}
-            />
-          </mesh>
-        )
-      ))}
+      {Object.values(nodes).map(
+        (node: THREE.Object3D, index) =>
+          isMesh(node) && (
+            <mesh key={index} geometry={node.geometry}>
+              <meshBasicMaterial transparent opacity={0} />
+              <Edges scale={1} threshold={15} color={color} linewidth={thickness} />
+            </mesh>
+          )
+      )}
     </>
   );
 };
@@ -1479,19 +1861,18 @@ interface ModelRendererProps {
   polyThickness: number;
   polyColor: string;
 }
+
 const ModelRenderer: FC<ModelRendererProps> = (props) => {
   const groupRef = useRef<THREE.Group>(null!);
-
-  useFrame((state, delta) => {
-    if (props.autoRotate && groupRef.current) {
+  useFrame((_, delta) => {
+    if (props.autoRotate && groupRef.current)
       groupRef.current.rotation.y += delta * 0.2;
-    }
   });
 
   return (
     <group ref={groupRef} scale={props.scale} rotation={props.rotation}>
       <Model />
-      <ModelWireframe 
+      <ModelWireframe
         show={props.showWireframe}
         thickness={props.polyThickness}
         color={props.polyColor}
@@ -1500,7 +1881,7 @@ const ModelRenderer: FC<ModelRendererProps> = (props) => {
   );
 };
 
-useGLTF.preload('/3D-model/model.glb');
+useGLTF.preload("/3D-model/model.glb");
 
 const CameraUpdater: FC<{ fov: number }> = ({ fov }) => {
   const { camera } = useThree();
@@ -1513,93 +1894,98 @@ const CameraUpdater: FC<{ fov: number }> = ({ fov }) => {
   return null;
 };
 
-const environmentOptions = ['city', 'sunset', 'dawn', 'park', 'apartment', 'studio', 'warehouse'] as const;
-type EnvironmentPreset = typeof environmentOptions[number];
-
-
 // --- COMPONENT CHÍNH ---
-
 const ViewPanel: FC = () => {
-  const sceneControls = useControls('Scene', {
-    backgroundColor: '#000000',
-    environment: { value: 'city', options: environmentOptions },
-    intensity: { value: 0.8, min: 0, max: 2, step: 0.1 },
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const theme = mounted ? resolvedTheme : "dark";
+  const isLight = theme === "light";
+
+  // --- Tone theo theme ---
+  const backgroundColor = isLight ? "#EEF2FF" : "#0A0A0A"; // Light: xanh tím nhạt, Dark: đen
+  const gridColors = isLight
+    ? { sectionColor: "#c7d2fe", cellColor: "#e0e7ff" }
+    : { sectionColor: "#3f3f46", cellColor: "#18181b" };
+
+  // --- Leva floating ---
+  const viewPanelRef = useRef<HTMLDivElement>(null);
+  const [levaStyle, setLevaStyle] = useState<React.CSSProperties>({
+    opacity: 0,
+    position: "fixed",
+    zIndex: 10,
   });
 
-  const modelControls = useControls('Model', {
-    scale: { value: 1, min: 0.1, max: 5, step: 0.05 },
-    rotation: [0, 0, 0],
-  });
-
-  const cameraControls = useControls('Camera', {
-    fov: { value: 45, min: 10, max: 120, step: 1 },
-  });
-
-  const helperControls = useControls('Helpers', {
-    autoRotate: true,
-    showGrid: true,
-    showWireframe: false,
-    polyThickness: {
-      value: 1,
-      min: 0.1,
-      max: 10,
-      step: 0.1,
-      render: (get) => get('Helpers.showWireframe'),
-    },
-    polyColor: {
-      value: '#ffffff',
-      render: (get) => get('Helpers.showWireframe'),
-    },
-  });
+  useEffect(() => {
+    const el = viewPanelRef.current;
+    if (!el) return;
+    const updatePosition = () => {
+      const rect = el.getBoundingClientRect();
+      const levaWidth = 300;
+      const newLeft = rect.left + rect.width / 2 - levaWidth / 2;
+      setLevaStyle({
+        position: "fixed",
+        left: `${newLeft}px`,
+        bottom: "1rem",
+        width: `${levaWidth}px`,
+        zIndex: 10,
+        opacity: 1,
+        transition: "left 0.25s ease-out",
+      });
+    };
+    updatePosition();
+    const observer = new ResizeObserver(updatePosition);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="flex-grow h-full bg-neutral-900 relative">
-      {/* CẬP NHẬT: Áp dụng các lớp responsive cho Leva panel */}
-      <div className="absolute bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:w-[300px] md:-translate-x-1/2 z-10">
-        <Leva 
-          fill 
-          oneLineLabels 
-          collapsed 
-        />
+    <div
+      ref={viewPanelRef}
+      className={`flex-grow h-full relative transition-colors duration-500 ${
+        isLight ? "bg-indigo-50" : "bg-neutral-950"
+      }`}
+    >
+      <div style={levaStyle}>
+        <Leva fill oneLineLabels collapsed />
       </div>
 
-      <Canvas 
-        dpr={[1, 2]} 
-        camera={{ position: [0, 1.5, 6] }} 
-        style={{ position: "absolute", width: '100%', height: '100%' }} // Đảm bảo Canvas fill parent
+      <Canvas
+        dpr={[1, 2]}
+        camera={{ position: [0, 1.5, 6] }}
+        style={{ position: "absolute", width: "100%", height: "100%" }}
         shadows
       >
-        <color attach="background" args={[sceneControls.backgroundColor]} />
-        <CameraUpdater fov={cameraControls.fov} />
+        {/* Fix: gán màu background cứng theo theme, không dựa Leva */}
+        <color attach="background" args={[backgroundColor]} />
 
-        <ambientLight intensity={sceneControls.intensity / 2} />
-        <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
-        <Environment preset={sceneControls.environment as EnvironmentPreset} />
-        
-        {helperControls.showGrid && (
-          <Grid
-            infiniteGrid
-            position={[0, -0.5, 0]}
-            sectionSize={1}
-            cellSize={0.5}
-            sectionColor={"#444444"}
-            cellColor={"#222222"}
-            fadeDistance={25}
-            fadeStrength={1}
-          />
-        )}
+        <CameraUpdater fov={45} />
+        <ambientLight intensity={isLight ? 1.2 : 0.6} />
+        <directionalLight position={[5, 5, 5]} intensity={isLight ? 1.2 : 0.8} />
+        <Environment preset="city" />
+
+        <Grid
+          infiniteGrid
+          position={[0, -0.5, 0]}
+          sectionSize={1}
+          cellSize={0.5}
+          sectionColor={gridColors.sectionColor}
+          cellColor={gridColors.cellColor}
+          fadeDistance={25}
+          fadeStrength={1}
+        />
 
         <Suspense fallback={<Loader />}>
-          <ModelRenderer 
-            scale={modelControls.scale}
-            rotation={modelControls.rotation}
-            autoRotate={helperControls.autoRotate}
-            showWireframe={helperControls.showWireframe}
-            polyThickness={helperControls.polyThickness}
-            polyColor={helperControls.polyColor}
+          <ModelRenderer
+            scale={1}
+            rotation={[0, 0, 0]}
+            autoRotate={true}
+            showWireframe={false}
+            polyThickness={1}
+            polyColor={isLight ? "#1e293b" : "#ffffff"}
           />
         </Suspense>
-        
+
         <OrbitControls makeDefault />
       </Canvas>
     </div>
@@ -1607,6 +1993,7 @@ const ViewPanel: FC = () => {
 };
 
 export default ViewPanel;
+
 
 ===== .\src\context\AuthContext.tsx =====
 "use client";
@@ -1656,6 +2043,25 @@ export const useAuth = () => {
   }
   return context;
 };
+
+===== .\src\context\ThemeProvider.tsx =====
+"use client";
+
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ReactNode } from "react";
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  return (
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      {children}
+    </NextThemesProvider>
+  );
+}
 
 ===== DIRECTORY TREE =====
 ./
@@ -1721,6 +2127,7 @@ export const useAuth = () => {
             Hero.tsx
             ImageGallery.tsx
             LanguageSwitcher.tsx
+            Pricing.tsx
             WorkflowCTA.tsx
             workspace/
                 LibraryPanel.tsx
@@ -1728,4 +2135,5 @@ export const useAuth = () => {
                 ViewPanel.tsx
         context/
             AuthContext.tsx
+            ThemeProvider.tsx
     utils/

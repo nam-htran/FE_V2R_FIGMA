@@ -135,5 +135,12 @@
         "Advanced Security"
       ]
     }
+  },
+  "OTP": {
+    "title": "Enter OTP Code",
+    "subtitle": "A verification code has been sent to *******762",
+    "did_not_receive": "Didn't receive the code?",
+    "resend": "Resend",
+    "continue_button": "Continue"
   }
 }

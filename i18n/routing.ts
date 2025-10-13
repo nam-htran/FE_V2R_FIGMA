@@ -16,6 +16,7 @@ export const routing = defineRouting({
     '/forgot-password': '/forgot-password',
     '/terms': '/terms',
     '/privacy': '/privacy',
+    '/confirm': '/confirm',
     
     // Thêm luôn các đường dẫn từ Header và Footer để tránh lỗi sau này
     '/community': '/community',

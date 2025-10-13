@@ -134,45 +134,13 @@
         "Hỗ trợ riêng biệt",
         "Bảo mật nâng cao"
       ]
-    },
-    "Pricing": {
-      "title": "Upgrade",
-      "subtitle": "Start for free. Upgrade to get special prices and more benefits.",
-      "basic": {
-        "name": "Basic",
-        "price": "$9",
-        "price_period": "month",
-        "cta_button": "Sign Up",
-        "features": [
-          "10 Models",
-          "Community Access",
-          "Email Support"
-        ]
-      },
-      "pro": {
-        "name": "Pro",
-        "price": "$25",
-        "price_period": "month",
-        "cta_button": "Sign Up",
-        "features": [
-          "30 Models",
-          "API Access",
-          "Priority Support",
-          "Integration Plugin"
-        ]
-      },
-      "enterprise": {
-        "name": "Enterprise",
-        "price": "$99",
-        "price_period": "month",
-        "cta_button": "Contact Us",
-        "features": [
-          "Unlimited Models",
-          "Team Management",
-          "Dedicated Support",
-          "Advanced Security"
-        ]
-      }
     }
+  },
+  "OTP": {
+    "title": "Nhập mã OTP",
+    "subtitle": "Mã xác thực đã được gửi đến *******762",
+    "did_not_receive": "Chưa nhận được mã?",
+    "resend": "Gửi lại",
+    "continue_button": "Tiếp tục"
   }
 }
