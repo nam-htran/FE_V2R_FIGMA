@@ -1,3 +1,4 @@
+// ===== .\i18n\routing.ts =====
 import {defineRouting} from 'next-intl/routing';
 
 export const routing = defineRouting({
@@ -28,5 +29,15 @@ export const routing = defineRouting({
     '/about': '/about',
     '/contact': '/contact',
     '/workspace': '/workspace',
+
+    // Dashboard routes
+    '/dashboard': '/dashboard',
+    '/dashboard/status': '/dashboard/status',
+    '/dashboard/reports': '/dashboard/reports',
+    '/dashboard/console': '/dashboard/console',
+    '/dashboard/customers': '/dashboard/customers',
+    '/dashboard/transactions': '/dashboard/transactions',
+    '/dashboard/revenue': '/dashboard/revenue',
+    '/dashboard/notifications': '/dashboard/notifications',
   }
 });

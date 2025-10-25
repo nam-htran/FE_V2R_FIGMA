@@ -142,5 +142,15 @@
     "did_not_receive": "Didn't receive the code?",
     "resend": "Resend",
     "continue_button": "Continue"
+  },
+  "Dashboard": {
+    "overview": "Overview",
+    "status_and_resources": "Status & Resources",
+    "cost_reports": "Cost Reports",
+    "console": "Console",
+    "customers": "Customers",
+    "transactions": "Transactions",
+    "revenue": "Revenue",
+    "notifications": "Notifications"
   }
 }

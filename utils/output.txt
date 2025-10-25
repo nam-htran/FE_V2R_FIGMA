@@ -68,6 +68,8 @@ export default withNextIntl(nextConfig);
     "next-themes": "^0.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-resizable-panels": "^3.0.6",
+    "recharts": "^3.3.0",
     "three": "^0.180.0"
   },
   "devDependencies": {
@@ -162,6 +164,7 @@ export default getRequestConfig(async ({requestLocale}) => {
 });
 
 ===== .\i18n\routing.ts =====
+// ===== .\i18n\routing.ts =====
 import {defineRouting} from 'next-intl/routing';
 
 export const routing = defineRouting({
@@ -180,6 +183,7 @@ export const routing = defineRouting({
     '/forgot-password': '/forgot-password',
     '/terms': '/terms',
     '/privacy': '/privacy',
+    '/confirm': '/confirm',
     
     // Thêm luôn các đường dẫn từ Header và Footer để tránh lỗi sau này
     '/community': '/community',
@@ -191,6 +195,16 @@ export const routing = defineRouting({
     '/about': '/about',
     '/contact': '/contact',
     '/workspace': '/workspace',
+
+    // Dashboard routes
+    '/dashboard': '/dashboard',
+    '/dashboard/status': '/dashboard/status',
+    '/dashboard/reports': '/dashboard/reports',
+    '/dashboard/console': '/dashboard/console',
+    '/dashboard/customers': '/dashboard/customers',
+    '/dashboard/transactions': '/dashboard/transactions',
+    '/dashboard/revenue': '/dashboard/revenue',
+    '/dashboard/notifications': '/dashboard/notifications',
   }
 });
 
@@ -332,6 +346,23 @@ export const routing = defineRouting({
         "Advanced Security"
       ]
     }
+  },
+  "OTP": {
+    "title": "Enter OTP Code",
+    "subtitle": "A verification code has been sent to *******762",
+    "did_not_receive": "Didn't receive the code?",
+    "resend": "Resend",
+    "continue_button": "Continue"
+  },
+  "Dashboard": {
+    "overview": "Overview",
+    "status_and_resources": "Status & Resources",
+    "cost_reports": "Cost Reports",
+    "console": "Console",
+    "customers": "Customers",
+    "transactions": "Transactions",
+    "revenue": "Revenue",
+    "notifications": "Notifications"
   }
 }
 
@@ -472,46 +503,24 @@ export const routing = defineRouting({
         "Hỗ trợ riêng biệt",
         "Bảo mật nâng cao"
       ]
-    },
-    "Pricing": {
-      "title": "Upgrade",
-      "subtitle": "Start for free. Upgrade to get special prices and more benefits.",
-      "basic": {
-        "name": "Basic",
-        "price": "$9",
-        "price_period": "month",
-        "cta_button": "Sign Up",
-        "features": [
-          "10 Models",
-          "Community Access",
-          "Email Support"
-        ]
-      },
-      "pro": {
-        "name": "Pro",
-        "price": "$25",
-        "price_period": "month",
-        "cta_button": "Sign Up",
-        "features": [
-          "30 Models",
-          "API Access",
-          "Priority Support",
-          "Integration Plugin"
-        ]
-      },
-      "enterprise": {
-        "name": "Enterprise",
-        "price": "$99",
-        "price_period": "month",
-        "cta_button": "Contact Us",
-        "features": [
-          "Unlimited Models",
-          "Team Management",
-          "Dedicated Support",
-          "Advanced Security"
-        ]
-      }
     }
+  },
+  "OTP": {
+    "title": "Nhập mã OTP",
+    "subtitle": "Mã xác thực đã được gửi đến *******762",
+    "did_not_receive": "Chưa nhận được mã?",
+    "resend": "Gửi lại",
+    "continue_button": "Tiếp tục"
+  },
+  "Dashboard": {
+    "overview": "Tổng quan",
+    "status_and_resources": "Trạng thái & Tài nguyên",
+    "cost_reports": "Báo cáo Chi phí",
+    "console": "Console",
+    "customers": "Khách hàng",
+    "transactions": "Giao dịch",
+    "revenue": "Doanh thu",
+    "notifications": "Thông báo"
   }
 }
 
@@ -639,6 +648,435 @@ export default function Home() {
       <Footer />
     </>
   );
+}
+
+===== .\src\app\[locale]\confirm\page.tsx =====
+// ===== .\src\app\[locale]\otp\page.tsx =====
+"use client";
+
+import { useTranslations } from "next-intl";
+import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
+
+export default function OtpPage() {
+  const t = useTranslations("OTP");
+  const [otp, setOtp] = useState<string[]>(new Array(5).fill(""));
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleChange = (index: number, e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (!/^\d?$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    if (value && index < otp.length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  return (
+    <main className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-neutral-800 p-4">
+      <div className="w-full max-w-[676px] bg-white rounded-[40px] overflow-hidden p-8 sm:p-16 text-center">
+        <h1 className="text-black text-4xl font-normal font-['Unbounded']">
+          {t("title")}
+        </h1>
+        <p className="mt-6 text-black text-xl font-normal font-['Inter']">
+          {t("subtitle")}
+        </p>
+
+        <div className="flex justify-center gap-x-2 sm:gap-x-5 my-14">
+          {otp.map((digit, index) => (
+            <input
+              key={index}
+              // === SỬA LỖI TẠI ĐÂY ===
+              // Bọc phép gán trong khối lệnh `{}` để hàm không trả về giá trị
+              ref={(el) => {
+                inputRefs.current[index] = el;
+              }}
+              type="text"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleChange(index, e)}
+              onKeyDown={(e) => handleKeyDown(index, e)}
+              className="w-16 h-16 sm:w-24 sm:h-24 bg-white rounded-[10px] border-[1.5px] border-blue-800 text-center text-3xl sm:text-4xl font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          ))}
+        </div>
+
+        <button className="w-56 h-20 bg-blue-900 rounded-2xl hover:bg-blue-800 transition-colors">
+          <span className="text-white text-2xl font-semibold font-['Unbounded']">
+            {t("continue_button")}
+          </span>
+        </button>
+
+        <p className="mt-12 text-black text-xl font-normal font-['Inter']">
+          {t("did_not_receive")}{" "}
+          <button className="text-blue-800 font-medium hover:underline">
+            {t("resend")}
+          </button>
+        </p>
+      </div>
+    </main>
+  );
+}
+
+===== .\src\app\[locale]\dashboard\layout.tsx =====
+// src/app/[locale]/dashboard/layout.tsx
+"use client";
+
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import { ReactNode, useState } from "react";
+
+export default function DashboardLayout({ children }: { children: ReactNode }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  return (
+    // Container này cần có position relative để làm gốc cho các phần tử con
+    <div className="relative min-h-screen bg-gray-400">
+      <DashboardSidebar 
+        isCollapsed={isCollapsed} 
+        toggleCollapse={toggleSidebar} 
+      />
+      
+      {/* 
+        VÙNG NỘI DUNG CHÍNH:
+        - Có transition-all để thay đổi padding-left một cách mượt mà.
+        - padding-left (pl) sẽ tương ứng với chiều rộng của sidebar (w-72 -> pl-72, w-20 -> pl-20).
+        - h-screen và overflow-y-auto đảm bảo chỉ vùng nội dung này cuộn, sidebar đứng yên.
+      */}
+      <main className={`
+        transition-all duration-300 ease-in-out
+        h-screen overflow-y-auto
+        ${isCollapsed ? 'pl-20' : 'pl-72'}
+      `}>
+        {/* Thêm một div bọc ngoài với padding như cũ */}
+        <div className="p-10">
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+===== .\src\app\[locale]\dashboard\page.tsx =====
+import Overview from "@/components/dashboard/Overview";
+
+export default function DashboardOverviewPage() {
+  return <Overview />;
+}
+
+===== .\src\app\[locale]\dashboard\console\page.tsx =====
+// ===== .\src\app\[locale]\dashboard\console\page.tsx =====
+import { Icon } from "@iconify/react";
+
+export default function ConsolePage() {
+    return (
+        <div className="space-y-8 h-full flex flex-col">
+            <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Console</h1>
+            <div className="flex-grow bg-black rounded-[10px] overflow-hidden flex flex-col">
+                <div className="w-full h-6 bg-blue-900 flex-shrink-0" />
+                <div className="p-7 text-white text-sm font-normal font-mono flex-grow overflow-y-auto">
+                    <pre>
+{`#include <iostream>
+
+int main() { 
+    std::cout << "Hello World!"; 
+    return 0; 
+}`}
+                    </pre>
+                </div>
+                <div className="p-4 flex-shrink-0">
+                    <div className="w-full h-9 bg-zinc-300 rounded-[4.83px] flex items-center px-3">
+                        <span className="text-black text-sm font-normal font-mono">Type here...</span>
+                        <Icon icon="mdi:send" className="w-4 h-4 ml-auto text-black" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+===== .\src\app\[locale]\dashboard\customers\page.tsx =====
+// ===== .\src/app\[locale]\dashboard\customers\page.tsx =====
+const customersData = [
+  { name: 'Jim. Hogwarts', email: 'papapa7...', plan: 'Basic', models: 20, status: 'Hoạt động', date: '06/07/2025', time: '04:20:42' },
+  { name: 'Jim. Hogwarts', email: 'papapa7...', plan: 'Basic', models: 17, status: 'Hoạt động', date: '06/07/2025', time: '04:20:42' },
+  { name: 'Jim. Hogwarts', email: 'papapa7...', plan: 'Pro', models: 199, status: 'Hoạt động', date: '06/07/2025', time: '04:20:42' },
+  { name: 'Jim. Hogwarts', email: 'papapa7...', plan: 'Basic', models: 15, status: 'Hoạt động', date: '06/07/2025', time: '04:20:42' },
+  { name: 'Jim. Hogwarts', email: 'papapa7...', plan: 'Basic', models: 42, status: 'Hoạt động', date: '06/07/2025', time: '04:20:42' },
+];
+
+export default function CustomersPage() {
+    return (
+        <div className="space-y-8">
+             <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Khách hàng</h1>
+             <div className="bg-white rounded-2xl p-8">
+                 <h2 className="text-black text-2xl font-semibold font-['Unbounded'] mb-6">Danh sách khách hàng</h2>
+                 <div className="overflow-x-auto">
+                     <table className="w-full text-left">
+                         <thead className="bg-violet-300 rounded-md">
+                             <tr className="text-black text-xl font-normal font-['Inter']">
+                                 <th className="p-3">Tên khách hàng</th>
+                                 <th className="p-3">Email</th>
+                                 <th className="p-3">Gói dịch vụ</th>
+                                 <th className="p-3">Số lượng mô hình</th>
+                                 <th className="p-3">Trạng thái</th>
+                                 <th className="p-3">Ngày đăng ký</th>
+                             </tr>
+                         </thead>
+                         <tbody>
+                             {customersData.map((customer, index) => (
+                                 <tr key={index} className="border-b">
+                                     <td className="p-3 text-black text-xl font-semibold">{customer.name}</td>
+                                     <td className="p-3 text-black text-xl font-light">{customer.email}</td>
+                                     <td className={`p-3 text-xl font-semibold ${customer.plan === 'Pro' ? 'text-blue-900' : 'text-black'}`}>{customer.plan}</td>
+                                     <td className="p-3 text-black text-xl font-light">{customer.models}</td>
+                                     <td className="p-3 text-green-700 text-xl font-normal">{customer.status}</td>
+                                     <td className="p-3 text-black text-xl font-light">
+                                         <div>{customer.date}</div>
+                                         <div>{customer.time}</div>
+                                     </td>
+                                 </tr>
+                             ))}
+                         </tbody>
+                     </table>
+                 </div>
+             </div>
+        </div>
+    );
+}
+
+===== .\src\app\[locale]\dashboard\notifications\page.tsx =====
+// ===== .\src\app\[locale]\dashboard\notifications\page.tsx =====
+const notifications = [
+    { title: "XÁC NHẬN THANH TOÁN", date: "15/10/2025" },
+    { title: "CẬP NHẬT HỆ THỐNG", date: "14/10/2025" },
+    { title: "XÁC NHẬN THANH TOÁN", date: "13/10/2025" },
+    { title: "BẢO TRÌ DỰ KIẾN", date: "12/10/2025" },
+    { title: "XÁC NHẬN THANH TOÁN", date: "11/10/2025" },
+    { title: "CẬP NHẬT HỆ THỐNG", date: "10/10/2025" },
+    { title: "XÁC NHẬN THANH TOÁN", date: "09/10/2025" },
+];
+const content = "Đây là nội dung, nội dung là đây nè đây là nội dung nhé lorem ipsum ipsum loren hello hihihi. Đây là nội dung, nội dung là đây nè đây là nội dung nhé lorem ipsum ipsum loren hello hihihi.";
+
+const NotificationCard = ({ title, date, content }: { title: string, date: string, content: string }) => (
+    <div className="w-full bg-white rounded-[20px] p-6 shadow-md">
+        <h3 className="text-neutral-950 text-xl font-semibold font-['Unbounded']">{title}</h3>
+        <p className="mt-4 text-neutral-700 text-xl font-medium">{content}</p>
+        <p className="mt-6 text-neutral-700 text-xl font-medium">{date}</p>
+    </div>
+);
+
+export default function NotificationsPage() {
+    return (
+        <div className="space-y-8">
+            <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Thông báo</h1>
+            <div className="space-y-8">
+                {notifications.map((item, index) => (
+                    <NotificationCard key={index} title={item.title} date={item.date} content={content} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+===== .\src\app\[locale]\dashboard\reports\page.tsx =====
+// ===== .\src\app\[locale]\dashboard\reports\page.tsx =====
+"use client";
+import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+const costData = [
+  { name: '06/07', gpu: 18000, backend: 22000 },
+  { name: '07/07', gpu: 16000, backend: 21000 },
+  { name: '08/07', gpu: 17000, backend: 23000 },
+  { name: '09/07', gpu: 15000, backend: 20000 },
+  { name: '10/07', gpu: 19000, backend: 24000 },
+  { name: '11/07', gpu: 20000, backend: 25000 },
+  { name: '12/07', gpu: 18500, backend: 23500 },
+];
+
+export default function ReportsPage() {
+    return (
+        <div className="space-y-8">
+            <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Báo cáo & Chi phí</h1>
+             <div className="flex justify-start gap-2">
+                 <button className="w-24 h-11 bg-blue-900 rounded-md text-neutral-100 text-base font-semibold font-['Unbounded']">TUẦN</button>
+                 <button className="w-24 h-11 bg-white rounded-md text-neutral-950 text-base font-semibold font-['Unbounded']">THÁNG</button>
+                 <button className="w-24 h-11 bg-white rounded-md text-neutral-950 text-base font-semibold font-['Unbounded']">NĂM</button>
+             </div>
+             <div className="w-full bg-white rounded-2xl p-8">
+                  <div className="flex justify-start items-center gap-x-6 mb-4">
+                       <div className="flex items-center gap-x-2">
+                           <div className="w-8 h-6 bg-indigo-300 rounded" />
+                           <span className="text-neutral-950 text-xs font-semibold font-['Unbounded']">GPU</span>
+                       </div>
+                       <div className="flex items-center gap-x-2">
+                           <div className="w-8 h-6 bg-blue-900 rounded" />
+                           <span className="text-neutral-950 text-xs font-semibold font-['Unbounded']">Backend</span>
+                       </div>
+                  </div>
+                 <ResponsiveContainer width="100%" height={400}>
+                     <AreaChart data={costData} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
+                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                         <XAxis dataKey="name" dy={10} />
+                         <YAxis unit="K" dx={-10} />
+                         <Tooltip formatter={(value: number) => `${value / 1000}K`} />
+                         <Area type="monotone" dataKey="gpu" stackId="1" stroke="#818cf8" fill="#a5b4fc" />
+                         <Area type="monotone" dataKey="backend" stackId="1" stroke="#312e81" fill="#4338ca" />
+                     </AreaChart>
+                 </ResponsiveContainer>
+             </div>
+        </div>
+    );
+}
+
+===== .\src\app\[locale]\dashboard\revenue\page.tsx =====
+"use client";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+const revenueData = [
+  { name: '06/07', value: 22000 }, { name: '07/07', value: 19000 },
+  { name: '08/07', value: 21000 }, { name: '09/07', value: 18000 },
+  { name: '10/07', value: 24000 }, { name: '11/07', value: 25000 },
+  { name: '12/07', value: 23000 },
+];
+
+export default function RevenuePage() {
+    return (
+        <div className="space-y-8">
+            <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Doanh thu</h1>
+             <div className="flex justify-start gap-2">
+                 <button className="w-24 h-11 bg-blue-900 rounded-md text-neutral-100 text-base font-semibold font-['Unbounded']">TUẦN</button>
+                 <button className="w-24 h-11 bg-white rounded-md text-neutral-950 text-base font-semibold font-['Unbounded']">THÁNG</button>
+                 <button className="w-24 h-11 bg-white rounded-md text-neutral-950 text-base font-semibold font-['Unbounded']">NĂM</button>
+             </div>
+             <div className="w-full bg-white rounded-2xl p-8">
+                 <ResponsiveContainer width="100%" height={400}>
+                     <AreaChart data={revenueData} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
+                         <defs>
+                             <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                                 <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                             </linearGradient>
+                         </defs>
+                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                         <XAxis dataKey="name" dy={10} />
+                         <YAxis unit="K" dx={-10} domain={[0, 25000]} tickFormatter={(value) => `${value / 1000}`} />
+                         <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
+                         <Area type="monotone" dataKey="value" stroke="#1e3a8a" strokeWidth={3} fill="url(#revenueGradient)" />
+                     </AreaChart>
+                 </ResponsiveContainer>
+             </div>
+        </div>
+    );
+}
+
+===== .\src\app\[locale]\dashboard\status\page.tsx =====
+// ===== .\src\app\[locale]\dashboard\status\page.tsx =====
+"use client";
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+
+const usageData = Array.from({ length: 60 }, (_, i) => ({
+  name: i + 1,
+  uv: Math.random() * 80 + 10,
+}));
+
+const ResourceChart = ({ title, unit, max, data }: { title: string; unit: string; max: string; data: any[];}) => (
+  <div className="w-full bg-white rounded-2xl overflow-hidden p-8">
+    <h2 className="text-black text-4xl font-bold font-['Unbounded']">{title}</h2>
+    <div className="flex justify-between text-neutral-800 text-base font-normal mt-10">
+      <span>{unit}</span>
+      <span>{max}</span>
+    </div>
+    <ResponsiveContainer width="100%" height={350}>
+      <AreaChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+        <defs>
+          <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
+            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <YAxis hide={true} domain={[0, 100]} />
+        <XAxis hide={true} />
+        <Area type="monotone" dataKey="uv" stroke="#1e3a8a" strokeWidth={3} fillOpacity={1} fill="url(#colorUv)" />
+      </AreaChart>
+    </ResponsiveContainer>
+    <div className="flex justify-between text-neutral-800 text-base font-normal">
+        <span>60 giây</span>
+        <span>0%</span>
+    </div>
+  </div>
+);
+
+export default function StatusPage() {
+  return (
+    <div className="space-y-8">
+      <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Trạng thái & Tài nguyên</h1>
+      <ResourceChart title="CPU" unit="% Sử dụng" max="100%" data={usageData} />
+      <ResourceChart title="CPU của GPU" unit="% Sử dụng" max="100%" data={usageData} />
+      <ResourceChart title="RAM của GPU (VRAM)" unit="Bộ nhớ đã dùng" max="15.4 GB" data={usageData} />
+    </div>
+  );
+}
+
+===== .\src\app\[locale]\dashboard\transactions\page.tsx =====
+// ===== .\src\app\[locale]\dashboard\transactions\page.tsx =====
+const transactionsData = [
+  { id: '01835193', name: 'Jim. Hogwarts', amount: '$420', service: 'Nâng cấp tài khoản Pro', status: 'Thành công', date: '06/07/2025', time: '04:20:42' },
+  { id: '01835193', name: 'Jim. Hogwarts', amount: '$420', service: 'Nâng cấp tài khoản Pro', status: 'Thành công', date: '06/07/2025', time: '04:20:42' },
+  { id: '01835193', name: 'Jim. Hogwarts', amount: '$420', service: 'Nâng cấp tài khoản Pro', status: 'Đang chờ', date: '06/07/2025', time: '04:20:42' },
+  { id: '01835193', name: 'Jim. Hogwarts', amount: '$420', service: 'Nâng cấp tài khoản Pro', status: 'Đang chờ', date: '06/07/2025', time: '04:20:42' },
+];
+
+export default function TransactionsPage() {
+    return (
+        <div className="space-y-8">
+             <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Giao dịch</h1>
+             <div className="bg-white rounded-2xl p-8">
+                 <h2 className="text-black text-2xl font-semibold font-['Unbounded'] mb-6">Giao dịch gần đây</h2>
+                 <div className="overflow-x-auto">
+                     <table className="w-full text-left">
+                         <thead className="bg-violet-300 rounded-md">
+                             <tr className="text-black text-xl font-normal font-['Inter']">
+                                 <th className="p-3">Mã giao dịch</th>
+                                 <th className="p-3">Tên khách hàng</th>
+                                 <th className="p-3">Số tiền</th>
+                                 <th className="p-3">Gói dịch vụ</th>
+                                 <th className="p-3">Trạng thái</th>
+                                 <th className="p-3">Thời gian tạo</th>
+                             </tr>
+                         </thead>
+                         <tbody>
+                             {transactionsData.map((tx, index) => (
+                                 <tr key={index} className="border-b">
+                                     <td className="p-3 text-black text-xl font-normal">{tx.id}</td>
+                                     <td className="p-3 text-black text-xl font-semibold">{tx.name}</td>
+                                     <td className="p-3 text-black text-xl font-semibold">{tx.amount}</td>
+                                     <td className="p-3 text-black text-xl font-normal">{tx.service}</td>
+                                     <td className={`p-3 text-xl font-normal ${tx.status === 'Thành công' ? 'text-green-700' : 'text-amber-500'}`}>{tx.status}</td>
+                                     <td className="p-3 text-black text-xl font-light">
+                                         <div>{tx.date}</div>
+                                         <div>{tx.time}</div>
+                                     </td>
+                                 </tr>
+                             ))}
+                         </tbody>
+                     </table>
+                 </div>
+             </div>
+        </div>
+    );
 }
 
 ===== .\src\app\[locale]\login\page.tsx =====
@@ -817,121 +1255,77 @@ export default function RegisterPage() {
 }
 
 ===== .\src\app\[locale]\workspace\page.tsx =====
-// ===== .\src\app\[locale]\workspace\page.tsx =====
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import { Icon } from "@iconify/react";
+import { useState, useRef, useEffect } from "react";
+import {
+  Panel,
+  PanelGroup,
+  PanelResizeHandle,
+  type ImperativePanelHandle, // SỬA LỖI 1: Dùng type đúng là ImperativePanelHandle
+} from "react-resizable-panels";
+
 import Sidebar from "@/components/workspace/Sidebar";
 import ViewPanel from "@/components/workspace/ViewPanel";
 import LibraryPanel from "@/components/workspace/LibraryPanel";
+import { Leva } from "leva";
+import { Icon } from "@iconify/react";
+import { useTheme } from "next-themes";
 
-const TRANSITION_DURATION_MS = 200;
+const SIDE_PANEL_EXPANDED_PX = 288;
+const SIDE_PANEL_COLLAPSED_PX = 56;
 
 export default function WorkspacePage() {
-  const [sidebarWidth, setSidebarWidth] = useState(288);
-  const [libraryPanelWidth, setLibraryPanelWidth] = useState(384);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isLibraryPanelCollapsed, setIsLibraryPanelCollapsed] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isLibraryPanelCollapsed, setLibraryPanelCollapsed] = useState(false);
 
-  const mainRef = useRef<HTMLElement>(null);
-  const isResizingSidebar = useRef(false);
-  const isResizingLibrary = useRef(false);
-  const transitionTimeoutRef = useRef<NodeJS.Timeout>();
-
-  useEffect(() => {
-    if (mainRef.current) {
-      mainRef.current.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
-      mainRef.current.style.setProperty('--library-panel-width', `${libraryPanelWidth}px`);
-    }
-  }, [sidebarWidth, libraryPanelWidth]);
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!mainRef.current) return;
-    if (isResizingSidebar.current) {
-      const newWidth = Math.max(200, Math.min(e.clientX, 500));
-      mainRef.current.style.setProperty('--sidebar-width', `${newWidth}px`);
-    }
-    if (isResizingLibrary.current) {
-      const newWidth = Math.max(300, Math.min(window.innerWidth - e.clientX, 600));
-      mainRef.current.style.setProperty('--library-panel-width', `${newWidth}px`);
-    }
-  }, []);
-
-  const handleMouseUp = useCallback(() => {
-    if (mainRef.current) {
-      if (isResizingSidebar.current) {
-        const finalWidth = parseInt(mainRef.current.style.getPropertyValue('--sidebar-width'), 10);
-        setSidebarWidth(finalWidth);
-      }
-      if (isResizingLibrary.current) {
-        const finalWidth = parseInt(mainRef.current.style.getPropertyValue('--library-panel-width'), 10);
-        setLibraryPanelWidth(finalWidth);
-      }
-    }
-    isResizingSidebar.current = false;
-    isResizingLibrary.current = false;
-    document.body.classList.remove('cursor-col-resize');
-  }, []);
+  const { resolvedTheme } = useTheme();
+  
+  const [sidePanelSize, setSidePanelSize] = useState(20);
+  const [collapsedSize, setCollapsedSize] = useState(4);
+  
+  const [viewPanelBg, setViewPanelBg] = useState("bg-neutral-900");
+  const [handleBg, setHandleBg] = useState("bg-neutral-900");
 
   useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+    const updatePanelSizes = () => {
+      const screenWidth = window.innerWidth;
+      setSidePanelSize((SIDE_PANEL_EXPANDED_PX / screenWidth) * 100);
+      setCollapsedSize((SIDE_PANEL_COLLAPSED_PX / screenWidth) * 100);
     };
-  }, [handleMouseMove, handleMouseUp]);
 
-  const triggerCollapse = (
-    collapseSetter: React.Dispatch<React.SetStateAction<boolean>>,
-    widthSetter: React.Dispatch<React.SetStateAction<number>>,
-    isCollapsed: boolean,
-    collapsedWidth: number,
-    expandedWidth: number
-  ) => {
-    setIsTransitioning(true);
-    const nextState = !isCollapsed;
-    collapseSetter(nextState);
-    widthSetter(nextState ? collapsedWidth : expandedWidth);
+    updatePanelSizes();
+    window.addEventListener('resize', updatePanelSizes);
+    return () => window.removeEventListener('resize', updatePanelSizes);
+  }, []);
 
-    if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
-    transitionTimeoutRef.current = setTimeout(() => {
-      setIsTransitioning(false);
-    }, TRANSITION_DURATION_MS);
-  };
 
-  const toggleSidebarCollapse = () => {
-    triggerCollapse(setIsSidebarCollapsed, setSidebarWidth, isSidebarCollapsed, 56, 288);
-  };
-
-  const toggleLibraryPanelCollapse = () => {
-    triggerCollapse(setIsLibraryPanelCollapsed, setLibraryPanelWidth, isLibraryPanelCollapsed, 56, 384);
-  };
-
-  const startResizing = (panel: 'sidebar' | 'library') => (e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    if (panel === 'sidebar' && isSidebarCollapsed) {
-      toggleSidebarCollapse();
-      return;
+  useEffect(() => {
+    if (resolvedTheme === 'light') {
+      setViewPanelBg("bg-indigo-50");
+      setHandleBg("bg-indigo-50");
+    } else {
+      setViewPanelBg("bg-neutral-900");
+      setHandleBg("bg-neutral-900");
     }
-    if (panel === 'library' && isLibraryPanelCollapsed) {
-      toggleLibraryPanelCollapse();
-      return;
-    }
+  }, [resolvedTheme]);
 
-    setIsTransitioning(false);
-    if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
-    if (panel === 'sidebar') isResizingSidebar.current = true;
-    if (panel === 'library') isResizingLibrary.current = true;
-    document.body.classList.add('cursor-col-resize');
+  const sidebarPanelRef = useRef<ImperativePanelHandle>(null); // SỬA LỖI 1
+  const libraryPanelRef = useRef<ImperativePanelHandle>(null); // SỬA LỖI 1
+
+  const toggleSidebar = () => {
+    const panel = sidebarPanelRef.current;
+    if (panel) { panel.isCollapsed() ? panel.expand() : panel.collapse(); }
+  };
+
+  const toggleLibraryPanel = () => {
+    const panel = libraryPanelRef.current;
+    if (panel) { panel.isCollapsed() ? panel.expand() : panel.collapse(); }
   };
 
   return (
-    <main ref={mainRef} className="flex w-screen h-screen overflow-hidden bg-neutral-900 select-none">
+    <main className="w-screen h-screen overflow-hidden select-none">
       <button
         onClick={() => setMobileSidebarOpen(true)}
         className="absolute top-4 left-4 z-50 lg:hidden p-2 bg-gray-700/50 text-white rounded-md"
@@ -940,33 +1334,56 @@ export default function WorkspacePage() {
         <Icon icon="mdi:menu" width={24} />
       </button>
 
-      <Sidebar
-        isTransitioning={isTransitioning}
-        isCollapsed={isSidebarCollapsed}
-        setIsCollapsed={toggleSidebarCollapse}
-        isSidebarOpen={isMobileSidebarOpen}
-        setIsSidebarOpen={setMobileSidebarOpen}
-      />
+      <PanelGroup direction="horizontal">
+        <Panel
+          ref={sidebarPanelRef}
+          defaultSize={sidePanelSize}
+          minSize={15}
+          collapsible={true}
+          collapsedSize={collapsedSize}
+          onCollapse={() => setSidebarCollapsed(true)}
+          onExpand={() => setSidebarCollapsed(false)}
+        >
+          <Sidebar
+            isCollapsed={isSidebarCollapsed}
+            toggleCollapse={toggleSidebar}
+            isSidebarOpen={isMobileSidebarOpen}
+            setIsSidebarOpen={setMobileSidebarOpen}
+          />
+        </Panel>
+        
+        <PanelResizeHandle className={`w-1.5 transition-colors duration-200 group ${handleBg}`}>
+          <div className="h-full w-px bg-transparent group-hover:bg-blue-600 transition-colors duration-200" />
+        </PanelResizeHandle>
 
-      <div
-        onMouseDown={startResizing('sidebar')}
-        className={`w-1.5 h-full cursor-col-resize flex-shrink-0 z-40 ${isSidebarCollapsed ? 'pointer-events-none' : ''}`}
-      />
+        <Panel minSize={30}>
+          <div className={`h-full relative ${viewPanelBg}`}>
+            <ViewPanel />
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[300px] z-10">
+              <Leva fill oneLineLabels collapsed />
+            </div>
+          </div>
+        </Panel>
 
-      <div className="flex-1 relative min-w-0">
-        <ViewPanel />
-      </div>
+        <PanelResizeHandle className={`w-1.5 transition-colors duration-200 group ${handleBg}`}>
+           <div className="h-full w-px bg-transparent group-hover:bg-blue-600 transition-colors duration-200" />
+        </PanelResizeHandle>
 
-      <div
-        onMouseDown={startResizing('library')}
-        className={`w-1.5 h-full cursor-col-resize flex-shrink-0 z-40 ${isLibraryPanelCollapsed ? 'pointer-events-none' : ''}`}
-      />
-
-      <LibraryPanel
-        isTransitioning={isTransitioning}
-        isCollapsed={isLibraryPanelCollapsed}
-        setIsCollapsed={toggleLibraryPanelCollapse}
-      />
+        <Panel
+          ref={libraryPanelRef}
+          defaultSize={sidePanelSize}
+          minSize={15}
+          collapsible={true}
+          collapsedSize={collapsedSize}
+          onCollapse={() => setLibraryPanelCollapsed(true)}
+          onExpand={() => setLibraryPanelCollapsed(false)}
+        >
+          <LibraryPanel
+            isCollapsed={isLibraryPanelCollapsed}
+            toggleCollapse={toggleLibraryPanel}
+          />
+        </Panel>
+      </PanelGroup>
     </main>
   );
 }
@@ -1449,23 +1866,286 @@ const WorkflowCTA: FC = () => {
 
 export default WorkflowCTA;
 
+===== .\src\components\dashboard\DashboardSidebar.tsx =====
+// src/components/dashboard/DashboardSidebar.tsx
+"use client";
+
+import Image from "next/image";
+import { Link, usePathname } from "@/../i18n/navigation";
+import { Icon } from "@iconify/react";
+
+interface DashboardSidebarProps {
+  isCollapsed: boolean;
+  toggleCollapse: () => void;
+}
+const sidebarNavItems = [
+    { title: "Tổng quan", href: "/dashboard", icon: "mdi:view-dashboard-outline" },
+    {
+      title: "Quản lý Máy chủ",
+      items: [
+        { title: "Trạng thái & Tài nguyên", href: "/dashboard/status", icon: "mdi:server-network" },
+        { title: "Báo cáo Chi phí", href: "/dashboard/reports", icon: "mdi:chart-line" },
+        { title: "Console", href: "/dashboard/console", icon: "mdi:console" },
+      ],
+    },
+    {
+      title: "Quản lý Kinh doanh",
+      items: [
+        { title: "Khách hàng", href: "/dashboard/customers", icon: "mdi:account-group-outline" },
+        { title: "Giao dịch", href: "/dashboard/transactions", icon: "mdi:swap-horizontal" },
+      ],
+    },
+    {
+      title: "Báo cáo & Thống kê",
+      items: [{ title: "Doanh thu", href: "/dashboard/revenue", icon: "mdi:finance" }],
+    },
+    {
+      title: "Hệ thống",
+      items: [{ title: "Thông báo", href: "/dashboard/notifications", icon: "mdi:bell-outline" }],
+    },
+];
+
+export default function DashboardSidebar({ isCollapsed, toggleCollapse }: DashboardSidebarProps) {
+  const pathname = usePathname();
+
+  return (
+    <aside 
+      className={`
+        fixed top-0 left-0 h-full bg-white p-4 flex flex-col z-30
+        transition-all duration-300 ease-in-out
+        ${isCollapsed ? 'w-20' : 'w-72'} 
+      `}
+    >
+      {/* Logic bên trong giữ nguyên vì đã tối ưu cho việc ẩn/hiện text mượt mà */}
+      <div className="py-4 px-2 flex justify-center">
+        <Image src="/logo/dark.png" alt="V2R Logo" width={isCollapsed ? 35 : 43} height={isCollapsed ? 22 : 27} className="transition-all"/>
+      </div>
+      
+      <nav className="flex flex-col gap-y-2 mt-8 w-full overflow-hidden">
+        {sidebarNavItems.map((item, index) => (
+          <div key={index}>
+            {item.href ? (
+              <Link
+                href={item.href}
+                title={isCollapsed ? item.title : ''}
+                className={`flex items-center gap-x-3 p-2 rounded-md transition-colors hover:bg-gray-200 ${
+                  pathname === item.href ? "bg-gray-300 font-bold text-neutral-950" : "text-neutral-950"
+                } ${isCollapsed ? 'justify-center' : ''}`}
+              >
+                <Icon icon={item.icon} className="w-6 h-6 flex-shrink-0" />
+                <span className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>{item.title}</span>
+              </Link>
+            ) : (
+              <h3 className={`text-lg font-bold text-neutral-950 p-2 mt-2 transition-all duration-200 whitespace-nowrap overflow-hidden ${isCollapsed ? 'opacity-0 h-0 p-0 m-0' : 'opacity-100'}`}>{item.title}</h3>
+            )}
+            
+            {item.items && (
+              <div className={`flex flex-col transition-all duration-300 ${isCollapsed ? 'items-center' : 'ml-4'}`}>
+                {item.items.map((subItem, subIndex) => (
+                  <Link
+                    key={subIndex}
+                    href={subItem.href}
+                    title={isCollapsed ? subItem.title : ''}
+                    className={`flex items-center gap-x-3 p-2 rounded-md transition-colors hover:bg-gray-200 ${
+                      pathname === subItem.href ? "bg-gray-300 font-semibold text-neutral-950" : "text-neutral-950"
+                    } ${isCollapsed ? 'justify-center mt-1' : ''}`}
+                  >
+                    <Icon icon={subItem.icon} className="w-6 h-6 flex-shrink-0" />
+                    <span className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>{subItem.title}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </nav>
+
+      <div className={`mt-auto border-t border-gray-200 pt-4 w-full`}>
+        <div className={`bg-gray-400 rounded-lg p-2 flex items-center gap-x-4 overflow-hidden ${isCollapsed ? 'justify-center' : ''}`}>
+            <div className="w-9 h-9 bg-neutral-900 rounded-full flex-shrink-0" />
+            <div className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
+                <p className="text-neutral-950 text-lg font-bold">Alex Ng. (admin)</p>
+            </div>
+        </div>
+        <button 
+            onClick={toggleCollapse} 
+            className="w-full flex items-center justify-center mt-4 p-2 rounded-md hover:bg-gray-200 transition-colors"
+            title={isCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
+        >
+            <Icon icon={isCollapsed ? "mdi:arrow-right" : "mdi:arrow-left"} className="w-6 h-6 text-neutral-800" />
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+===== .\src\components\dashboard\Overview.tsx =====
+// ===== .\src\components\dashboard\Overview.tsx =====
+"use client";
+
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+const userChartData = [
+  { name: "06/07", free: 300, basic: 400, pro: 200, enterprise: 100 },
+  { name: "07/07", free: 350, basic: 410, pro: 220, enterprise: 110 },
+  { name: "08/07", free: 320, basic: 420, pro: 210, enterprise: 120 },
+  { name: "09/07", free: 380, basic: 430, pro: 230, enterprise: 130 },
+  { name: "10/07", free: 360, basic: 440, pro: 240, enterprise: 140 },
+  { name: "11/07", free: 390, basic: 450, pro: 250, enterprise: 150 },
+  { name: "12/07", free: 400, basic: 460, pro: 260, enterprise: 160 },
+];
+
+const revenueChartData = [
+    { name: 'Spring 2025', basic: 64, pro: 38, enterprise: 25 },
+    { name: 'Summer 2025', basic: 70, pro: 42, enterprise: 28 },
+    { name: 'Fall 2025', basic: 80, pro: 45, enterprise: 30 },
+    { name: 'Winter 2025', basic: 90, pro: 50, enterprise: 35 },
+];
+
+const userDistributionData = [
+  { name: "Người dùng miễn phí", value: 56 },
+  { name: "Người dùng trả phí", value: 44 },
+];
+const COLORS = ["#A5B4FC", "#1E3A8A"];
+
+export default function Overview() {
+  return (
+    <div className="space-y-8">
+      <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">
+        Tổng quan
+      </h1>
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <StatCard title="Tất cả người dùng" value="476" />
+        <StatCard
+          title="Người dùng trả phí"
+          value="127"
+          subtitle="64 Basic, 38 Pro, 25 Enterprise"
+        />
+        <StatCard title="Tổng doanh thu" value="21,402$" />
+      </div>
+
+      {/* User Chart */}
+      <ChartContainer title="Biểu đồ người dùng" filterOptions={["Tuần", "Tháng", "Năm"]}>
+        <ResponsiveContainer width="100%" height={350}>
+          <BarChart data={userChartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="free" stackId="a" fill="#A5B4FC" name="Free" />
+            <Bar dataKey="basic" stackId="a" fill="#6366F1" name="Basic" />
+            <Bar dataKey="pro" stackId="a" fill="#4338CA" name="Pro" />
+            <Bar dataKey="enterprise" stackId="a" fill="#1E3A8A" name="Enterprise" />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartContainer>
+      
+      {/* User Distribution and Revenue Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <ChartContainer title="Phân bổ người dùng">
+            <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                    <Pie data={userDistributionData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} fill="#8884d8" label>
+                        {userDistributionData.map((entry, index) => (
+                            <Pie key={`cell-${index}`} cx="50%" cy="50%" outerRadius={120} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                </PieChart>
+            </ResponsiveContainer>
+        </ChartContainer>
+
+        <ChartContainer title="Doanh thu theo gói" filterOptions={["Tuần", "Tháng", "Quý", "Năm"]}>
+            <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={revenueChartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="basic" fill="#C7D2FE" name="Basic" />
+                    <Bar dataKey="pro" fill="#A5B4FC" name="Pro" />
+                    <Bar dataKey="enterprise" fill="#312E81" name="Enterprise" />
+                </BarChart>
+            </ResponsiveContainer>
+        </ChartContainer>
+      </div>
+    </div>
+  );
+}
+
+// Reusable components
+function StatCard({ title, value, subtitle }: { title: string; value: string; subtitle?: string; }) {
+  return (
+    <div className="bg-white rounded-xl p-6 shadow">
+      <div className="bg-blue-900 text-white text-xl font-semibold font-['Unbounded'] p-3 rounded-xl -mt-10 mx-auto w-max">
+        {title}
+      </div>
+      <p className="text-4xl font-black font-['Unbounded'] text-center mt-4">
+        {value}
+      </p>
+      {subtitle && (
+        <p className="text-sm font-medium text-center mt-2">{subtitle}</p>
+      )}
+    </div>
+  );
+}
+
+function ChartContainer({ title, children, filterOptions }: { title: string; children: React.ReactNode; filterOptions?: string[]; }) {
+  return (
+    <div className="bg-white rounded-2xl p-6 shadow">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">{title}</h2>
+        {filterOptions && (
+          <div className="flex gap-x-2">
+            {filterOptions.map((option, index) => (
+              <button
+                key={index}
+                className={`px-4 py-2 rounded-md text-base font-semibold ${
+                  index === 0
+                    ? "bg-blue-900 text-white"
+                    : "bg-white text-neutral-950"
+                }`}
+              >
+                {option.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 ===== .\src\components\workspace\LibraryPanel.tsx =====
 // ===== .\src\components\workspace\LibraryPanel.tsx =====
 "use client";
-
 import { useState, type FC, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 
-interface LibraryPanelProps {
-  isTransitioning: boolean;
-  isCollapsed: boolean;
-  setIsCollapsed: () => void;
-}
+// ... (Interface không đổi)
+interface LibraryPanelProps { isCollapsed: boolean; toggleCollapse: () => void; }
 
-const LibraryPanel: FC<LibraryPanelProps> = ({ isTransitioning, isCollapsed, setIsCollapsed }) => {
+const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, toggleCollapse }) => {
   const t = useTranslations('Workspace');
   const { theme, resolvedTheme } = useTheme();
 
@@ -1480,512 +2160,263 @@ const LibraryPanel: FC<LibraryPanelProps> = ({ isTransitioning, isCollapsed, set
   const itemsPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(libraryItems.length / itemsPerPage);
-  const currentItems = libraryItems.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const currentItems = libraryItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <aside 
-      style={{ width: 'var(--library-panel-width)' }}
       className={`
-        h-full relative flex flex-col flex-shrink-0 z-30
-        ${isTransitioning ? 'transition-width duration-200 ease-out' : ''}
-        ${themeClass('bg-white text-black border-l border-gray-200', 'bg-neutral-950 text-white border-l border-zinc-700')}
+        flex flex-col h-full w-full
+        ${themeClass(
+          'bg-white text-black border-l border-gray-200', // Light Mode
+          'bg-stone-950 text-white' // Dark Mode: Dùng bg-stone-950 như thiết kế
+        )}
         ${isCollapsed ? 'p-2' : 'p-6'}
       `}
     >
-      <div className={`flex items-center mb-4 flex-shrink-0 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-        {!isCollapsed && (
-          <h2 className={`text-lg font-semibold whitespace-nowrap ${themeClass('text-black', 'text-white')}`}>{t('my_library')}</h2>
-        )}
-        <button
-          onClick={setIsCollapsed}
-          className={`${themeClass('text-gray-600 hover:text-black', 'text-gray-400 hover:text-white')}`}
-          aria-label={isCollapsed ? 'Expand panel' : 'Collapse panel'}
-        >
-          <Icon icon={isCollapsed ? "mdi:arrow-left" : "mdi:arrow-right"} width={20} />
-        </button>
-      </div>
-
-      <div 
-        className={`
-          flex flex-col flex-grow min-w-0 overflow-hidden gap-y-5
-          transition-opacity duration-200 ease-in-out
-          ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}
-        `}
-      >
-          <div className="flex items-center gap-x-4">
-            <div className="relative flex-grow">
-              <Icon 
-                icon="mdi:search" 
-                className={`absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 ${themeClass('text-gray-500', 'text-gray-400')}`}
-              />
-              <input 
-                type="text" 
-                placeholder={t('search')}
-                className={`
-                  w-full h-12 rounded-lg pl-12 pr-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-700
-                  ${themeClass('bg-indigo-100 text-black placeholder:text-gray-500', 'bg-neutral-800 text-white placeholder:text-gray-400')}
-                `}
-              />
+        {/* ... toàn bộ nội dung bên trong LibraryPanel không thay đổi ... */}
+        <div className={`flex items-center mb-4 flex-shrink-0 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+             {!isCollapsed && (<h2 className={`text-lg font-semibold whitespace-nowrap`}>{t('my_library')}</h2>)}
+             <button onClick={toggleCollapse} className={`${themeClass('text-gray-600 hover:text-black', 'text-gray-400 hover:text-white')}`} aria-label={isCollapsed ? 'Expand panel' : 'Collapse panel'}>
+                 <Icon icon={isCollapsed ? "mdi:arrow-left" : "mdi:arrow-right"} width={20} />
+             </button>
+        </div>
+        <div className={`flex flex-col flex-grow min-w-0 overflow-hidden gap-y-5 transition-opacity duration-200 ease-in-out ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            <div className="flex items-center gap-x-4">
+                 <div className="relative flex-grow">
+                     <Icon icon="mdi:search" className={`absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 ${themeClass('text-gray-500', 'text-gray-400')}`} />
+                     <input type="text" placeholder={t('search')} className={`w-full h-12 rounded-lg pl-12 pr-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-700 ${themeClass('bg-indigo-100 text-black placeholder:text-gray-500', 'bg-neutral-800 text-white placeholder:text-gray-400')}`} />
+                 </div>
+                 <button className="w-36 h-12 bg-blue-900 rounded-lg text-base font-semibold text-white flex items-center justify-center gap-x-2 hover:bg-blue-800 transition-colors flex-shrink-0">
+                     <Icon icon="mdi:upload" className="w-6 h-6" />{t('upload')}
+                 </button>
             </div>
-            <button className="w-36 h-12 bg-blue-900 rounded-lg text-base font-semibold text-white flex items-center justify-center gap-x-2 hover:bg-blue-800 transition-colors flex-shrink-0">
-              <Icon icon="mdi:upload" className="w-6 h-6" />
-              {t('upload')}
-            </button>
-          </div>
-          <div className={`h-12 rounded-lg flex items-center justify-between px-4 ${themeClass('bg-indigo-100', 'bg-neutral-800')}`}>
-              <Icon icon="mdi:folder-outline" className={`w-6 h-6 ${themeClass('text-black', 'text-white')}`} />
-              <Icon icon="mdi:arrow-expand-all" className={`w-5 h-5 ${themeClass('text-black', 'text-white')}`} />
-          </div>
-          <div className={`flex-grow rounded-xl p-4 flex flex-col min-h-0 ${themeClass('bg-indigo-100', 'bg-neutral-900')}`}>
-            <div className="flex-grow overflow-y-auto pr-2">
-              <div className="grid grid-cols-3 gap-4">
-                {currentItems.map((src, index) => (
-                  <div key={index} className={`w-full aspect-square rounded-xl overflow-hidden relative ${themeClass('bg-white', 'bg-neutral-800')}`}>
-                    <Image 
-                      src={src} 
-                      alt={`Library item ${index + 1}`} 
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      className="opacity-70"
-                    />
-                  </div>
-                ))}
-              </div>
+            <div className={`h-12 rounded-lg flex items-center justify-between px-4 ${themeClass('bg-indigo-100', 'bg-neutral-800')}`}>
+                 <Icon icon="mdi:folder-outline" className={`w-6 h-6`} />
+                 <Icon icon="mdi:arrow-expand-all" className={`w-5 h-5`} />
             </div>
-          </div>
-          <div className="flex items-center justify-center gap-x-2 flex-shrink-0">
-              <button 
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className={`w-9 h-9 rounded-md flex items-center justify-center disabled:opacity-50
-                  ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}
-                `}
-              >
-                  <Icon icon="mdi:chevron-left" className="w-6 h-6" />
-              </button>
-              <div className={`px-4 py-1.5 rounded-md text-sm ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}`}>
-                  {currentPage} / {totalPages}
-              </div>
-              <button 
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className={`w-9 h-9 rounded-md flex items-center justify-center disabled:opacity-50
-                  ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}
-                `}
-              >
-                  <Icon icon="mdi:chevron-right" className="w-6 h-6" />
-              </button>
-          </div>
-      </div>
-      <div 
-        className={`
-          flex flex-col items-center space-y-1 mt-10 transition-opacity duration-200 ease-in-out
-          ${isCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-        `}
-      >
-        <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('search')}>
-          <Icon icon="mdi:search" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} />
+            <div className={`flex-grow rounded-xl p-4 flex flex-col min-h-0 ${themeClass('bg-indigo-100', 'bg-neutral-900')}`}>
+                <div className="flex-grow overflow-y-auto pr-2">
+                     <div className="grid grid-cols-3 gap-4">
+                         {currentItems.map((src, index) => (
+                         <div key={index} className={`w-full aspect-square rounded-xl overflow-hidden relative ${themeClass('bg-white', 'bg-neutral-800')}`}>
+                             <Image src={src} alt={`Library item ${index + 1}`} fill style={{ objectFit: 'cover' }} className="opacity-70" />
+                         </div>
+                         ))}
+                     </div>
+                </div>
+            </div>
+            <div className="flex items-center justify-center gap-x-2 flex-shrink-0">
+                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className={`w-9 h-9 rounded-md flex items-center justify-center disabled:opacity-50 ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}`}>
+                     <Icon icon="mdi:chevron-left" className="w-6 h-6" />
+                </button>
+                <div className={`px-4 py-1.5 rounded-md text-sm ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}`}>{currentPage} / {totalPages}</div>
+                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className={`w-9 h-9 rounded-md flex items-center justify-center disabled:opacity-50 ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}`}>
+                     <Icon icon="mdi:chevron-right" className="w-6 h-6" />
+                </button>
+            </div>
         </div>
-        <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('upload')}>
-          <Icon icon="mdi:upload" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} />
+        <div className={`flex flex-col items-center space-y-1 mt-auto transition-opacity duration-200 ease-in-out ${isCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('search')}><Icon icon="mdi:search" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} /></div>
+            <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('upload')}><Icon icon="mdi:upload" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} /></div>
+            <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('my_library')}><Icon icon="mdi:folder-multiple-image" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} /></div>
         </div>
-        <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('my_library')}>
-          <Icon icon="mdi:folder-multiple-image" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} />
-        </div>
-      </div>
     </aside>
   );
 };
-
 export default LibraryPanel;
 
 ===== .\src\components\workspace\Sidebar.tsx =====
 // ===== .\src\components\workspace\Sidebar.tsx =====
 "use client";
-
 import { type FC, useEffect, useState } from "react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 
-interface SidebarProps {
-  isTransitioning: boolean;
-  isCollapsed: boolean;
-  setIsCollapsed: () => void;
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: (isOpen: boolean) => void;
-}
+// ... (Interface và NavItem không đổi)
+interface SidebarProps { isCollapsed: boolean; toggleCollapse: () => void; isSidebarOpen: boolean; setIsSidebarOpen: (isOpen: boolean) => void; }
+const NavItem: FC<{ icon: string; text: string; isCollapsed: boolean; themeClass: (l: string, d: string) => string; }> = ({ icon, text, isCollapsed, themeClass }) => ( <a href="#" className={`block flex items-center rounded-md transition-colors ${isCollapsed ? "w-10 h-10 justify-center" : "p-2"} ${themeClass("hover:bg-indigo-100", "hover:bg-neutral-800")}`}> <Icon icon={icon} className={`w-6 h-6 flex-shrink-0 ${themeClass("text-zinc-700", "text-gray-300")}`} /> {!isCollapsed && (<span className={`ml-3 text-sm font-medium whitespace-nowrap`}>{text}</span>)} </a>);
 
-const Sidebar: FC<SidebarProps> = ({
-  isTransitioning,
-  isCollapsed,
-  setIsCollapsed,
-  isSidebarOpen,
-  setIsSidebarOpen,
-}) => {
+
+const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen, setIsSidebarOpen, }) => {
   const t = useTranslations("Sidebar");
   const tWorkspace = useTranslations("Workspace");
   const { theme, resolvedTheme, setTheme } = useTheme();
-
+  
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const activeTheme = !mounted ? "dark" : (resolvedTheme || theme || "dark");
   const themeClass = (light: string, dark: string) => activeTheme === "light" ? light : dark;
 
-  const NavItem = ({ icon, text }: { icon: string; text: string }) => (
-    <a
-      href="#"
-      className={`block flex items-center rounded-md transition-colors ${
-        isCollapsed ? "w-10 h-10 justify-center" : "p-2"
-      } ${themeClass("hover:bg-indigo-100 text-black", "hover:bg-neutral-800 text-white")}`}
-    >
-      <Icon
-        icon={icon}
-        className={`w-6 h-6 flex-shrink-0 ${themeClass("text-zinc-700", "text-gray-300")}`}
-      />
-      {!isCollapsed && (
-        <span className={`ml-3 text-sm font-medium whitespace-nowrap ${themeClass("text-black", "text-white")}`}>
-          {text}
-        </span>
-      )}
-    </a>
-  );
-
   return (
     <>
+      <div className={`fixed inset-0 z-40 bg-black/30 lg:hidden transition-opacity ${isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={() => setIsSidebarOpen(false)} aria-hidden="true" />
       <div
-        className={`fixed inset-0 z-40 bg-black/30 lg:hidden transition-opacity ${isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        onClick={() => setIsSidebarOpen(false)}
-        aria-hidden="true"
-      />
-
-      <div
-        style={{ width: 'var(--sidebar-width)' }}
         className={`
-          flex flex-col h-full z-30 font-['Inter'] flex-shrink-0
-          fixed lg:relative top-0 left-0
-          ${isTransitioning ? 'transition-width duration-200 ease-out' : ''}
-          transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0
-          ${themeClass("bg-white text-black border-r border-gray-200", "bg-neutral-950 text-white border-r border-zinc-700")}
+          flex flex-col h-full w-full font-['Inter']
+          ${themeClass(
+            "bg-white text-black border-r border-gray-200", // Light Mode
+            "bg-neutral-950 text-white" // Dark Mode: Dùng bg-neutral-950 như thiết kế
+          )}
         `}
       >
-        <div className={`flex flex-col flex-grow min-h-0 ${isCollapsed ? "p-2" : "p-4"}`}>
-          {/* ===== BẮT ĐẦU SỬA LỖI HEADER ===== */}
-          <div className={`flex items-center mb-6 ${isCollapsed ? 'flex-col gap-y-4' : 'justify-between'}`}>
-            <Image
-              src={activeTheme === "light" ? "/logo/dark.png" : "/logo/light.png"}
-              alt="Logo"
-              width={isCollapsed ? 30 : 40}
-              height={isCollapsed ? 19 : 25}
-            />
-            <div className="flex items-center">
-              <button
-                onClick={setIsCollapsed}
-                className={`hidden lg:block ${themeClass("text-gray-600 hover:text-black", "text-gray-400 hover:text-white")}`}
-                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              >
-                <Icon icon={isCollapsed ? "mdi:arrow-right" : "mdi:arrow-left"} width={20} />
-              </button>
-              <button
-                onClick={() => setIsSidebarOpen(false)}
-                className={`lg:hidden ${isCollapsed ? "hidden" : ""} ${themeClass("text-black", "text-white")}`}
-                aria-label="Close sidebar"
-              >
-                <Icon icon="mdi:close" width={28} />
-              </button>
+        {/* ... toàn bộ nội dung bên trong Sidebar không thay đổi ... */}
+        {/* Phần header */}
+        <div className={`flex flex-col flex-grow min-h-0 overflow-hidden ${isCollapsed ? "p-2" : "p-4"}`}>
+            <div className={`flex items-center mb-6 ${isCollapsed ? 'flex-col gap-y-4' : 'justify-between'}`}>
+                 <Image src={activeTheme === "light" ? "/logo/dark.png" : "/logo/light.png"} alt="Logo" width={isCollapsed ? 30 : 40} height={isCollapsed ? 19 : 25} />
+                 <div className="flex items-center">
+                     <button onClick={toggleCollapse} className={`hidden lg:block ${themeClass("text-gray-600 hover:text-black", "text-gray-400 hover:text-white")}`} aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
+                         <Icon icon={isCollapsed ? "mdi:arrow-right" : "mdi:arrow-left"} width={20} />
+                     </button>
+                     <button onClick={() => setIsSidebarOpen(false)} className={`lg:hidden ${isCollapsed ? "hidden" : ""} ${themeClass("text-black", "text-white")}`} aria-label="Close sidebar" > <Icon icon="mdi:close" width={28} /> </button>
+                 </div>
             </div>
-          </div>
-          {/* ===== KẾT THÚC SỬA LỖI HEADER ===== */}
-
-          <nav className={`${isCollapsed ? "flex flex-col items-center space-y-1" : ""}`}>
-            <NavItem icon="mdi:plus-box" text={tWorkspace("new_project")} />
-            <NavItem icon="mdi:folder-multiple-image" text={tWorkspace("your_library")} />
-            <NavItem icon="mdi:crown" text={tWorkspace("upgrade_account")} />
-          </nav>
-
-          <div className="flex-grow min-w-0 overflow-hidden">
-            {!isCollapsed && (
-              <div className="flex flex-col h-full overflow-y-auto mt-4 pr-1">
-                {/* ... Nội dung form không đổi ... */}
-                <hr className={`${themeClass("border-gray-300", "border-zinc-700")} mb-4`} />
-                <div className={`${themeClass("bg-indigo-50", "bg-neutral-800")} rounded-xl p-1 mb-6 flex`}>
-                  <button className={`flex-1 p-2 rounded-lg text-sm font-bold ${themeClass("text-zinc-700", "text-neutral-400")}`}>
-                    {t("text_to_3d")}
-                  </button>
-                  <button className="flex-1 p-2 bg-blue-900 text-white rounded-lg font-bold text-sm">
-                    {t("image_to_3d")}
-                  </button>
+            <nav className={`${isCollapsed ? "flex flex-col items-center space-y-1" : "space-y-1"}`}>
+                <NavItem icon="mdi:plus-box" text={tWorkspace("new_project")} isCollapsed={isCollapsed} themeClass={themeClass} />
+                <NavItem icon="mdi:folder-multiple-image" text={tWorkspace("your_library")} isCollapsed={isCollapsed} themeClass={themeClass} />
+                <NavItem icon="mdi:crown" text={tWorkspace("upgrade_account")} isCollapsed={isCollapsed} themeClass={themeClass} />
+            </nav>
+            <div className={`flex-grow min-w-0 overflow-y-auto transition-opacity duration-200 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <div className="mt-4 pr-1">
+                     <hr className={`${themeClass("border-gray-300", "border-zinc-700")} mb-4`} />
+                     <div className={`${themeClass("bg-indigo-50", "bg-neutral-800")} rounded-xl p-1 mb-6 flex`}>
+                         <button className={`flex-1 p-2 rounded-lg text-sm font-bold ${themeClass("text-zinc-700", "text-neutral-400")}`}>{t("text_to_3d")}</button>
+                         <button className="flex-1 p-2 bg-blue-900 text-white rounded-lg font-bold text-sm">{t("image_to_3d")}</button>
+                     </div>
+                     <div className="mb-5">
+                         <label className={`text-sm font-normal mb-2 block`}>{t("image_label")}</label>
+                         <div className={`${themeClass("bg-indigo-100 border-indigo-200", "bg-neutral-900 border-neutral-700")} border rounded-xl w-full h-40 flex flex-col justify-center items-center text-center p-4`}>
+                             <Icon icon="icon-park-outline:upload-picture" className={`w-10 h-10 mb-2 ${themeClass("text-stone-500","text-neutral-500")}`} />
+                             <p className={`text-base font-semibold ${themeClass("text-stone-600","text-neutral-300")}`}>{t("uploader_title")}</p>
+                             <p className={`text-xs font-normal mt-1 ${themeClass("text-neutral-500","text-neutral-400")}`}>{t("uploader_formats")}</p>
+                         </div>
+                     </div>
+                     <div className="mb-5">
+                         <label className={`text-sm font-normal mb-2 block`}>{t("name_label")}</label>
+                         <input type="text" placeholder={t("name_placeholder")} className={`${themeClass("bg-indigo-100 placeholder:text-zinc-500 text-black","bg-neutral-800 placeholder:text-gray-400 text-white")} w-full h-11 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700`} />
+                     </div>
+                     <div className="mb-5">
+                         <label className={`text-sm font-normal mb-2 block`}>{t("model_label")}</label>
+                         <div className={`${themeClass("bg-indigo-100","bg-neutral-800")} flex items-center justify-between p-2 h-11 rounded-xl px-4`}>
+                             <span className={`text-sm`}>V2R</span>
+                             <Icon icon="mdi:chevron-down" className={`w-5 h-5`} />
+                         </div>
+                     </div>
+                     <div className="mb-6">
+                         <label className={`text-sm font-normal mb-2 block`}>{t("symmetry_label")}</label>
+                         <div className={`${themeClass("bg-indigo-100","bg-neutral-800")} rounded-lg p-1 flex`}>
+                             <button className={`flex-1 p-1.5 text-sm rounded-md font-bold ${themeClass("text-zinc-600","text-neutral-400")}`}>{t("symmetry_off")}</button>
+                             <button className="flex-1 bg-blue-900 text-white rounded-md font-bold p-1.5 text-sm">{t("symmetry_auto")}</button>
+                             <button className={`flex-1 p-1.5 text-sm rounded-md font-bold ${themeClass("text-zinc-600","text-neutral-400")}`}>{t("symmetry_on")}</button>
+                         </div>
+                     </div>
+                     <div className={`flex justify-center items-center space-x-3 mb-4 text-sm font-light ${themeClass("text-neutral-600","text-neutral-300")}`}>
+                         <span>{t("cost_info_model")}</span>
+                         <div className={`${themeClass("bg-neutral-400","bg-neutral-600")} w-px h-5`} />
+                         <span>{t("cost_info_tokens")}</span>
+                     </div>
+                     <button className="w-full h-11 bg-blue-900 rounded-xl text-neutral-100 text-base font-semibold font-['Unbounded'] hover:bg-blue-700 transition-colors">{t("generate_button")}</button>
                 </div>
-                <div className="mb-5">
-                  <label className={`text-sm font-normal mb-2 block ${themeClass("text-black", "text-white")}`}>
-                    {t("image_label")}
-                  </label>
-                  <div className={`${themeClass("bg-indigo-100 border-indigo-200", "bg-neutral-900 border-neutral-700")} border rounded-xl w-full h-40 flex flex-col justify-center items-center text-center p-4`}>
-                    <Icon icon="icon-park-outline:upload-picture" className={`w-10 h-10 mb-2 ${themeClass("text-stone-500","text-neutral-500")}`} />
-                    <p className={`text-base font-semibold ${themeClass("text-stone-600","text-neutral-300")}`}>{t("uploader_title")}</p>
-                    <p className={`text-xs font-normal mt-1 ${themeClass("text-neutral-500","text-neutral-400")}`}>{t("uploader_formats")}</p>
-                  </div>
-                </div>
-                <div className="mb-5">
-                  <label className={`text-sm font-normal mb-2 block ${themeClass("text-black","text-white")}`}>{t("name_label")}</label>
-                  <input
-                    type="text"
-                    placeholder={t("name_placeholder")}
-                    className={`${themeClass("bg-indigo-100 placeholder:text-zinc-500 text-black","bg-neutral-800 placeholder:text-gray-400 text-white")} w-full h-11 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700`}
-                  />
-                </div>
-                <div className="mb-5">
-                  <label className={`text-sm font-normal mb-2 block ${themeClass("text-black","text-white")}`}>{t("model_label")}</label>
-                  <div className={`${themeClass("bg-indigo-100","bg-neutral-800")} flex items-center justify-between p-2 h-11 rounded-xl px-4`}>
-                    <span className={`${themeClass("text-black","text-white")} text-sm`}>V2R</span>
-                    <Icon icon="mdi:chevron-down" className={`${themeClass("text-black","text-white")} w-5 h-5`} />
-                  </div>
-                </div>
-                <div className="mb-6">
-                  <label className={`text-sm font-normal mb-2 block ${themeClass("text-black","text-white")}`}>{t("symmetry_label")}</label>
-                  <div className={`${themeClass("bg-indigo-100","bg-neutral-800")} rounded-lg p-1 flex`}>
-                    <button className={`flex-1 p-1.5 text-sm rounded-md font-bold ${themeClass("text-zinc-600","text-neutral-400")}`}>{t("symmetry_off")}</button>
-                    <button className="flex-1 bg-blue-900 text-white rounded-md font-bold p-1.5 text-sm">{t("symmetry_auto")}</button>
-                    <button className={`flex-1 p-1.5 text-sm rounded-md font-bold ${themeClass("text-zinc-600","text-neutral-400")}`}>{t("symmetry_on")}</button>
-                  </div>
-                </div>
-                <div className={`flex justify-center items-center space-x-3 mb-4 text-sm font-light ${themeClass("text-neutral-600","text-neutral-300")}`}>
-                  <span>{t("cost_info_model")}</span>
-                  <div className={`${themeClass("bg-neutral-400","bg-neutral-600")} w-px h-5`} />
-                  <span>{t("cost_info_tokens")}</span>
-                </div>
-                <button className="w-full h-11 bg-blue-900 rounded-xl text-neutral-100 text-base font-semibold font-['Unbounded'] hover:bg-blue-700 transition-colors">
-                  {t("generate_button")}
-                </button>
-              </div>
-            )}
-          </div>
+            </div>
         </div>
-
-        {/* ===== BẮT ĐẦU SỬA LỖI FOOTER ===== */}
+        {/* Phần footer */}
         <div className={`border-t ${themeClass("border-gray-200","border-zinc-700")} flex-shrink-0 ${isCollapsed ? "p-2" : "p-4"}`}>
-          <div className={`flex items-center ${isCollapsed ? 'flex-col justify-center gap-y-2' : 'justify-between'}`}>
-            <div className="flex items-center min-w-0">
-              <div className={`${themeClass("bg-zinc-300","bg-zinc-600")} w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0`}>
-                <Icon icon="mdi:user" className={`${themeClass("text-black","text-white")} w-6 h-6`} />
-              </div>
-              {!isCollapsed && (
-                <div className="ml-3 overflow-hidden">
-                  <p className={`text-black dark:text-white text-sm font-semibold truncate`}>PhuongBT</p>
-                  <p className={`text-stone-500 dark:text-gray-300 text-sm font-light truncate`}>{tWorkspace("user_free_tier")}</p>
-                </div>
-              )}
+            <div className={`flex items-center ${isCollapsed ? 'flex-col justify-center gap-y-2' : 'justify-between'}`}>
+                 <div className="flex items-center min-w-0">
+                     <div className={`${themeClass("bg-zinc-300","bg-zinc-600")} w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0`}>
+                         <Icon icon="mdi:user" className={`w-6 h-6`} />
+                     </div>
+                     {!isCollapsed && (
+                     <div className="ml-3 overflow-hidden">
+                         <p className={`text-sm font-semibold truncate`}>PhuongBT</p>
+                         <p className={`text-stone-500 dark:text-gray-300 text-sm font-light truncate`}>{tWorkspace("user_free_tier")}</p>
+                     </div>
+                     )}
+                 </div>
+                 <button onClick={() => setTheme(activeTheme === "light" ? "dark" : "light")} className={`flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center transition-colors ${themeClass("bg-indigo-100 text-neutral-900 hover:bg-indigo-200", "bg-neutral-800 text-white hover:bg-neutral-700")}`} title="Toggle theme">
+                     <Icon icon={activeTheme === "light" ? "mdi:weather-night" : "mdi:white-balance-sunny"} width={isCollapsed ? 16 : 18} />
+                 </button>
             </div>
-            
-            <button
-              onClick={() => setTheme(activeTheme === "light" ? "dark" : "light")}
-              className={`flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center transition-colors
-                ${themeClass("bg-indigo-100 text-neutral-900 hover:bg-indigo-200", "bg-neutral-800 text-white hover:bg-neutral-700")}
-              `}
-              title="Toggle theme"
-            >
-              <Icon icon={activeTheme === "light" ? "mdi:weather-night" : "mdi:white-balance-sunny"} width={isCollapsed ? 16 : 18} />
-            </button>
-          </div>
         </div>
-        {/* ===== KẾT THÚC SỬA LỖI FOOTER ===== */}
       </div>
     </>
   );
 };
-
 export default Sidebar;
 
 ===== .\src\components\workspace\ViewPanel.tsx =====
+// ===== .\src\components\workspace\ViewPanel.tsx =====
 "use client";
 
-import { Suspense, type FC, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, useGLTF, Html, Environment, Grid, Edges } from "@react-three/drei";
-import { Leva } from "leva";
-import { useTheme } from "next-themes";
-import * as THREE from "three";
+import { Suspense, type FC, useEffect, useRef } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+// Bỏ PresetsType, nó không tồn tại
+import { OrbitControls, useGLTF, Html, Environment, Grid, Edges } from '@react-three/drei';
+import { useControls } from 'leva';
+import * as THREE from 'three';
+import { useTheme } from 'next-themes';
 
-// --- TYPE GUARD ---
-function isMesh(obj: THREE.Object3D): obj is THREE.Mesh {
-  return (obj as THREE.Mesh).isMesh;
-}
+// --- Các component phụ không đổi ---
+function isMesh(obj: THREE.Object3D): obj is THREE.Mesh { return (obj as THREE.Mesh).isMesh; }
+const Loader: FC = () => <Html center><div className="text-white text-lg font-sans">Loading 3D Model...</div></Html>;
+const Model: FC = () => { const { scene } = useGLTF('/3D-model/model.glb'); return <primitive object={scene} />; };
+interface WireframeProps { show: boolean; thickness: number; color: string; }
+const ModelWireframe: FC<WireframeProps> = ({ show, thickness, color }) => { const { nodes } = useGLTF('/3D-model/model.glb'); if (!show) return null; return (<>{Object.values(nodes).map((node: THREE.Object3D, index) => (isMesh(node) && (<mesh key={index} geometry={node.geometry}><meshBasicMaterial transparent opacity={0} /><Edges scale={1} threshold={15} color={color} linewidth={thickness} /></mesh>)))}</>); };
+interface ModelRendererProps { scale: number; rotation: [number, number, number]; autoRotate: boolean; showWireframe: boolean; polyThickness: number; polyColor: string; }
+const ModelRenderer: FC<ModelRendererProps> = (props) => { const groupRef = useRef<THREE.Group>(null!); useFrame((state, delta) => { if (props.autoRotate && groupRef.current) { groupRef.current.rotation.y += delta * 0.2; } }); return (<group ref={groupRef} scale={props.scale} rotation={props.rotation}><Model /><ModelWireframe show={props.showWireframe} thickness={props.polyThickness} color={props.polyColor} /></group>); };
+useGLTF.preload('/3D-model/model.glb');
+const CameraUpdater: FC<{ fov: number }> = ({ fov }) => { const { camera } = useThree(); useEffect(() => { if (camera instanceof THREE.PerspectiveCamera) { camera.fov = fov; camera.updateProjectionMatrix(); } }, [fov, camera]); return null; };
 
-// --- COMPONENTS PHỤ ---
-const Loader: FC = () => (
-  <Html center>
-    <div className="text-neutral-800 dark:text-white text-lg font-sans">
-      Loading 3D Model...
-    </div>
-  </Html>
-);
+// Tạo một "nguồn chân lý" cho các giá trị preset
+const environmentOptions = ['sunset', 'dawn', 'night', 'warehouse', 'forest', 'apartment', 'studio', 'city', 'park', 'lobby'] as const;
+// Tự động tạo type từ mảng trên
+type EnvironmentPresetType = typeof environmentOptions[number];
 
-const Model: FC = () => {
-  const { scene } = useGLTF("/3D-model/model.glb");
-  return <primitive object={scene} />;
-};
 
-interface WireframeProps {
-  show: boolean;
-  thickness: number;
-  color: string;
-}
-const ModelWireframe: FC<WireframeProps> = ({ show, thickness, color }) => {
-  const { nodes } = useGLTF("/3D-model/model.glb");
-  if (!show) return null;
-  return (
-    <>
-      {Object.values(nodes).map(
-        (node: THREE.Object3D, index) =>
-          isMesh(node) && (
-            <mesh key={index} geometry={node.geometry}>
-              <meshBasicMaterial transparent opacity={0} />
-              <Edges scale={1} threshold={15} color={color} linewidth={thickness} />
-            </mesh>
-          )
-      )}
-    </>
-  );
-};
-
-interface ModelRendererProps {
-  scale: number;
-  rotation: [number, number, number];
-  autoRotate: boolean;
-  showWireframe: boolean;
-  polyThickness: number;
-  polyColor: string;
-}
-
-const ModelRenderer: FC<ModelRendererProps> = (props) => {
-  const groupRef = useRef<THREE.Group>(null!);
-  useFrame((_, delta) => {
-    if (props.autoRotate && groupRef.current)
-      groupRef.current.rotation.y += delta * 0.2;
-  });
-
-  return (
-    <group ref={groupRef} scale={props.scale} rotation={props.rotation}>
-      <Model />
-      <ModelWireframe
-        show={props.showWireframe}
-        thickness={props.polyThickness}
-        color={props.polyColor}
-      />
-    </group>
-  );
-};
-
-useGLTF.preload("/3D-model/model.glb");
-
-const CameraUpdater: FC<{ fov: number }> = ({ fov }) => {
-  const { camera } = useThree();
-  useEffect(() => {
-    if (camera instanceof THREE.PerspectiveCamera) {
-      camera.fov = fov;
-      camera.updateProjectionMatrix();
-    }
-  }, [fov, camera]);
-  return null;
-};
-
-// --- COMPONENT CHÍNH ---
 const ViewPanel: FC = () => {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const theme = mounted ? resolvedTheme : "dark";
-  const isLight = theme === "light";
 
-  // --- Tone theo theme ---
-  const backgroundColor = isLight ? "#EEF2FF" : "#0A0A0A"; // Light: xanh tím nhạt, Dark: đen
-  const gridColors = isLight
-    ? { sectionColor: "#c7d2fe", cellColor: "#e0e7ff" }
-    : { sectionColor: "#3f3f46", cellColor: "#18181b" };
-
-  // --- Leva floating ---
-  const viewPanelRef = useRef<HTMLDivElement>(null);
-  const [levaStyle, setLevaStyle] = useState<React.CSSProperties>({
-    opacity: 0,
-    position: "fixed",
-    zIndex: 10,
-  });
+  const [sceneControls, setSceneControls] = useControls('Scene', () => ({
+    backgroundColor: resolvedTheme === 'light' ? '#EEF2FF' : '#171717',
+    environment: { value: 'city' as EnvironmentPresetType, options: environmentOptions },
+    intensity: { value: 0.8, min: 0, max: 2, step: 0.1 }
+  }));
+  
+  const modelControls = useControls('Model', { scale: { value: 1, min: 0.1, max: 5, step: 0.05 }, rotation: [0, 0, 0] });
+  const cameraControls = useControls('Camera', { fov: { value: 45, min: 10, max: 120, step: 1 } });
+  const helperControls = useControls('Helpers', { autoRotate: true, showGrid: true, showWireframe: false, polyThickness: { value: 1, min: 0.1, max: 10, step: 0.1, render: (get) => get('Helpers.showWireframe') }, polyColor: { value: '#ffffff', render: (get) => get('Helpers.showWireframe') } });
 
   useEffect(() => {
-    const el = viewPanelRef.current;
-    if (!el) return;
-    const updatePosition = () => {
-      const rect = el.getBoundingClientRect();
-      const levaWidth = 300;
-      const newLeft = rect.left + rect.width / 2 - levaWidth / 2;
-      setLevaStyle({
-        position: "fixed",
-        left: `${newLeft}px`,
-        bottom: "1rem",
-        width: `${levaWidth}px`,
-        zIndex: 10,
-        opacity: 1,
-        transition: "left 0.25s ease-out",
-      });
-    };
-    updatePosition();
-    const observer = new ResizeObserver(updatePosition);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+    if (resolvedTheme) {
+      const newBgColor = resolvedTheme === 'light' ? '#EEF2FF' : '#171717';
+      setSceneControls({ backgroundColor: newBgColor });
+    }
+  }, [resolvedTheme, setSceneControls]);
 
   return (
-    <div
-      ref={viewPanelRef}
-      className={`flex-grow h-full relative transition-colors duration-500 ${
-        isLight ? "bg-indigo-50" : "bg-neutral-950"
-      }`}
-    >
-      <div style={levaStyle}>
-        <Leva fill oneLineLabels collapsed />
-      </div>
-
-      <Canvas
-        dpr={[1, 2]}
-        camera={{ position: [0, 1.5, 6] }}
-        style={{ position: "absolute", width: "100%", height: "100%" }}
+    <div className="w-full h-full relative">
+      <Canvas 
+        dpr={[1, 2]} 
+        camera={{ position: [0, 1.5, 6] }} 
+        style={{ position: "absolute", width: '100%', height: '100%' }}
         shadows
       >
-        {/* Fix: gán màu background cứng theo theme, không dựa Leva */}
-        <color attach="background" args={[backgroundColor]} />
-
-        <CameraUpdater fov={45} />
-        <ambientLight intensity={isLight ? 1.2 : 0.6} />
-        <directionalLight position={[5, 5, 5]} intensity={isLight ? 1.2 : 0.8} />
-        <Environment preset="city" />
-
-        <Grid
-          infiniteGrid
-          position={[0, -0.5, 0]}
-          sectionSize={1}
-          cellSize={0.5}
-          sectionColor={gridColors.sectionColor}
-          cellColor={gridColors.cellColor}
-          fadeDistance={25}
-          fadeStrength={1}
-        />
-
+        <color attach="background" args={[sceneControls.backgroundColor]} />
+        <CameraUpdater fov={cameraControls.fov} />
+        <ambientLight intensity={sceneControls.intensity / 2} />
+        <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
+        
+        {/* === SỬA LỖI TẠI ĐÂY === */}
+        {/* Ép kiểu (cast) `sceneControls.environment` thành `EnvironmentPresetType` */}
+        <Environment preset={sceneControls.environment as EnvironmentPresetType} />
+        
+        {helperControls.showGrid && (<Grid infiniteGrid position={[0, -0.5, 0]} sectionSize={1} cellSize={0.5} sectionColor={"#444444"} cellColor={"#222222"} fadeDistance={25} fadeStrength={1} />)}
         <Suspense fallback={<Loader />}>
-          <ModelRenderer
-            scale={1}
-            rotation={[0, 0, 0]}
-            autoRotate={true}
-            showWireframe={false}
-            polyThickness={1}
-            polyColor={isLight ? "#1e293b" : "#ffffff"}
-          />
+          <ModelRenderer scale={modelControls.scale} rotation={modelControls.rotation} autoRotate={helperControls.autoRotate} showWireframe={helperControls.showWireframe} polyThickness={helperControls.polyThickness} polyColor={helperControls.polyColor} />
         </Suspense>
-
         <OrbitControls makeDefault />
       </Canvas>
     </div>
@@ -1993,7 +2424,6 @@ const ViewPanel: FC = () => {
 };
 
 export default ViewPanel;
-
 
 ===== .\src\context\AuthContext.tsx =====
 "use client";
@@ -2115,6 +2545,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             [locale]/
                 layout.tsx
                 page.tsx
+                confirm/
+                    page.tsx
+                dashboard/
+                    layout.tsx
+                    page.tsx
+                    console/
+                        page.tsx
+                    customers/
+                        page.tsx
+                    notifications/
+                        page.tsx
+                    reports/
+                        page.tsx
+                    revenue/
+                        page.tsx
+                    status/
+                        page.tsx
+                    transactions/
+                        page.tsx
                 login/
                     page.tsx
                 register/
@@ -2129,6 +2578,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             LanguageSwitcher.tsx
             Pricing.tsx
             WorkflowCTA.tsx
+            dashboard/
+                DashboardSidebar.tsx
+                Overview.tsx
             workspace/
                 LibraryPanel.tsx
                 Sidebar.tsx

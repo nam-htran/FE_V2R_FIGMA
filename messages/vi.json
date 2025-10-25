@@ -142,5 +142,15 @@
     "did_not_receive": "Chưa nhận được mã?",
     "resend": "Gửi lại",
     "continue_button": "Tiếp tục"
+  },
+  "Dashboard": {
+    "overview": "Tổng quan",
+    "status_and_resources": "Trạng thái & Tài nguyên",
+    "cost_reports": "Báo cáo Chi phí",
+    "console": "Console",
+    "customers": "Khách hàng",
+    "transactions": "Giao dịch",
+    "revenue": "Doanh thu",
+    "notifications": "Thông báo"
   }
 }
