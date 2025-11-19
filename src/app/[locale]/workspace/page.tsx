@@ -1,3 +1,4 @@
+// ===== .\src\app\[locale]\workspace\page.tsx =====
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -5,13 +6,12 @@ import {
   Panel,
   PanelGroup,
   PanelResizeHandle,
-  type ImperativePanelHandle, // SỬA LỖI 1: Dùng type đúng là ImperativePanelHandle
+  type ImperativePanelHandle,
 } from "react-resizable-panels";
 
 import Sidebar from "@/components/workspace/Sidebar";
 import ViewPanel from "@/components/workspace/ViewPanel";
 import LibraryPanel from "@/components/workspace/LibraryPanel";
-import { Leva } from "leva";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 
@@ -54,18 +54,40 @@ export default function WorkspacePage() {
     }
   }, [resolvedTheme]);
 
-  const sidebarPanelRef = useRef<ImperativePanelHandle>(null); // SỬA LỖI 1
-  const libraryPanelRef = useRef<ImperativePanelHandle>(null); // SỬA LỖI 1
+  const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
+  const libraryPanelRef = useRef<ImperativePanelHandle>(null);
 
   const toggleSidebar = () => {
     const panel = sidebarPanelRef.current;
-    if (panel) { panel.isCollapsed() ? panel.expand() : panel.collapse(); }
+    if (panel) {
+      // SỬA LỖI: Chuyển từ toán tử ba ngôi sang if/else
+      if (panel.isCollapsed()) {
+        panel.expand();
+      } else {
+        panel.collapse();
+      }
+    }
   };
 
   const toggleLibraryPanel = () => {
     const panel = libraryPanelRef.current;
-    if (panel) { panel.isCollapsed() ? panel.expand() : panel.collapse(); }
+    if (panel) {
+      // SỬA LỖI: Chuyển từ toán tử ba ngôi sang if/else
+      if (panel.isCollapsed()) {
+        panel.expand();
+      } else {
+        panel.collapse();
+      }
+    }
   };
+
+  const expandLibraryPanel = () => {
+    const panel = libraryPanelRef.current;
+    if (panel && panel.isCollapsed()) {
+      panel.expand();
+    }
+  };
+
 
   return (
     <main className="w-screen h-screen overflow-hidden select-none">
@@ -92,24 +114,22 @@ export default function WorkspacePage() {
             toggleCollapse={toggleSidebar}
             isSidebarOpen={isMobileSidebarOpen}
             setIsSidebarOpen={setMobileSidebarOpen}
+            expandLibraryPanel={expandLibraryPanel}
           />
         </Panel>
         
-        <PanelResizeHandle className={`w-1.5 transition-colors duration-200 group ${handleBg}`}>
-          <div className="h-full w-px bg-transparent group-hover:bg-blue-600 transition-colors duration-200" />
+        <PanelResizeHandle className={`w-2 flex items-center justify-center group ${handleBg}`}>
+          <div className="h-full w-0.5 bg-transparent group-hover:bg-blue-600 transition-all duration-300" />
         </PanelResizeHandle>
 
         <Panel minSize={30}>
           <div className={`h-full relative ${viewPanelBg}`}>
             <ViewPanel />
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[300px] z-10">
-              <Leva fill oneLineLabels collapsed />
-            </div>
           </div>
         </Panel>
 
-        <PanelResizeHandle className={`w-1.5 transition-colors duration-200 group ${handleBg}`}>
-           <div className="h-full w-px bg-transparent group-hover:bg-blue-600 transition-colors duration-200" />
+        <PanelResizeHandle className={`w-2 flex items-center justify-center group ${handleBg}`}>
+           <div className="h-full w-0.5 bg-transparent group-hover:bg-blue-600 transition-all duration-300" />
         </PanelResizeHandle>
 
         <Panel

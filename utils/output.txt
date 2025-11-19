@@ -62,14 +62,17 @@ export default withNextIntl(nextConfig);
     "@iconify/react": "^6.0.2",
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.3.0",
+    "@upstash/redis": "^1.35.6",
+    "chart.js": "^4.5.1",
+    "framer-motion": "^12.23.24",
     "leva": "^0.10.0",
     "next": "15.5.4",
     "next-intl": "^4.3.9",
     "next-themes": "^0.4.6",
     "react": "19.1.0",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "19.1.0",
     "react-resizable-panels": "^3.0.6",
-    "recharts": "^3.3.0",
     "three": "^0.180.0"
   },
   "devDependencies": {
@@ -576,15 +579,54 @@ body {
 "use client";
 
 import { AuthProvider } from "@/context/AuthContext";
+import { GenerationProvider } from "@/context/GenerationContext";
 import { ReactNode } from "react";
 
-// Component này sẽ đóng vai trò là điểm vào phía client cho các provider
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      {children}
+      <GenerationProvider>
+        {children}
+      </GenerationProvider>
     </AuthProvider>
   );
+}
+
+===== .\src\app\api\get-backend-url\route.ts =====
+// ===== .\src\app\api\get-backend-url\route.ts =====
+import { Redis } from '@upstash/redis';
+import { NextResponse } from 'next/server';
+
+// Khởi tạo Redis client từ biến môi trường
+// QUAN TRỌNG: Các biến này phải được đặt trong tệp .env.local của bạn
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_URL!,
+  token: process.env.UPSTASH_REDIS_TOKEN!,
+});
+
+// Đảm bảo route này không bị cache và luôn lấy dữ liệu mới nhất
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  try {
+    // Lấy URL từ key 'active_ai_service_url' trong Redis
+    const url = await redis.get('active_ai_service_url');
+
+    if (!url) {
+      return NextResponse.json(
+        { error: 'Backend service URL not found in Redis.' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ url });
+  } catch (error) {
+    console.error('Error fetching backend URL from Redis:', error);
+    return NextResponse.json(
+      { error: 'Failed to connect to Redis and fetch backend URL.' },
+      { status: 500 }
+    );
+  }
 }
 
 ===== .\src\app\[locale]\layout.tsx =====
@@ -742,25 +784,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    // Container này cần có position relative để làm gốc cho các phần tử con
-    <div className="relative min-h-screen bg-gray-400">
+    <div className="bg-gray-400 min-h-screen">
+      {/* Sidebar giờ đây được đặt ở position: fixed, tách biệt khỏi luồng layout */}
       <DashboardSidebar 
         isCollapsed={isCollapsed} 
         toggleCollapse={toggleSidebar} 
       />
-      
       {/* 
-        VÙNG NỘI DUNG CHÍNH:
-        - Có transition-all để thay đổi padding-left một cách mượt mà.
-        - padding-left (pl) sẽ tương ứng với chiều rộng của sidebar (w-72 -> pl-72, w-20 -> pl-20).
-        - h-screen và overflow-y-auto đảm bảo chỉ vùng nội dung này cuộn, sidebar đứng yên.
+        - Vùng main content sẽ có padding-left thay đổi mượt mà.
+        - Transition trên padding sẽ tạo ra hiệu ứng đẩy/co nội dung rất trôi chảy.
       */}
       <main className={`
         transition-all duration-300 ease-in-out
-        h-screen overflow-y-auto
         ${isCollapsed ? 'pl-20' : 'pl-72'}
       `}>
-        {/* Thêm một div bọc ngoài với padding như cũ */}
         <div className="p-10">
           {children}
         </div>
@@ -774,37 +811,6 @@ import Overview from "@/components/dashboard/Overview";
 
 export default function DashboardOverviewPage() {
   return <Overview />;
-}
-
-===== .\src\app\[locale]\dashboard\console\page.tsx =====
-// ===== .\src\app\[locale]\dashboard\console\page.tsx =====
-import { Icon } from "@iconify/react";
-
-export default function ConsolePage() {
-    return (
-        <div className="space-y-8 h-full flex flex-col">
-            <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Console</h1>
-            <div className="flex-grow bg-black rounded-[10px] overflow-hidden flex flex-col">
-                <div className="w-full h-6 bg-blue-900 flex-shrink-0" />
-                <div className="p-7 text-white text-sm font-normal font-mono flex-grow overflow-y-auto">
-                    <pre>
-{`#include <iostream>
-
-int main() { 
-    std::cout << "Hello World!"; 
-    return 0; 
-}`}
-                    </pre>
-                </div>
-                <div className="p-4 flex-shrink-0">
-                    <div className="w-full h-9 bg-zinc-300 rounded-[4.83px] flex items-center px-3">
-                        <span className="text-black text-sm font-normal font-mono">Type here...</span>
-                        <Icon icon="mdi:send" className="w-4 h-4 ml-auto text-black" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
 }
 
 ===== .\src\app\[locale]\dashboard\customers\page.tsx =====
@@ -894,8 +900,35 @@ export default function NotificationsPage() {
 ===== .\src\app\[locale]\dashboard\reports\page.tsx =====
 // ===== .\src\app\[locale]\dashboard\reports\page.tsx =====
 "use client";
-import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+// SỬA ĐỔI: Import Line component từ react-chartjs-2
+import { Line } from 'react-chartjs-2';
+// SỬA ĐỔI: Import các thành phần cần thiết từ chart.js
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler, // Cần Filler để tô màu vùng dưới đường line
+} from 'chart.js';
+
+// Đăng ký các thành phần với ChartJS
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+// --- DỮ LIỆU GỐC (Không đổi) ---
 const costData = [
   { name: '06/07', gpu: 18000, backend: 22000 },
   { name: '07/07', gpu: 16000, backend: 21000 },
@@ -905,6 +938,73 @@ const costData = [
   { name: '11/07', gpu: 20000, backend: 25000 },
   { name: '12/07', gpu: 18500, backend: 23500 },
 ];
+
+// --- CẤU HÌNH BIỂU ĐỒ CHO CHART.JS ---
+
+const labels = costData.map(d => d.name);
+
+const chartData = {
+  labels,
+  datasets: [
+    {
+      label: 'GPU',
+      data: costData.map(d => d.gpu),
+      borderColor: '#818cf8',
+      backgroundColor: '#a5b4fc',
+      fill: true, // Bật tô màu vùng
+      tension: 0.4, // Làm cho đường cong mượt hơn
+    },
+    {
+      label: 'Backend',
+      data: costData.map(d => d.backend),
+      borderColor: '#312e81',
+      backgroundColor: '#4338ca',
+      fill: true, // Bật tô màu vùng
+      tension: 0.4,
+    },
+  ],
+};
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false, // Ẩn legend mặc định để dùng legend tùy chỉnh bên ngoài
+    },
+    tooltip: {
+      callbacks: {
+        // Tùy chỉnh tooltip để hiển thị dạng '...K'
+        label: function(context: any) {
+            let label = context.dataset.label || '';
+            if (label) {
+                label += ': ';
+            }
+            if (context.parsed.y !== null) {
+                label += `${context.parsed.y / 1000}K`;
+            }
+            return label;
+        }
+      }
+    }
+  },
+  scales: {
+    y: {
+      stacked: true, // Bật chế độ xếp chồng
+      ticks: {
+        // Tùy chỉnh các nhãn trên trục Y
+        callback: function(value: any) {
+          return `${value / 1000}K`;
+        }
+      }
+    },
+    x: {
+        grid: {
+            display: false, // Ẩn đường kẻ dọc
+        }
+    }
+  },
+};
 
 export default function ReportsPage() {
     return (
@@ -926,24 +1026,45 @@ export default function ReportsPage() {
                            <span className="text-neutral-950 text-xs font-semibold font-['Unbounded']">Backend</span>
                        </div>
                   </div>
-                 <ResponsiveContainer width="100%" height={400}>
-                     <AreaChart data={costData} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
-                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                         <XAxis dataKey="name" dy={10} />
-                         <YAxis unit="K" dx={-10} />
-                         <Tooltip formatter={(value: number) => `${value / 1000}K`} />
-                         <Area type="monotone" dataKey="gpu" stackId="1" stroke="#818cf8" fill="#a5b4fc" />
-                         <Area type="monotone" dataKey="backend" stackId="1" stroke="#312e81" fill="#4338ca" />
-                     </AreaChart>
-                 </ResponsiveContainer>
+                 {/* SỬA ĐỔI: Sử dụng Line component và container có chiều cao cố định */}
+                 <div style={{ position: 'relative', height: '400px' }}>
+                    <Line options={chartOptions} data={chartData} />
+                 </div>
              </div>
         </div>
     );
 }
 
 ===== .\src\app\[locale]\dashboard\revenue\page.tsx =====
+// ===== .\src\app\[locale]\dashboard\revenue\page.tsx =====
 "use client";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  ChartOptions,
+  ScriptableContext,
+  TooltipItem // SỬA LỖI: Import kiểu TooltipItem để sử dụng
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 const revenueData = [
   { name: '06/07', value: 22000 }, { name: '07/07', value: 19000 },
@@ -951,6 +1072,70 @@ const revenueData = [
   { name: '10/07', value: 24000 }, { name: '11/07', value: 25000 },
   { name: '12/07', value: 23000 },
 ];
+
+const labels = revenueData.map(d => d.name);
+
+const chartData = {
+  labels,
+  datasets: [
+    {
+      label: 'Doanh thu',
+      data: revenueData.map(d => d.value),
+      borderColor: '#1e3a8a',
+      borderWidth: 3,
+      pointRadius: 0,
+      tension: 0.4,
+      fill: true,
+      backgroundColor: (context: ScriptableContext<"line">) => {
+        const ctx = context.chart.ctx;
+        if (!ctx) return 'rgba(59, 130, 246, 0)';
+        const gradient = ctx.createLinearGradient(0, 0, 0, context.chart.height);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+        return gradient;
+      },
+    },
+  ],
+};
+
+const chartOptions: ChartOptions<'line'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      callbacks: {
+        // SỬA LỖI: Thêm bước kiểm tra giá trị null
+        label: function(context: TooltipItem<'line'>) {
+          // Chỉ định dạng label nếu giá trị y tồn tại và là một con số
+          if (context.parsed.y !== null && typeof context.parsed.y === 'number') {
+            return `$${context.parsed.y.toLocaleString()}`;
+          }
+          // Nếu không, trả về một chuỗi rỗng để tránh lỗi
+          return '';
+        }
+      }
+    }
+  },
+  scales: {
+    y: {
+      min: 0,
+      max: 25000,
+      ticks: {
+        callback: function(value) {
+          return `${Number(value) / 1000}K`;
+        }
+      }
+    },
+    x: {
+        grid: {
+            display: false,
+        }
+    }
+  },
+};
 
 export default function RevenuePage() {
     return (
@@ -962,21 +1147,9 @@ export default function RevenuePage() {
                  <button className="w-24 h-11 bg-white rounded-md text-neutral-950 text-base font-semibold font-['Unbounded']">NĂM</button>
              </div>
              <div className="w-full bg-white rounded-2xl p-8">
-                 <ResponsiveContainer width="100%" height={400}>
-                     <AreaChart data={revenueData} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
-                         <defs>
-                             <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                                 <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                             </linearGradient>
-                         </defs>
-                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                         <XAxis dataKey="name" dy={10} />
-                         <YAxis unit="K" dx={-10} domain={[0, 25000]} tickFormatter={(value) => `${value / 1000}`} />
-                         <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
-                         <Area type="monotone" dataKey="value" stroke="#1e3a8a" strokeWidth={3} fill="url(#revenueGradient)" />
-                     </AreaChart>
-                 </ResponsiveContainer>
+                 <div style={{ position: 'relative', height: '400px' }}>
+                    <Line options={chartOptions} data={chartData} />
+                 </div>
              </div>
         </div>
     );
@@ -985,40 +1158,111 @@ export default function RevenuePage() {
 ===== .\src\app\[locale]\dashboard\status\page.tsx =====
 // ===== .\src\app\[locale]\dashboard\status\page.tsx =====
 "use client";
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
-const usageData = Array.from({ length: 60 }, (_, i) => ({
-  name: i + 1,
-  uv: Math.random() * 80 + 10,
-}));
+// SỬA ĐỔI: Import Line component từ react-chartjs-2
+import { Line } from 'react-chartjs-2';
+// SỬA ĐỔI: Import các thành phần cần thiết từ chart.js
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  ScriptableContext
+} from 'chart.js';
 
-const ResourceChart = ({ title, unit, max, data }: { title: string; unit: string; max: string; data: any[];}) => (
-  <div className="w-full bg-white rounded-2xl overflow-hidden p-8">
-    <h2 className="text-black text-4xl font-bold font-['Unbounded']">{title}</h2>
-    <div className="flex justify-between text-neutral-800 text-base font-normal mt-10">
-      <span>{unit}</span>
-      <span>{max}</span>
-    </div>
-    <ResponsiveContainer width="100%" height={350}>
-      <AreaChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-        <defs>
-          <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
-            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-          </linearGradient>
-        </defs>
-        <YAxis hide={true} domain={[0, 100]} />
-        <XAxis hide={true} />
-        <Area type="monotone" dataKey="uv" stroke="#1e3a8a" strokeWidth={3} fillOpacity={1} fill="url(#colorUv)" />
-      </AreaChart>
-    </ResponsiveContainer>
-    <div className="flex justify-between text-neutral-800 text-base font-normal">
-        <span>60 giây</span>
-        <span>0%</span>
-    </div>
-  </div>
+// Đăng ký các thành phần với ChartJS
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip
 );
 
+// --- DỮ LIỆU GỐC (Không đổi) ---
+// Tạo dữ liệu ngẫu nhiên để mô phỏng việc sử dụng tài nguyên
+const usageData = Array.from({ length: 60 }, (_, i) => ({
+  name: i + 1,
+  uv: Math.random() * 80 + 10, // Giá trị ngẫu nhiên từ 10 đến 90
+}));
+
+// --- COMPONENT BIỂU ĐỒ CON ĐÃ CHUYỂN ĐỔI ---
+const ResourceChart = ({ title, unit, max, data }: { title: string; unit: string; max: string; data: any[];}) => {
+  
+  // Cấu hình dữ liệu cho Chart.js
+  const chartData = {
+    labels: data.map(d => d.name),
+    datasets: [
+      {
+        label: 'Usage',
+        data: data.map(d => d.uv),
+        borderColor: '#1e3a8a',
+        borderWidth: 3,
+        pointRadius: 0, // Ẩn các điểm chấm trên đường line
+        tension: 0.4,   // Làm mượt đường cong
+        fill: true,     // Bật tô màu vùng
+        // Tạo hiệu ứng gradient cho màu nền
+        backgroundColor: (context: ScriptableContext<"line">) => {
+            const ctx = context.chart.ctx;
+            if (!ctx) return 'rgba(59, 130, 246, 0)';
+            const gradient = ctx.createLinearGradient(0, 0, 0, context.chart.height);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+            return gradient;
+        },
+      },
+    ],
+  };
+
+  // Cấu hình tùy chọn cho Chart.js
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false, // Ẩn chú thích
+      },
+      tooltip: {
+        enabled: false, // Tắt tooltip
+      },
+    },
+    scales: {
+      y: {
+        display: false, // Ẩn trục Y
+        min: 0,
+        max: 100, // Giữ giới hạn từ 0-100%
+      },
+      x: {
+        display: false, // Ẩn trục X
+      }
+    },
+  };
+
+  return (
+    <div className="w-full bg-white rounded-2xl overflow-hidden p-8">
+      <h2 className="text-black text-4xl font-bold font-['Unbounded']">{title}</h2>
+      <div className="flex justify-between text-neutral-800 text-base font-normal mt-10">
+        <span>{unit}</span>
+        <span>{max}</span>
+      </div>
+      {/* SỬA ĐỔI: Sử dụng Line component và container có chiều cao cố định */}
+      <div style={{ position: 'relative', height: '350px' }}>
+        <Line options={chartOptions} data={chartData} />
+      </div>
+      <div className="flex justify-between text-neutral-800 text-base font-normal">
+          <span>60 giây</span>
+          <span>0%</span>
+      </div>
+    </div>
+  );
+};
+
+
+// --- COMPONENT CHÍNH ---
 export default function StatusPage() {
   return (
     <div className="space-y-8">
@@ -1255,6 +1499,7 @@ export default function RegisterPage() {
 }
 
 ===== .\src\app\[locale]\workspace\page.tsx =====
+// ===== .\src\app\[locale]\workspace\page.tsx =====
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -1262,13 +1507,12 @@ import {
   Panel,
   PanelGroup,
   PanelResizeHandle,
-  type ImperativePanelHandle, // SỬA LỖI 1: Dùng type đúng là ImperativePanelHandle
+  type ImperativePanelHandle,
 } from "react-resizable-panels";
 
 import Sidebar from "@/components/workspace/Sidebar";
 import ViewPanel from "@/components/workspace/ViewPanel";
 import LibraryPanel from "@/components/workspace/LibraryPanel";
-import { Leva } from "leva";
 import { Icon } from "@iconify/react";
 import { useTheme } from "next-themes";
 
@@ -1311,18 +1555,40 @@ export default function WorkspacePage() {
     }
   }, [resolvedTheme]);
 
-  const sidebarPanelRef = useRef<ImperativePanelHandle>(null); // SỬA LỖI 1
-  const libraryPanelRef = useRef<ImperativePanelHandle>(null); // SỬA LỖI 1
+  const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
+  const libraryPanelRef = useRef<ImperativePanelHandle>(null);
 
   const toggleSidebar = () => {
     const panel = sidebarPanelRef.current;
-    if (panel) { panel.isCollapsed() ? panel.expand() : panel.collapse(); }
+    if (panel) {
+      // SỬA LỖI: Chuyển từ toán tử ba ngôi sang if/else
+      if (panel.isCollapsed()) {
+        panel.expand();
+      } else {
+        panel.collapse();
+      }
+    }
   };
 
   const toggleLibraryPanel = () => {
     const panel = libraryPanelRef.current;
-    if (panel) { panel.isCollapsed() ? panel.expand() : panel.collapse(); }
+    if (panel) {
+      // SỬA LỖI: Chuyển từ toán tử ba ngôi sang if/else
+      if (panel.isCollapsed()) {
+        panel.expand();
+      } else {
+        panel.collapse();
+      }
+    }
   };
+
+  const expandLibraryPanel = () => {
+    const panel = libraryPanelRef.current;
+    if (panel && panel.isCollapsed()) {
+      panel.expand();
+    }
+  };
+
 
   return (
     <main className="w-screen h-screen overflow-hidden select-none">
@@ -1349,24 +1615,22 @@ export default function WorkspacePage() {
             toggleCollapse={toggleSidebar}
             isSidebarOpen={isMobileSidebarOpen}
             setIsSidebarOpen={setMobileSidebarOpen}
+            expandLibraryPanel={expandLibraryPanel}
           />
         </Panel>
         
-        <PanelResizeHandle className={`w-1.5 transition-colors duration-200 group ${handleBg}`}>
-          <div className="h-full w-px bg-transparent group-hover:bg-blue-600 transition-colors duration-200" />
+        <PanelResizeHandle className={`w-2 flex items-center justify-center group ${handleBg}`}>
+          <div className="h-full w-0.5 bg-transparent group-hover:bg-blue-600 transition-all duration-300" />
         </PanelResizeHandle>
 
         <Panel minSize={30}>
           <div className={`h-full relative ${viewPanelBg}`}>
             <ViewPanel />
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[300px] z-10">
-              <Leva fill oneLineLabels collapsed />
-            </div>
           </div>
         </Panel>
 
-        <PanelResizeHandle className={`w-1.5 transition-colors duration-200 group ${handleBg}`}>
-           <div className="h-full w-px bg-transparent group-hover:bg-blue-600 transition-colors duration-200" />
+        <PanelResizeHandle className={`w-2 flex items-center justify-center group ${handleBg}`}>
+           <div className="h-full w-0.5 bg-transparent group-hover:bg-blue-600 transition-all duration-300" />
         </PanelResizeHandle>
 
         <Panel
@@ -1740,7 +2004,7 @@ import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
 import type { FC } from 'react';
 
-// Component con cho mỗi thẻ giá, được thiết kế lại để khớp với hình ảnh
+// ... (Component PricingCard giữ nguyên) ...
 const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => {
   const t = useTranslations(`Pricing.${plan}`);
   const isPro = plan === 'pro';
@@ -1755,18 +2019,13 @@ const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => 
         }
       `}
     >
-      {/* Tên gói */}
       <h3 className="text-2xl font-bold font-['Inter']">{t('name')}</h3>
-      
-      {/* CẬP NHẬT: Thêm 'whitespace-nowrap' để ngăn xuống dòng */}
       <div className="flex items-baseline mt-8 mb-10 whitespace-nowrap">
         <span className="text-5xl font-bold font-['Inter'] tracking-tight">{t('price')}</span>
         <span className={`text-lg font-medium ml-1 ${isPro ? 'text-gray-400' : 'text-gray-500'}`}>
           /{t('price_period')}
         </span>
       </div>
-
-      {/* Nút CTA */}
       <button 
         className={`
           w-full h-12 rounded-lg text-base font-semibold transition-colors
@@ -1778,11 +2037,7 @@ const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => 
       >
         {t('cta_button')}
       </button>
-
-      {/* Đường kẻ ngang */}
       <hr className={`my-8 ${isPro ? 'border-zinc-700' : 'border-gray-300'}`} />
-
-      {/* Danh sách tính năng */}
       <ul className="space-y-4 flex-grow">
         {t.raw('features').map((feature: string, index: number) => (
           <li key={index} className="flex items-center text-base font-medium font-['Inter']">
@@ -1807,19 +2062,15 @@ const Pricing: FC = () => {
   const t = useTranslations('Pricing');
 
   return (
-    <section className="bg-white py-20 lg:py-24">
+    // SỬA ĐỔI: Thêm id="pricing" vào đây
+    <section id="pricing" className="bg-white py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Phần tiêu đề đã được ẩn đi để khớp với ảnh thứ 2, bạn có thể mở lại nếu cần */}
-        
         <div className="text-center">
           <h1 className="text-4xl font-bold font-['Unbounded'] text-neutral-900">{t('title')}</h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg font-medium font-['Inter'] text-neutral-600">
             {t('subtitle')}
           </p>
         </div>
-       
-
-        {/* Căn giữa các thẻ trên màn hình lớn */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-center">
           <PricingCard plan="basic" />
           <PricingCard plan="pro" />
@@ -1870,106 +2121,203 @@ export default WorkflowCTA;
 // src/components/dashboard/DashboardSidebar.tsx
 "use client";
 
+import { useState, type ComponentProps } from "react"; // SỬA LỖI: Import ComponentProps
 import Image from "next/image";
 import { Link, usePathname } from "@/../i18n/navigation";
 import { Icon } from "@iconify/react";
+
+// SỬA LỖI: Định nghĩa kiểu dữ liệu cho đường dẫn hợp lệ, lấy từ chính component Link
+type AppPath = ComponentProps<typeof Link>['href'];
+
+// SỬA LỖI: Định nghĩa kiểu cho một mục menu đơn lẻ
+interface NavItem {
+  title: string;
+  href: AppPath;
+  icon: string;
+}
+
+// SỬA LỖI: Định nghĩa kiểu cho một mục dropdown
+interface NavDropdown {
+  title: string;
+  icon: string;
+  items: NavItem[];
+}
+
+// Kiểu dữ liệu tổng hợp cho một mục trong sidebar
+type SidebarNavItem = NavItem | NavDropdown;
 
 interface DashboardSidebarProps {
   isCollapsed: boolean;
   toggleCollapse: () => void;
 }
-const sidebarNavItems = [
-    { title: "Tổng quan", href: "/dashboard", icon: "mdi:view-dashboard-outline" },
-    {
-      title: "Quản lý Máy chủ",
-      items: [
-        { title: "Trạng thái & Tài nguyên", href: "/dashboard/status", icon: "mdi:server-network" },
-        { title: "Báo cáo Chi phí", href: "/dashboard/reports", icon: "mdi:chart-line" },
-        { title: "Console", href: "/dashboard/console", icon: "mdi:console" },
-      ],
-    },
-    {
-      title: "Quản lý Kinh doanh",
-      items: [
-        { title: "Khách hàng", href: "/dashboard/customers", icon: "mdi:account-group-outline" },
-        { title: "Giao dịch", href: "/dashboard/transactions", icon: "mdi:swap-horizontal" },
-      ],
-    },
-    {
-      title: "Báo cáo & Thống kê",
-      items: [{ title: "Doanh thu", href: "/dashboard/revenue", icon: "mdi:finance" }],
-    },
-    {
-      title: "Hệ thống",
-      items: [{ title: "Thông báo", href: "/dashboard/notifications", icon: "mdi:bell-outline" }],
-    },
+
+// SỬA LỖI: Áp dụng kiểu dữ liệu đã định nghĩa vào mảng
+const sidebarNavItems: SidebarNavItem[] = [
+  {
+    title: "Tổng quan",
+    href: "/dashboard",
+    icon: "mdi:view-dashboard-outline",
+  },
+  {
+    title: "Quản lý Máy chủ",
+    icon: "mdi:server",
+    items: [
+      { title: "Trạng thái & Tài nguyên", href: "/dashboard/status", icon: "mdi:server-network" },
+      { title: "Báo cáo Chi phí", href: "/dashboard/reports", icon: "mdi:chart-line" },
+    ],
+  },
+  {
+    title: "Quản lý Kinh doanh",
+    icon: "mdi:briefcase-outline",
+    items: [
+      { title: "Khách hàng", href: "/dashboard/customers", icon: "mdi:account-group-outline" },
+      { title: "Giao dịch", href: "/dashboard/transactions", icon: "mdi:swap-horizontal" },
+    ],
+  },
+  {
+    title: "Báo cáo & Thống kê",
+    icon: "mdi:chart-bar",
+    items: [{ title: "Doanh thu", href: "/dashboard/revenue", icon: "mdi:finance" }],
+  },
+  {
+    title: "Hệ thống",
+    icon: "mdi:cog-outline",
+    items: [{ title: "Thông báo", href: "/dashboard/notifications", icon: "mdi:bell-outline" }],
+  },
 ];
+
+// "Làm phẳng" danh sách menu để dùng cho chế độ thu gọn
+const flattenedNavItems: NavItem[] = sidebarNavItems.flatMap(item => {
+    // Dùng type guard để TypeScript hiểu logic
+    if ('items' in item) {
+        return item.items;
+    }
+    return item;
+});
 
 export default function DashboardSidebar({ isCollapsed, toggleCollapse }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const activeParent = sidebarNavItems.find(item =>
+    'items' in item && item.items?.some(subItem => subItem.href === pathname)
+  );
+  const [openDropdowns, setOpenDropdowns] = useState<string[]>(
+    activeParent ? [activeParent.title] : []
+  );
+
+  const handleDropdownToggle = (title: string) => {
+    setOpenDropdowns(prev => {
+      if (prev.includes(title)) {
+        return prev.filter(item => item !== title);
+      } else {
+        return [...prev, title];
+      }
+    });
+  };
 
   return (
-    <aside 
+    <aside
       className={`
-        fixed top-0 left-0 h-full bg-white p-4 flex flex-col z-30
+        fixed top-0 left-0 h-full bg-white flex flex-col z-30
         transition-all duration-300 ease-in-out
-        ${isCollapsed ? 'w-20' : 'w-72'} 
+        ${isCollapsed ? 'w-20 p-2' : 'w-72 p-4'}
       `}
     >
-      {/* Logic bên trong giữ nguyên vì đã tối ưu cho việc ẩn/hiện text mượt mà */}
-      <div className="py-4 px-2 flex justify-center">
+      <div className="flex flex-shrink-0 items-center justify-center h-[60px]">
         <Image src="/logo/dark.png" alt="V2R Logo" width={isCollapsed ? 35 : 43} height={isCollapsed ? 22 : 27} className="transition-all"/>
       </div>
       
-      <nav className="flex flex-col gap-y-2 mt-8 w-full overflow-hidden">
-        {sidebarNavItems.map((item, index) => (
-          <div key={index}>
-            {item.href ? (
-              <Link
-                href={item.href}
-                title={isCollapsed ? item.title : ''}
-                className={`flex items-center gap-x-3 p-2 rounded-md transition-colors hover:bg-gray-200 ${
-                  pathname === item.href ? "bg-gray-300 font-bold text-neutral-950" : "text-neutral-950"
-                } ${isCollapsed ? 'justify-center' : ''}`}
-              >
-                <Icon icon={item.icon} className="w-6 h-6 flex-shrink-0" />
-                <span className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>{item.title}</span>
-              </Link>
-            ) : (
-              <h3 className={`text-lg font-bold text-neutral-950 p-2 mt-2 transition-all duration-200 whitespace-nowrap overflow-hidden ${isCollapsed ? 'opacity-0 h-0 p-0 m-0' : 'opacity-100'}`}>{item.title}</h3>
-            )}
-            
-            {item.items && (
-              <div className={`flex flex-col transition-all duration-300 ${isCollapsed ? 'items-center' : 'ml-4'}`}>
-                {item.items.map((subItem, subIndex) => (
-                  <Link
-                    key={subIndex}
-                    href={subItem.href}
-                    title={isCollapsed ? subItem.title : ''}
-                    className={`flex items-center gap-x-3 p-2 rounded-md transition-colors hover:bg-gray-200 ${
-                      pathname === subItem.href ? "bg-gray-300 font-semibold text-neutral-950" : "text-neutral-950"
-                    } ${isCollapsed ? 'justify-center mt-1' : ''}`}
-                  >
-                    <Icon icon={subItem.icon} className="w-6 h-6 flex-shrink-0" />
-                    <span className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>{subItem.title}</span>
-                  </Link>
+      <nav className={`flex flex-col mt-5 w-full flex-grow overflow-y-auto overflow-x-hidden`}>
+        {isCollapsed && (
+            <div className="flex flex-col items-center gap-y-2">
+                {flattenedNavItems.map(item => (
+                    // Giờ đây `item.href` có kiểu AppPath, hoàn toàn tương thích
+                    <Link
+                        key={item.href.toString()} // toString() để xử lý trường hợp href là object
+                        href={item.href}
+                        title={item.title}
+                        className={`flex items-center justify-center p-2 rounded-md transition-colors hover:bg-gray-200 w-full ${
+                            pathname === item.href ? "bg-gray-300" : ""
+                        }`}
+                    >
+                        <Icon icon={item.icon} className={`w-6 h-6 flex-shrink-0 text-neutral-950`} />
+                    </Link>
                 ))}
-              </div>
-            )}
-          </div>
-        ))}
+            </div>
+        )}
+
+        {!isCollapsed && (
+            <div className="flex flex-col">
+                {sidebarNavItems.map((item) => {
+                  // Dùng type guard để phân biệt
+                  if ('items' in item) { // Đây là một NavDropdown
+                    const isDropdownOpen = openDropdowns.includes(item.title);
+                    const isParentActive = item.items?.some(sub => sub.href === pathname);
+                    return (
+                      <div key={item.title} className="w-full">
+                        <button
+                          onClick={() => handleDropdownToggle(item.title)}
+                          className={`flex items-center justify-between p-2 rounded-md transition-colors hover:bg-gray-200 w-full text-lg font-bold font-['Inter'] ${
+                            isParentActive ? "text-blue-900" : "text-neutral-950"
+                          }`}
+                        >
+                          <div className="flex items-center gap-x-3">
+                            <Icon icon={item.icon} className="w-6 h-6 flex-shrink-0" />
+                            <span>{item.title}</span>
+                          </div>
+                          <Icon
+                            icon="mdi:chevron-down"
+                            className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                        <div
+                          className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                            isDropdownOpen ? 'max-h-40' : 'max-h-0'
+                          } flex flex-col gap-y-1 ml-4 mt-1`}
+                        >
+                          {item.items.map(subItem => (
+                            <Link
+                              key={subItem.href.toString()}
+                              href={subItem.href}
+                              className={`p-2 rounded-md text-lg font-normal font-['Inter'] hover:bg-gray-200 ${
+                                pathname === subItem.href ? 'bg-gray-300 text-neutral-950' : 'text-neutral-950'
+                              }`}
+                            >
+                              {subItem.title}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  } else { // Đây là một NavItem (Link trực tiếp)
+                    return (
+                      <Link
+                        key={item.href.toString()}
+                        href={item.href}
+                        className={`flex items-center gap-x-3 p-2 rounded-md transition-colors hover:bg-gray-200 w-full text-lg font-bold font-['Inter'] ${
+                          pathname === item.href ? "bg-gray-300 text-neutral-950" : "text-neutral-950"
+                        }`}
+                      >
+                        <Icon icon={item.icon} className="w-6 h-6 flex-shrink-0" />
+                        <span>{item.title}</span>
+                      </Link>
+                    );
+                  }
+                })}
+            </div>
+        )}
       </nav>
 
-      <div className={`mt-auto border-t border-gray-200 pt-4 w-full`}>
+      {/* Footer Section */}
+      <div className="mt-auto border-t border-gray-200 pt-4 w-full flex-shrink-0">
         <div className={`bg-gray-400 rounded-lg p-2 flex items-center gap-x-4 overflow-hidden ${isCollapsed ? 'justify-center' : ''}`}>
             <div className="w-9 h-9 bg-neutral-900 rounded-full flex-shrink-0" />
-            <div className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
-                <p className="text-neutral-950 text-lg font-bold">Alex Ng. (admin)</p>
+            <div className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'hidden' : 'opacity-100'}`}>
+                <p className="text-neutral-950 text-sm font-bold truncate">Alex Ng. (admin)</p>
             </div>
         </div>
         <button 
             onClick={toggleCollapse} 
-            className="w-full flex items-center justify-center mt-4 p-2 rounded-md hover:bg-gray-200 transition-colors"
+            className="w-full flex items-center justify-center mt-2 p-2 rounded-md hover:bg-gray-200 transition-colors"
             title={isCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
         >
             <Icon icon={isCollapsed ? "mdi:arrow-right" : "mdi:arrow-left"} className="w-6 h-6 text-neutral-800" />
@@ -1983,20 +2331,33 @@ export default function DashboardSidebar({ isCollapsed, toggleCollapse }: Dashbo
 // ===== .\src\components\dashboard\Overview.tsx =====
 "use client";
 
+// SỬA ĐỔI: Import component Bar và Doughnut từ react-chartjs-2
+import { Bar, Doughnut } from 'react-chartjs-2';
+// SỬA ĐỔI: Import các thành phần cần thiết từ chart.js
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
   Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  Legend,
+} from 'chart.js';
 
-const userChartData = [
+// SỬA ĐỔI: Đăng ký các thành phần với ChartJS. Đây là bước bắt buộc!
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+// --- DỮ LIỆU GỐC (Không đổi) ---
+const originalUserChartData = [
   { name: "06/07", free: 300, basic: 400, pro: 200, enterprise: 100 },
   { name: "07/07", free: 350, basic: 410, pro: 220, enterprise: 110 },
   { name: "08/07", free: 320, basic: 420, pro: 210, enterprise: 120 },
@@ -2006,19 +2367,85 @@ const userChartData = [
   { name: "12/07", free: 400, basic: 460, pro: 260, enterprise: 160 },
 ];
 
-const revenueChartData = [
+const originalRevenueChartData = [
     { name: 'Spring 2025', basic: 64, pro: 38, enterprise: 25 },
     { name: 'Summer 2025', basic: 70, pro: 42, enterprise: 28 },
     { name: 'Fall 2025', basic: 80, pro: 45, enterprise: 30 },
     { name: 'Winter 2025', basic: 90, pro: 50, enterprise: 35 },
 ];
 
-const userDistributionData = [
+const originalUserDistributionData = [
   { name: "Người dùng miễn phí", value: 56 },
   { name: "Người dùng trả phí", value: 44 },
 ];
-const COLORS = ["#A5B4FC", "#1E3A8A"];
 
+// --- CẤU HÌNH BIỂU ĐỒ CHO CHART.JS ---
+
+// Cấu hình chung
+const commonChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false, // Rất quan trọng để biểu đồ lấp đầy container
+  plugins: {
+    legend: {
+      position: 'top' as const,
+    },
+  },
+};
+
+// 1. Dữ liệu và tùy chọn cho Biểu đồ người dùng (User Chart - Stacked Bar)
+const userChartLabels = originalUserChartData.map(d => d.name);
+const userChartData = {
+  labels: userChartLabels,
+  datasets: [
+    { label: 'Free', data: originalUserChartData.map(d => d.free), backgroundColor: '#A5B4FC' },
+    { label: 'Basic', data: originalUserChartData.map(d => d.basic), backgroundColor: '#6366F1' },
+    { label: 'Pro', data: originalUserChartData.map(d => d.pro), backgroundColor: '#4338CA' },
+    { label: 'Enterprise', data: originalUserChartData.map(d => d.enterprise), backgroundColor: '#1E3A8A' },
+  ],
+};
+const userChartOptions = {
+  ...commonChartOptions,
+  scales: {
+    x: { stacked: true }, // Bật chế độ xếp chồng cho trục X
+    y: { stacked: true }, // Bật chế độ xếp chồng cho trục Y
+  },
+};
+
+// 2. Dữ liệu và tùy chọn cho Phân bổ người dùng (User Distribution - Doughnut)
+const userDistributionData = {
+  labels: originalUserDistributionData.map(d => d.name),
+  datasets: [
+    {
+      label: 'Phân bổ người dùng',
+      data: originalUserDistributionData.map(d => d.value),
+      backgroundColor: ['#A5B4FC', '#1E3A8A'], // Màu tương ứng với labels
+      borderColor: ['#FFFFFF'],
+      borderWidth: 2,
+    },
+  ],
+};
+const userDistributionOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom' as const, // Di chuyển chú thích xuống dưới cho đẹp hơn
+    },
+  },
+};
+
+// 3. Dữ liệu và tùy chọn cho Doanh thu theo gói (Revenue Chart - Bar)
+const revenueChartLabels = originalRevenueChartData.map(d => d.name);
+const revenueChartData = {
+  labels: revenueChartLabels,
+  datasets: [
+    { label: 'Basic', data: originalRevenueChartData.map(d => d.basic), backgroundColor: '#C7D2FE' },
+    { label: 'Pro', data: originalRevenueChartData.map(d => d.pro), backgroundColor: '#A5B4FC' },
+    { label: 'Enterprise', data: originalRevenueChartData.map(d => d.enterprise), backgroundColor: '#312E81' },
+  ],
+};
+
+// --- COMPONENT CHÍNH ---
 export default function Overview() {
   return (
     <div className="space-y-8">
@@ -2026,7 +2453,6 @@ export default function Overview() {
         Tổng quan
       </h1>
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <StatCard title="Tất cả người dùng" value="476" />
         <StatCard
@@ -2037,59 +2463,33 @@ export default function Overview() {
         <StatCard title="Tổng doanh thu" value="21,402$" />
       </div>
 
-      {/* User Chart */}
       <ChartContainer title="Biểu đồ người dùng" filterOptions={["Tuần", "Tháng", "Năm"]}>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={userChartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="free" stackId="a" fill="#A5B4FC" name="Free" />
-            <Bar dataKey="basic" stackId="a" fill="#6366F1" name="Basic" />
-            <Bar dataKey="pro" stackId="a" fill="#4338CA" name="Pro" />
-            <Bar dataKey="enterprise" stackId="a" fill="#1E3A8A" name="Enterprise" />
-          </BarChart>
-        </ResponsiveContainer>
+        {/* SỬA ĐỔI: Sử dụng component Bar của Chart.js */}
+        <div style={{ position: 'relative', height: '350px' }}>
+            <Bar options={userChartOptions} data={userChartData} />
+        </div>
       </ChartContainer>
       
-      {/* User Distribution and Revenue Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <ChartContainer title="Phân bổ người dùng">
-            <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                    <Pie data={userDistributionData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} fill="#8884d8" label>
-                        {userDistributionData.map((entry, index) => (
-                            <Pie key={`cell-${index}`} cx="50%" cy="50%" outerRadius={120} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                </PieChart>
-            </ResponsiveContainer>
+            {/* SỬA ĐỔI: Sử dụng component Doughnut của Chart.js */}
+            <div style={{ position: 'relative', height: '300px' }}>
+                <Doughnut data={userDistributionData} options={userDistributionOptions} />
+            </div>
         </ChartContainer>
 
         <ChartContainer title="Doanh thu theo gói" filterOptions={["Tuần", "Tháng", "Quý", "Năm"]}>
-            <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={revenueChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="basic" fill="#C7D2FE" name="Basic" />
-                    <Bar dataKey="pro" fill="#A5B4FC" name="Pro" />
-                    <Bar dataKey="enterprise" fill="#312E81" name="Enterprise" />
-                </BarChart>
-            </ResponsiveContainer>
+            {/* SỬA ĐỔI: Sử dụng component Bar của Chart.js */}
+            <div style={{ position: 'relative', height: '350px' }}>
+                <Bar options={commonChartOptions} data={revenueChartData} />
+            </div>
         </ChartContainer>
       </div>
     </div>
   );
 }
 
-// Reusable components
+// --- CÁC COMPONENT PHỤ (Không đổi) ---
 function StatCard({ title, value, subtitle }: { title: string; value: string; subtitle?: string; }) {
   return (
     <div className="bg-white rounded-xl p-6 shadow">
@@ -2141,13 +2541,62 @@ import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
+import { useGeneration } from '@/context/GenerationContext';
 
-// ... (Interface không đổi)
+const LoadingItem: FC<{ prompt: string; status: string }> = ({ prompt, status }) => {
+    const { theme, resolvedTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+    const activeTheme = !mounted ? "dark" : (resolvedTheme || theme || "dark");
+    const isLight = activeTheme === 'light';
+    const themeClass = (light: string, dark: string) => isLight ? light : dark;
+
+    return (
+        <div className="flex flex-col gap-y-2 p-1.5 rounded-lg">
+            <div className={`
+                w-full aspect-square rounded-md overflow-hidden relative flex flex-col items-center justify-center 
+                ${themeClass('bg-indigo-200/60', 'bg-neutral-800 animate-pulse')}
+            `}>
+                <Icon icon="eos-icons:bubble-loading" className={`w-8 h-8 ${themeClass('text-blue-800', 'text-blue-400')}`} />
+                <p className={`text-xs mt-2 font-semibold capitalize ${themeClass('text-blue-900', 'text-blue-300')}`}>{status}...</p>
+            </div>
+            <p className={`text-xs text-center font-medium truncate ${themeClass('text-neutral-600', 'text-neutral-400')}`}>
+                {prompt || 'Untitled'}
+            </p>
+        </div>
+    );
+};
+
+const ErrorItem: FC<{ prompt: string; error?: string }> = ({ prompt, error }) => {
+    const { theme, resolvedTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+    const activeTheme = !mounted ? "dark" : (resolvedTheme || theme || "dark");
+    const isLight = activeTheme === 'light';
+    const themeClass = (light: string, dark: string) => isLight ? light : dark;
+
+    return (
+        <div className="flex flex-col gap-y-2 p-1.5 rounded-lg" title={error || 'Failed to generate model'}>
+            <div className={`
+                w-full aspect-square rounded-md overflow-hidden relative flex flex-col items-center justify-center 
+                ${themeClass('bg-red-100', 'bg-red-900/50')}
+            `}>
+                <Icon icon="mdi:alert-circle-outline" className={`w-8 h-8 ${themeClass('text-red-600', 'text-red-400')}`} />
+                 <p className={`text-xs mt-2 font-semibold capitalize ${themeClass('text-red-700', 'text-red-300')}`}>Failed</p>
+            </div>
+            <p className={`text-xs text-center font-medium truncate ${themeClass('text-neutral-600', 'text-neutral-400')}`}>
+                {prompt || 'Untitled'}
+            </p>
+        </div>
+    );
+};
+
 interface LibraryPanelProps { isCollapsed: boolean; toggleCollapse: () => void; }
 
 const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, toggleCollapse }) => {
   const t = useTranslations('Workspace');
   const { theme, resolvedTheme } = useTheme();
+  const { library, setCurrentModelUrl, currentModelUrl } = useGeneration();
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -2156,24 +2605,13 @@ const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, toggleCollapse }) =>
   
   const themeClass = (light: string, dark: string) => isLight ? light : dark;
 
-  const libraryItems = Array(15).fill('/landing-page/image 13.png');
   const itemsPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(libraryItems.length / itemsPerPage);
-  const currentItems = libraryItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(library.length / itemsPerPage) || 1;
+  const currentItems = library.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <aside 
-      className={`
-        flex flex-col h-full w-full
-        ${themeClass(
-          'bg-white text-black border-l border-gray-200', // Light Mode
-          'bg-stone-950 text-white' // Dark Mode: Dùng bg-stone-950 như thiết kế
-        )}
-        ${isCollapsed ? 'p-2' : 'p-6'}
-      `}
-    >
-        {/* ... toàn bộ nội dung bên trong LibraryPanel không thay đổi ... */}
+    <aside className={`flex flex-col h-full w-full ${themeClass('bg-white text-black border-l border-gray-200', 'bg-stone-950 text-white')} ${isCollapsed ? 'p-2' : 'p-6'}`}>
         <div className={`flex items-center mb-4 flex-shrink-0 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
              {!isCollapsed && (<h2 className={`text-lg font-semibold whitespace-nowrap`}>{t('my_library')}</h2>)}
              <button onClick={toggleCollapse} className={`${themeClass('text-gray-600 hover:text-black', 'text-gray-400 hover:text-white')}`} aria-label={isCollapsed ? 'Expand panel' : 'Collapse panel'}>
@@ -2196,12 +2634,40 @@ const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, toggleCollapse }) =>
             </div>
             <div className={`flex-grow rounded-xl p-4 flex flex-col min-h-0 ${themeClass('bg-indigo-100', 'bg-neutral-900')}`}>
                 <div className="flex-grow overflow-y-auto pr-2">
-                     <div className="grid grid-cols-3 gap-4">
-                         {currentItems.map((src, index) => (
-                         <div key={index} className={`w-full aspect-square rounded-xl overflow-hidden relative ${themeClass('bg-white', 'bg-neutral-800')}`}>
-                             <Image src={src} alt={`Library item ${index + 1}`} fill style={{ objectFit: 'cover' }} className="opacity-70" />
-                         </div>
-                         ))}
+                     <div className="grid grid-cols-3 gap-2">
+                         {currentItems.map((item) => {
+                            if (item.status === 'completed') {
+                                return (
+                                    <div
+                                        key={item.jobId}
+                                        onClick={() => setCurrentModelUrl(item.url)}
+                                        className={`
+                                            flex flex-col gap-y-2 p-1.5 rounded-lg cursor-pointer transition-colors
+                                            ${currentModelUrl === item.url
+                                                ? themeClass('bg-blue-200', 'bg-blue-900/50')
+                                                : themeClass('hover:bg-indigo-200/60', 'hover:bg-neutral-800')
+                                            }
+                                        `}
+                                    >
+                                        <div className="w-full aspect-square rounded-md overflow-hidden relative">
+                                            <Image
+                                                src={item.thumbnailUrl}
+                                                alt={item.prompt}
+                                                fill
+                                                style={{ objectFit: 'cover' }}
+                                            />
+                                        </div>
+                                        <p className={`text-xs text-center font-medium truncate ${themeClass('text-neutral-800', 'text-neutral-200')}`}>
+                                            {item.prompt || 'Untitled'}
+                                        </p>
+                                    </div>
+                                );
+                            } else if (item.status === 'failed') {
+                                return <ErrorItem key={item.jobId} prompt={item.prompt} error={item.error} />;
+                            } else {
+                                return <LoadingItem key={item.jobId} prompt={item.prompt} status={item.status} />;
+                            }
+                         })}
                      </div>
                 </div>
             </div>
@@ -2228,42 +2694,74 @@ export default LibraryPanel;
 ===== .\src\components\workspace\Sidebar.tsx =====
 // ===== .\src\components\workspace\Sidebar.tsx =====
 "use client";
-import { type FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
+import { useGeneration } from "@/context/GenerationContext";
+import { Link } from '@/../i18n/navigation';
 
-// ... (Interface và NavItem không đổi)
-interface SidebarProps { isCollapsed: boolean; toggleCollapse: () => void; isSidebarOpen: boolean; setIsSidebarOpen: (isOpen: boolean) => void; }
-const NavItem: FC<{ icon: string; text: string; isCollapsed: boolean; themeClass: (l: string, d: string) => string; }> = ({ icon, text, isCollapsed, themeClass }) => ( <a href="#" className={`block flex items-center rounded-md transition-colors ${isCollapsed ? "w-10 h-10 justify-center" : "p-2"} ${themeClass("hover:bg-indigo-100", "hover:bg-neutral-800")}`}> <Icon icon={icon} className={`w-6 h-6 flex-shrink-0 ${themeClass("text-zinc-700", "text-gray-300")}`} /> {!isCollapsed && (<span className={`ml-3 text-sm font-medium whitespace-nowrap`}>{text}</span>)} </a>);
+interface SidebarProps { 
+  isCollapsed: boolean; 
+  toggleCollapse: () => void; 
+  isSidebarOpen: boolean; 
+  setIsSidebarOpen: (isOpen: boolean) => void;
+  expandLibraryPanel: () => void;
+}
 
-
-const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen, setIsSidebarOpen, }) => {
+const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen, setIsSidebarOpen, expandLibraryPanel }) => {
   const t = useTranslations("Sidebar");
   const tWorkspace = useTranslations("Workspace");
   const { theme, resolvedTheme, setTheme } = useTheme();
   
+  const [prompt, setPrompt] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [projectName, setProjectName] = useState('');
+  const [activeTab, setActiveTab] = useState<'image' | 'text'>('image');
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // SỬA ĐỔI: Lấy isRateLimited từ context
+  const { submitJob, isRateLimited } = useGeneration();
+
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const activeTheme = !mounted ? "dark" : (resolvedTheme || theme || "dark");
   const themeClass = (light: string, dark: string) => activeTheme === "light" ? light : dark;
 
+  const handleGenerate = () => {
+    if (activeTab === 'image' && imageFile) {
+      submitJob({ type: 'image', imageFile });
+    } else if (activeTab === 'text' && prompt) {
+      submitJob({ type: 'text', caption: prompt });
+    } else {
+      alert('Please provide an image or a text prompt.');
+    }
+  };
+  
+  const handleNewProject = () => {
+    setPrompt('');
+    setImageFile(null);
+    setProjectName('');
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
+    }
+    console.log("New project started. Inputs cleared.");
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    }
+  };
+
   return (
     <>
       <div className={`fixed inset-0 z-40 bg-black/30 lg:hidden transition-opacity ${isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={() => setIsSidebarOpen(false)} aria-hidden="true" />
       <div
-        className={`
-          flex flex-col h-full w-full font-['Inter']
-          ${themeClass(
-            "bg-white text-black border-r border-gray-200", // Light Mode
-            "bg-neutral-950 text-white" // Dark Mode: Dùng bg-neutral-950 như thiết kế
-          )}
-        `}
+        className={`flex flex-col h-full w-full font-['Inter'] ${themeClass("bg-white text-black border-r border-gray-200", "bg-neutral-950 text-white")}`}
       >
-        {/* ... toàn bộ nội dung bên trong Sidebar không thay đổi ... */}
-        {/* Phần header */}
         <div className={`flex flex-col flex-grow min-h-0 overflow-hidden ${isCollapsed ? "p-2" : "p-4"}`}>
             <div className={`flex items-center mb-6 ${isCollapsed ? 'flex-col gap-y-4' : 'justify-between'}`}>
                  <Image src={activeTheme === "light" ? "/logo/dark.png" : "/logo/light.png"} alt="Logo" width={isCollapsed ? 30 : 40} height={isCollapsed ? 19 : 25} />
@@ -2275,28 +2773,47 @@ const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen,
                  </div>
             </div>
             <nav className={`${isCollapsed ? "flex flex-col items-center space-y-1" : "space-y-1"}`}>
-                <NavItem icon="mdi:plus-box" text={tWorkspace("new_project")} isCollapsed={isCollapsed} themeClass={themeClass} />
-                <NavItem icon="mdi:folder-multiple-image" text={tWorkspace("your_library")} isCollapsed={isCollapsed} themeClass={themeClass} />
-                <NavItem icon="mdi:crown" text={tWorkspace("upgrade_account")} isCollapsed={isCollapsed} themeClass={themeClass} />
+                <button onClick={handleNewProject} className={`w-full flex items-center rounded-md transition-colors ${isCollapsed ? "w-10 h-10 justify-center" : "p-2"} ${themeClass("hover:bg-indigo-100", "hover:bg-neutral-800")}`}>
+                    <Icon icon="mdi:plus-box" className={`w-6 h-6 flex-shrink-0 ${themeClass("text-zinc-700", "text-gray-300")}`} />
+                    {!isCollapsed && (<span className={`ml-3 text-sm font-medium whitespace-nowrap`}>{tWorkspace("new_project")}</span>)}
+                </button>
+                <button onClick={expandLibraryPanel} className={`w-full flex items-center rounded-md transition-colors ${isCollapsed ? "w-10 h-10 justify-center" : "p-2"} ${themeClass("hover:bg-indigo-100", "hover:bg-neutral-800")}`}>
+                    <Icon icon="mdi:folder-multiple-image" className={`w-6 h-6 flex-shrink-0 ${themeClass("text-zinc-700", "text-gray-300")}`} />
+                    {!isCollapsed && (<span className={`ml-3 text-sm font-medium whitespace-nowrap`}>{tWorkspace("your_library")}</span>)}
+                </button>
+                <Link href={{ pathname: '/', hash: 'pricing' }} className={`block flex items-center rounded-md transition-colors ${isCollapsed ? "w-10 h-10 justify-center" : "p-2"} ${themeClass("hover:bg-indigo-100", "hover:bg-neutral-800")}`}>
+                    <Icon icon="mdi:crown" className={`w-6 h-6 flex-shrink-0 ${themeClass("text-zinc-700", "text-gray-300")}`} />
+                    {!isCollapsed && (<span className={`ml-3 text-sm font-medium whitespace-nowrap`}>{tWorkspace("upgrade_account")}</span>)}
+                </Link>
             </nav>
             <div className={`flex-grow min-w-0 overflow-y-auto transition-opacity duration-200 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <div className="mt-4 pr-1">
                      <hr className={`${themeClass("border-gray-300", "border-zinc-700")} mb-4`} />
                      <div className={`${themeClass("bg-indigo-50", "bg-neutral-800")} rounded-xl p-1 mb-6 flex`}>
-                         <button className={`flex-1 p-2 rounded-lg text-sm font-bold ${themeClass("text-zinc-700", "text-neutral-400")}`}>{t("text_to_3d")}</button>
-                         <button className="flex-1 p-2 bg-blue-900 text-white rounded-lg font-bold text-sm">{t("image_to_3d")}</button>
+                         <button onClick={() => setActiveTab('text')} className={`flex-1 p-2 rounded-lg text-sm font-bold ${activeTab === 'text' ? 'bg-blue-900 text-white' : themeClass("text-zinc-700", "text-neutral-400")}`}>{t("text_to_3d")}</button>
+                         <button onClick={() => setActiveTab('image')} className={`flex-1 p-2 rounded-lg text-sm font-bold ${activeTab === 'image' ? 'bg-blue-900 text-white' : themeClass("text-zinc-700", "text-neutral-400")}`}>{t("image_to_3d")}</button>
                      </div>
-                     <div className="mb-5">
-                         <label className={`text-sm font-normal mb-2 block`}>{t("image_label")}</label>
-                         <div className={`${themeClass("bg-indigo-100 border-indigo-200", "bg-neutral-900 border-neutral-700")} border rounded-xl w-full h-40 flex flex-col justify-center items-center text-center p-4`}>
-                             <Icon icon="icon-park-outline:upload-picture" className={`w-10 h-10 mb-2 ${themeClass("text-stone-500","text-neutral-500")}`} />
-                             <p className={`text-base font-semibold ${themeClass("text-stone-600","text-neutral-300")}`}>{t("uploader_title")}</p>
-                             <p className={`text-xs font-normal mt-1 ${themeClass("text-neutral-500","text-neutral-400")}`}>{t("uploader_formats")}</p>
-                         </div>
-                     </div>
+                      {activeTab === 'image' ? (
+                        <div className="mb-5">
+                            <label className={`text-sm font-normal mb-2 block`}>{t("image_label")}</label>
+                            <input type="file" ref={imageInputRef} onChange={handleImageUpload} accept="image/png, image/jpeg, image/webp" style={{ display: 'none' }} />
+                            <div onClick={() => imageInputRef.current?.click()} className={`${themeClass("bg-indigo-100 border-indigo-200", "bg-neutral-900 border-neutral-700")} border rounded-xl w-full h-40 flex flex-col justify-center items-center text-center p-4 cursor-pointer`}>
+                                <Icon icon="icon-park-outline:upload-picture" className={`w-10 h-10 mb-2 ${themeClass("text-stone-500","text-neutral-500")}`} />
+                                {imageFile ? (<p className={`text-base font-semibold ${themeClass("text-stone-600","text-neutral-300")}`}>{imageFile.name}</p>) : (<>
+                                    <p className={`text-base font-semibold ${themeClass("text-stone-600","text-neutral-300")}`}>{t("uploader_title")}</p>
+                                    <p className={`text-xs font-normal mt-1 ${themeClass("text-neutral-500","text-neutral-400")}`}>{t("uploader_formats")}</p>
+                                </>)}
+                            </div>
+                        </div>
+                      ) : (
+                        <div className="mb-5">
+                            <label className={`text-sm font-normal mb-2 block`}>Text Prompt</label>
+                            <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="A delicious hamburger" className={`${themeClass("bg-indigo-100 placeholder:text-zinc-500 text-black","bg-neutral-800 placeholder:text-gray-400 text-white")} w-full h-40 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700 resize-none`} />
+                        </div>
+                      )}
                      <div className="mb-5">
                          <label className={`text-sm font-normal mb-2 block`}>{t("name_label")}</label>
-                         <input type="text" placeholder={t("name_placeholder")} className={`${themeClass("bg-indigo-100 placeholder:text-zinc-500 text-black","bg-neutral-800 placeholder:text-gray-400 text-white")} w-full h-11 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700`} />
+                         <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t("name_placeholder")} className={`${themeClass("bg-indigo-100 placeholder:text-zinc-500 text-black","bg-neutral-800 placeholder:text-gray-400 text-white")} w-full h-11 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700`} />
                      </div>
                      <div className="mb-5">
                          <label className={`text-sm font-normal mb-2 block`}>{t("model_label")}</label>
@@ -2318,11 +2835,17 @@ const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen,
                          <div className={`${themeClass("bg-neutral-400","bg-neutral-600")} w-px h-5`} />
                          <span>{t("cost_info_tokens")}</span>
                      </div>
-                     <button className="w-full h-11 bg-blue-900 rounded-xl text-neutral-100 text-base font-semibold font-['Unbounded'] hover:bg-blue-700 transition-colors">{t("generate_button")}</button>
+                     <button 
+                        onClick={handleGenerate} 
+                        disabled={isRateLimited} 
+                        className="w-full h-11 bg-blue-900 rounded-xl text-neutral-100 text-base font-semibold font-['Unbounded'] hover:bg-blue-700 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
+                        title={isRateLimited ? `Rate limit exceeded. Please wait.` : ''}
+                    >
+                        {t("generate_button")}
+                     </button>
                 </div>
             </div>
         </div>
-        {/* Phần footer */}
         <div className={`border-t ${themeClass("border-gray-200","border-zinc-700")} flex-shrink-0 ${isCollapsed ? "p-2" : "p-4"}`}>
             <div className={`flex items-center ${isCollapsed ? 'flex-col justify-center gap-y-2' : 'justify-between'}`}>
                  <div className="flex items-center min-w-0">
@@ -2348,36 +2871,99 @@ const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen,
 export default Sidebar;
 
 ===== .\src\components\workspace\ViewPanel.tsx =====
-// ===== .\src\components\workspace\ViewPanel.tsx =====
+// ===== .\src/components/workspace/ViewPanel.tsx =====
 "use client";
 
 import { Suspense, type FC, useEffect, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-// Bỏ PresetsType, nó không tồn tại
-import { OrbitControls, useGLTF, Html, Environment, Grid, Edges } from '@react-three/drei';
-import { useControls } from 'leva';
+import { OrbitControls, useGLTF, Html, Environment, Grid } from '@react-three/drei';
+import { useControls, Leva } from 'leva';
 import * as THREE from 'three';
 import { useTheme } from 'next-themes';
+import { useGeneration } from '@/context/GenerationContext';
+// SỬA LỖI: Gỡ bỏ import 'Icon' không sử dụng
+// import { Icon } from '@iconify/react';
 
-// --- Các component phụ không đổi ---
-function isMesh(obj: THREE.Object3D): obj is THREE.Mesh { return (obj as THREE.Mesh).isMesh; }
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T | undefined>(undefined);
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  return ref.current;
+}
+
+// SỬA LỖI: Viết lại logic để không phụ thuộc vào state toàn cục
+const ThumbnailCapturer: FC = () => {
+  const { gl } = useThree();
+  const { library, updateThumbnail } = useGeneration();
+  const prevLibrary = usePrevious(library);
+
+  useEffect(() => {
+    // Chỉ chạy khi có prevLibrary và library đã thay đổi
+    if (prevLibrary && prevLibrary !== library) {
+      // Tìm mô hình vừa chuyển từ 'downloading' sang 'completed'
+      const newlyCompleted = library.find(currentItem => {
+        const prevItem = prevLibrary.find(p => p.jobId === currentItem.jobId);
+        return prevItem && prevItem.status === 'downloading' && currentItem.status === 'completed';
+      });
+
+      if (newlyCompleted) {
+        setTimeout(() => {
+          const dataUrl = gl.domElement.toDataURL('image/png');
+          updateThumbnail(newlyCompleted.jobId, dataUrl);
+          console.log(`Thumbnail captured for job: ${newlyCompleted.jobId}`);
+        }, 500); // 500ms delay để đảm bảo model đã render
+      }
+    }
+  }, [library, prevLibrary, gl, updateThumbnail]);
+
+  return null;
+};
+
 const Loader: FC = () => <Html center><div className="text-white text-lg font-sans">Loading 3D Model...</div></Html>;
-const Model: FC = () => { const { scene } = useGLTF('/3D-model/model.glb'); return <primitive object={scene} />; };
-interface WireframeProps { show: boolean; thickness: number; color: string; }
-const ModelWireframe: FC<WireframeProps> = ({ show, thickness, color }) => { const { nodes } = useGLTF('/3D-model/model.glb'); if (!show) return null; return (<>{Object.values(nodes).map((node: THREE.Object3D, index) => (isMesh(node) && (<mesh key={index} geometry={node.geometry}><meshBasicMaterial transparent opacity={0} /><Edges scale={1} threshold={15} color={color} linewidth={thickness} /></mesh>)))}</>); };
-interface ModelRendererProps { scale: number; rotation: [number, number, number]; autoRotate: boolean; showWireframe: boolean; polyThickness: number; polyColor: string; }
-const ModelRenderer: FC<ModelRendererProps> = (props) => { const groupRef = useRef<THREE.Group>(null!); useFrame((state, delta) => { if (props.autoRotate && groupRef.current) { groupRef.current.rotation.y += delta * 0.2; } }); return (<group ref={groupRef} scale={props.scale} rotation={props.rotation}><Model /><ModelWireframe show={props.showWireframe} thickness={props.polyThickness} color={props.polyColor} /></group>); };
-useGLTF.preload('/3D-model/model.glb');
-const CameraUpdater: FC<{ fov: number }> = ({ fov }) => { const { camera } = useThree(); useEffect(() => { if (camera instanceof THREE.PerspectiveCamera) { camera.fov = fov; camera.updateProjectionMatrix(); } }, [fov, camera]); return null; };
 
-// Tạo một "nguồn chân lý" cho các giá trị preset
+interface ModelRendererProps {
+  url: string;
+  scale: number;
+  rotation: [number, number, number];
+  autoRotate: boolean;
+}
+
+const GeneratedModelRenderer: FC<ModelRendererProps> = (props) => {
+  const groupRef = useRef<THREE.Group>(null!);
+  const { scene } = useGLTF(props.url);
+
+  useFrame((state, delta) => {
+    if (props.autoRotate && groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.2;
+    }
+  });
+
+  return (
+    <group ref={groupRef} scale={props.scale} rotation={props.rotation}>
+      <primitive object={scene} />
+    </group>
+  );
+};
+useGLTF.preload('/3D-model/model.glb');
+
+const CameraUpdater: FC<{ fov: number }> = ({ fov }) => { 
+    const { camera } = useThree(); 
+    useEffect(() => { 
+        if (camera instanceof THREE.PerspectiveCamera) { 
+            camera.fov = fov; camera.updateProjectionMatrix(); 
+        } 
+    }, [fov, camera]); 
+    return null; 
+};
+
 const environmentOptions = ['sunset', 'dawn', 'night', 'warehouse', 'forest', 'apartment', 'studio', 'city', 'park', 'lobby'] as const;
-// Tự động tạo type từ mảng trên
 type EnvironmentPresetType = typeof environmentOptions[number];
 
 
 const ViewPanel: FC = () => {
   const { resolvedTheme } = useTheme();
+  const { currentModelUrl } = useGeneration();
 
   const [sceneControls, setSceneControls] = useControls('Scene', () => ({
     backgroundColor: resolvedTheme === 'light' ? '#EEF2FF' : '#171717',
@@ -2387,7 +2973,7 @@ const ViewPanel: FC = () => {
   
   const modelControls = useControls('Model', { scale: { value: 1, min: 0.1, max: 5, step: 0.05 }, rotation: [0, 0, 0] });
   const cameraControls = useControls('Camera', { fov: { value: 45, min: 10, max: 120, step: 1 } });
-  const helperControls = useControls('Helpers', { autoRotate: true, showGrid: true, showWireframe: false, polyThickness: { value: 1, min: 0.1, max: 10, step: 0.1, render: (get) => get('Helpers.showWireframe') }, polyColor: { value: '#ffffff', render: (get) => get('Helpers.showWireframe') } });
+  const helperControls = useControls('Helpers', { autoRotate: true, showGrid: true });
 
   useEffect(() => {
     if (resolvedTheme) {
@@ -2396,29 +2982,32 @@ const ViewPanel: FC = () => {
     }
   }, [resolvedTheme, setSceneControls]);
 
+  const modelToDisplayUrl = currentModelUrl || '/3D-model/model.glb';
+
   return (
     <div className="w-full h-full relative">
-      <Canvas 
-        dpr={[1, 2]} 
-        camera={{ position: [0, 1.5, 6] }} 
-        style={{ position: "absolute", width: '100%', height: '100%' }}
-        shadows
-      >
+      <Canvas dpr={[1, 2]} camera={{ position: [0, 1.5, 6] }} style={{ position: "absolute", width: '100%', height: '100%' }} shadows gl={{ preserveDrawingBuffer: true }}>
         <color attach="background" args={[sceneControls.backgroundColor]} />
         <CameraUpdater fov={cameraControls.fov} />
         <ambientLight intensity={sceneControls.intensity / 2} />
         <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
-        
-        {/* === SỬA LỖI TẠI ĐÂY === */}
-        {/* Ép kiểu (cast) `sceneControls.environment` thành `EnvironmentPresetType` */}
         <Environment preset={sceneControls.environment as EnvironmentPresetType} />
-        
         {helperControls.showGrid && (<Grid infiniteGrid position={[0, -0.5, 0]} sectionSize={1} cellSize={0.5} sectionColor={"#444444"} cellColor={"#222222"} fadeDistance={25} fadeStrength={1} />)}
         <Suspense fallback={<Loader />}>
-          <ModelRenderer scale={modelControls.scale} rotation={modelControls.rotation} autoRotate={helperControls.autoRotate} showWireframe={helperControls.showWireframe} polyThickness={helperControls.polyThickness} polyColor={helperControls.polyColor} />
+          <GeneratedModelRenderer
+            url={modelToDisplayUrl}
+            scale={modelControls.scale}
+            rotation={modelControls.rotation}
+            autoRotate={helperControls.autoRotate}
+          />
         </Suspense>
         <OrbitControls makeDefault />
+        <ThumbnailCapturer />
       </Canvas>
+      
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[300px] z-10">
+        <Leva fill oneLineLabels collapsed />
+      </div>
     </div>
   );
 };
@@ -2470,6 +3059,213 @@ export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+===== .\src\context\GenerationContext.tsx =====
+// ===== .\src\context\GenerationContext.tsx =====
+"use client";
+
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef, useMemo } from 'react';
+
+interface GeneratedModel {
+  jobId: string;
+  url: string; 
+  prompt: string;
+  thumbnailUrl: string;
+  status: 'idle' | 'queued' | 'processing' | 'downloading' | 'completed' | 'failed';
+  error?: string;
+}
+
+interface GenerationState {
+  currentModelUrl: string | null;
+  library: GeneratedModel[];
+  isRateLimited: boolean;
+  submitJob: (payload: { type: 'text'; caption: string } | { type: 'image'; imageFile: File }) => Promise<void>;
+  setCurrentModelUrl: (url: string | null) => void;
+  updateThumbnail: (jobId: string, thumbnailUrl: string) => void;
+}
+
+const GenerationContext = createContext<GenerationState | undefined>(undefined);
+
+const MAX_REQUESTS = 5;
+const TIME_WINDOW_MINUTES = 10;
+
+async function getBackendUrl(): Promise<string> {
+  const res = await fetch('/api/get-backend-url');
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Failed to fetch backend URL');
+  }
+  const data = await res.json();
+  return data.url;
+}
+
+export const GenerationProvider = ({ children }: { children: ReactNode }) => {
+  const [currentModelUrl, setCurrentModelUrl] = useState<string | null>(null);
+  const [library, setLibrary] = useState<GeneratedModel[]>([]);
+  const [requestTimestamps, setRequestTimestamps] = useState<Date[]>([]);
+
+  const pollingIntervalsRef = useRef(new Map<string, NodeJS.Timeout>());
+
+  const isRateLimited = useMemo(() => {
+    const now = new Date();
+    const tenMinutesAgo = new Date(now.getTime() - TIME_WINDOW_MINUTES * 60 * 1000);
+    const recentRequests = requestTimestamps.filter(ts => ts > tenMinutesAgo);
+    return recentRequests.length >= MAX_REQUESTS;
+  }, [requestTimestamps]);
+
+  const updateThumbnail = (jobIdToUpdate: string, thumbnailUrl: string) => {
+    setLibrary(prevLibrary =>
+      prevLibrary.map(item =>
+        item.jobId === jobIdToUpdate ? { ...item, thumbnailUrl } : item
+      )
+    );
+  };
+
+  const updateLibraryItem = (jobId: string, updates: Partial<GeneratedModel>) => {
+      setLibrary(prev => prev.map(item => 
+          item.jobId === jobId ? { ...item, ...updates } : item
+      ));
+  };
+  
+  const stopPollingForJob = (id: string) => {
+      if (pollingIntervalsRef.current.has(id)) {
+          clearInterval(pollingIntervalsRef.current.get(id)!);
+          pollingIntervalsRef.current.delete(id);
+      }
+  };
+
+  const pollJobStatus = async (id: string, backendUrl: string) => {
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await fetch(`${backendUrl}/jobs/${id}/status`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' },
+        });
+
+        if (!res.ok) throw new Error(`Server responded with status ${res.status}`);
+        
+        const data = await res.json();
+        
+        if (data.status !== 'completed' && data.status !== 'failed') {
+            updateLibraryItem(id, { status: data.status });
+        }
+
+        if (data.status === 'completed' || data.status === 'failed') {
+          stopPollingForJob(id);
+
+          if (data.status === 'completed' && data.download_url) {
+            updateLibraryItem(id, { status: 'downloading' });
+            const modelUrl = `${backendUrl}${data.download_url}`;
+            const modelResponse = await fetch(modelUrl, {
+              headers: { 'ngrok-skip-browser-warning': 'true' },
+            });
+            if (!modelResponse.ok) throw new Error(`Failed to download GLB file. Status: ${modelResponse.status}`);
+            
+            const modelBlob = await modelResponse.blob();
+            const blobUrl = URL.createObjectURL(modelBlob);
+            
+            updateLibraryItem(id, { status: 'completed', url: blobUrl, thumbnailUrl: '/logo/dark.png' });
+            setCurrentModelUrl(blobUrl);
+
+          } else { 
+            const errorMsg = data.error || 'An unknown error occurred.';
+            updateLibraryItem(id, { status: 'failed', error: errorMsg });
+          }
+        }
+      } catch (err) {
+        stopPollingForJob(id);
+        const errorMsg = (err as Error).message;
+        updateLibraryItem(id, { status: 'failed', error: errorMsg });
+      }
+    }, 3000);
+    pollingIntervalsRef.current.set(id, intervalId);
+  };
+  
+  // SỬA LỖI: Khắc phục cảnh báo react-hooks/exhaustive-deps
+  useEffect(() => {
+    const pollingMap = pollingIntervalsRef.current;
+    return () => {
+      // Sử dụng biến đã được sao chép trong hàm dọn dẹp
+      pollingMap.forEach(intervalId => clearInterval(intervalId));
+    };
+  }, []);
+
+  const submitJob = async (payload: { type: 'text'; caption: string } | { type: 'image'; imageFile: File }) => {
+    if (isRateLimited) {
+        alert(`Rate limit exceeded. Please wait. (Max ${MAX_REQUESTS} requests per ${TIME_WINDOW_MINUTES} minutes)`);
+        return;
+    }
+    
+    let promptForLibrary: string;
+    let requestBody: BodyInit | null = null;
+    // SỬA LỖI: Chuyển 'let' thành 'const' vì không gán lại
+    const requestHeaders: HeadersInit = { 'ngrok-skip-browser-warning': 'true' };
+    let endpoint: string;
+
+    if (payload.type === 'text') {
+        promptForLibrary = payload.caption;
+        endpoint = '/jobs/text-to-3d';
+        requestHeaders['Content-Type'] = 'application/json';
+        requestBody = JSON.stringify({ caption: payload.caption });
+    } else {
+        promptForLibrary = payload.imageFile.name;
+        endpoint = '/jobs/image-to-3d';
+        const formData = new FormData();
+        formData.append('image', payload.imageFile);
+        requestBody = formData;
+        // Xóa 'Content-Type' để trình duyệt tự động đặt với boundary chính xác cho multipart/form-data
+        // delete requestHeaders['Content-Type']; // Dòng này không cần thiết nếu khởi tạo lại header
+    }
+
+    try {
+        const backendUrl = await getBackendUrl();
+        const response = await fetch(`${backendUrl}${endpoint}`, {
+            method: 'POST',
+            headers: requestHeaders,
+            body: requestBody,
+        });
+
+        setRequestTimestamps(prev => [...prev, new Date()]);
+      
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Job submission failed');
+        }
+
+        const data = await response.json();
+        const newJobId = data.job_id;
+      
+        const placeholderModel: GeneratedModel = {
+            jobId: newJobId,
+            url: '',
+            prompt: promptForLibrary,
+            thumbnailUrl: '',
+            status: data.status,
+        };
+        setLibrary(prev => [placeholderModel, ...prev]);
+
+        pollJobStatus(newJobId, backendUrl);
+
+    } catch (err) {
+      console.error("Job submission failed:", (err as Error).message);
+    }
+  };
+  
+  const value = { currentModelUrl, library, submitJob, setCurrentModelUrl, updateThumbnail, isRateLimited };
+
+  return (
+    <GenerationContext.Provider value={value}>
+      {children}
+    </GenerationContext.Provider>
+  );
+};
+
+export const useGeneration = () => {
+  const context = useContext(GenerationContext);
+  if (context === undefined) {
+    throw new Error('useGeneration must be used within a GenerationProvider');
   }
   return context;
 };
@@ -2542,6 +3338,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         app/
             globals.css
             providers.tsx
+            api/
+                get-backend-url/
+                    route.ts
             [locale]/
                 layout.tsx
                 page.tsx
@@ -2550,8 +3349,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
                 dashboard/
                     layout.tsx
                     page.tsx
-                    console/
-                        page.tsx
                     customers/
                         page.tsx
                     notifications/
@@ -2587,5 +3384,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
                 ViewPanel.tsx
         context/
             AuthContext.tsx
+            GenerationContext.tsx
             ThemeProvider.tsx
     utils/

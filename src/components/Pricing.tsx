@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
 import type { FC } from 'react';
 
-// Component con cho mỗi thẻ giá, được thiết kế lại để khớp với hình ảnh
+// ... (Component PricingCard giữ nguyên) ...
 const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => {
   const t = useTranslations(`Pricing.${plan}`);
   const isPro = plan === 'pro';
@@ -20,18 +20,13 @@ const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => 
         }
       `}
     >
-      {/* Tên gói */}
       <h3 className="text-2xl font-bold font-['Inter']">{t('name')}</h3>
-      
-      {/* CẬP NHẬT: Thêm 'whitespace-nowrap' để ngăn xuống dòng */}
       <div className="flex items-baseline mt-8 mb-10 whitespace-nowrap">
         <span className="text-5xl font-bold font-['Inter'] tracking-tight">{t('price')}</span>
         <span className={`text-lg font-medium ml-1 ${isPro ? 'text-gray-400' : 'text-gray-500'}`}>
           /{t('price_period')}
         </span>
       </div>
-
-      {/* Nút CTA */}
       <button 
         className={`
           w-full h-12 rounded-lg text-base font-semibold transition-colors
@@ -43,11 +38,7 @@ const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => 
       >
         {t('cta_button')}
       </button>
-
-      {/* Đường kẻ ngang */}
       <hr className={`my-8 ${isPro ? 'border-zinc-700' : 'border-gray-300'}`} />
-
-      {/* Danh sách tính năng */}
       <ul className="space-y-4 flex-grow">
         {t.raw('features').map((feature: string, index: number) => (
           <li key={index} className="flex items-center text-base font-medium font-['Inter']">
@@ -72,19 +63,15 @@ const Pricing: FC = () => {
   const t = useTranslations('Pricing');
 
   return (
-    <section className="bg-white py-20 lg:py-24">
+    // SỬA ĐỔI: Thêm id="pricing" vào đây
+    <section id="pricing" className="bg-white py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Phần tiêu đề đã được ẩn đi để khớp với ảnh thứ 2, bạn có thể mở lại nếu cần */}
-        
         <div className="text-center">
           <h1 className="text-4xl font-bold font-['Unbounded'] text-neutral-900">{t('title')}</h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg font-medium font-['Inter'] text-neutral-600">
             {t('subtitle')}
           </p>
         </div>
-       
-
-        {/* Căn giữa các thẻ trên màn hình lớn */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-center">
           <PricingCard plan="basic" />
           <PricingCard plan="pro" />
