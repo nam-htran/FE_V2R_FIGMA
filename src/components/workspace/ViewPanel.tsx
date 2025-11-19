@@ -114,7 +114,6 @@ const ViewPanel: FC = () => {
   return (
     <div className="w-full h-full relative">
       <Canvas dpr={[1, 2]} camera={{ position: [0, 1.5, 6] }} style={{ position: "absolute", width: '100%', height: '100%' }} shadows gl={{ preserveDrawingBuffer: true }}>
-        <color attach="background" args={[sceneControls.backgroundColor]} />
         <CameraUpdater fov={cameraControls.fov} />
         <ambientLight intensity={sceneControls.intensity / 2} />
         <directionalLight position={[5, 5, 5]} intensity={1} castShadow />

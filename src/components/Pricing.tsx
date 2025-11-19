@@ -16,7 +16,8 @@ const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => 
         flex flex-col p-8 rounded-2xl border transition-all duration-300
         ${isPro 
           ? 'bg-neutral-900 text-white border-blue-700 shadow-2xl lg:scale-105 lg:z-10' 
-          : 'bg-white text-neutral-900 border-gray-200 shadow-lg'
+          // CẬP NHẬT: Thêm hiệu ứng trong suốt cho thẻ Basic và Enterprise
+          : 'bg-white/60 backdrop-blur-sm text-neutral-900 border-gray-200/50 shadow-lg'
         }
       `}
     >
@@ -38,7 +39,7 @@ const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => 
       >
         {t('cta_button')}
       </button>
-      <hr className={`my-8 ${isPro ? 'border-zinc-700' : 'border-gray-300'}`} />
+      <hr className={`my-8 ${isPro ? 'border-zinc-700' : 'border-gray-300/50'}`} />
       <ul className="space-y-4 flex-grow">
         {t.raw('features').map((feature: string, index: number) => (
           <li key={index} className="flex items-center text-base font-medium font-['Inter']">
@@ -63,8 +64,8 @@ const Pricing: FC = () => {
   const t = useTranslations('Pricing');
 
   return (
-    // SỬA ĐỔI: Thêm id="pricing" vào đây
-    <section id="pricing" className="bg-white py-20 lg:py-24">
+    // CẬP NHẬT: Xóa bỏ "bg-white" để làm trong suốt section này
+    <section id="pricing" className="py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl font-bold font-['Unbounded'] text-neutral-900">{t('title')}</h1>

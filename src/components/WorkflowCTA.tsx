@@ -9,7 +9,7 @@ const WorkflowCTA: FC = () => {
   return (
     <section className="py-20 text-center">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl font-bold font-['Inter'] text-neutral-900">{t('title')}</h2>
+        <h2 className="text-4xl font-bold font-['Unbounded'] text-neutral-900">{t('title')}</h2>
         <p className="mt-4 text-xl font-['Inter'] text-neutral-900">
           {t('description')}
         </p>
