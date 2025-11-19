@@ -10,18 +10,14 @@ import "../globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const unbounded = Unbounded({ subsets: ["latin"], variable: "--font-unbounded" });
 
-export const metadata = {
-  title: "V2R",
-  description: "The NO.1 AI 3D Model Generator for Everyone",
-};
-
 export default async function RootLayout({
   children,
-  params: { locale },
+  params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   const messages = await getMessages();
 
   return (
@@ -35,16 +31,19 @@ export default async function RootLayout({
             src="/landing-page/background/full.png"
             alt="V2R landing page background"
             layout="fill"
-            objectFit="fill" // Giữ nguyên objectFit của bạn
+            // === CHỈNH SỬA TẠI ĐÂY ===
+            // "fill" sẽ kéo dãn ảnh để lấp đầy toàn bộ không gian,
+            // đảm bảo không bị cắt và không có khoảng trống.
+            objectFit="fill" 
             quality={100}
             priority
           />
         </div>
         
+        {/* Toàn bộ nội dung trang nằm ở đây */}
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>
             <Providers>
-              {/* Nội dung trang sẽ được render ở đây */}
               <main>{children}</main>
             </Providers>
           </ThemeProvider>
