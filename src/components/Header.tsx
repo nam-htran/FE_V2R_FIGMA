@@ -13,7 +13,7 @@ import { useUI } from '@/context/UIContext'; // --- BỔ SUNG ---
 const Header = () => {
   const t = useTranslations('Header');
   const pathname = usePathname();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { openLoginModal, openRegisterModal } = useUI(); // --- BỔ SUNG ---
 
@@ -47,7 +47,11 @@ const Header = () => {
               </button>
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
-                  <Link href="/workspace" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Workspace</Link>
+                  <Link href="/profile" onClick={() => setIsDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</Link>
+                  {((user?.role || '').toLowerCase() === 'admin') && (
+                    <Link href="/dashboard" onClick={() => setIsDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Dashboard</Link>
+                  )}
+                  <Link href="/workspace" onClick={() => setIsDropdownOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Workspace</Link>
                   <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Log Out
                   </button>

@@ -2,14 +2,44 @@
 "use client";
 
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
+import { useRouter } from "@/../i18n/navigation";
+import { api } from "@/services/api";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is authorized to access dashboard
+    const token = api.auth.getAuthToken();
+    
+    if (!token) {
+      // No token, redirect to login
+      router.push('/login');
+      return;
+    }
+
+    const role = api.auth.getUserRole();
+    
+    if (role && role.toLowerCase() === 'admin') {
+      // User is admin, allow access
+      setIsAuthorized(true);
+    } else {
+      // User is not admin, redirect to main page
+      router.push('/');
+    }
+  }, [router]);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  // Don't render dashboard content until authorization is checked
+  if (!isAuthorized) {
+    return null;
+  }
 
   return (
     <div className="bg-gray-400 min-h-screen">

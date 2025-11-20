@@ -78,6 +78,7 @@
     "welcome": "Welcome to V2R",
     "get_started": "Enter your Email to get started",
     "email_placeholder": "Email",
+    "full_name_placeholder": "Full name",
     "password_placeholder": "Password",
     "confirm_password_placeholder": "Confirm Password",
     "continue_button": "Continue",
@@ -141,7 +142,11 @@
     "subtitle": "A verification code has been sent to *******762",
     "did_not_receive": "Didn't receive the code?",
     "resend": "Resend",
-    "continue_button": "Continue"
+    "continue_button": "Continue",
+    "verifying": "Verifying...",
+    "enter_otp": "Please enter the OTP code.",
+    "no_email_found": "No registration email found. Please re-register.",
+    "invalid_otp": "Invalid OTP. Please try again."
   },
   "Dashboard": {
     "overview": "Overview",

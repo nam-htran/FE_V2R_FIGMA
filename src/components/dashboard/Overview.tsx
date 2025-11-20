@@ -1,6 +1,9 @@
 // ===== .\src\components\dashboard\Overview.tsx =====
 "use client";
 
+import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/services/api/config';
+import { orderService } from '@/services/api/order';
 // SỬA ĐỔI: Import component Bar và Doughnut từ react-chartjs-2
 import { Bar, Doughnut } from 'react-chartjs-2';
 // SỬA ĐỔI: Import các thành phần cần thiết từ chart.js
@@ -117,6 +120,38 @@ const revenueChartData = {
 
 // --- COMPONENT CHÍNH ---
 export default function Overview() {
+  const [totalUsers, setTotalUsers] = useState<number>(0);
+  const [paidUsers, setPaidUsers] = useState<number>(0);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Fetch total users
+        const usersResponse = await fetch(`${API_BASE_URL}/api/users?page=0&size=1`);
+        const usersData = await usersResponse.json();
+        setTotalUsers(usersData.totalElements || 0);
+
+        // Fetch user subscriptions to count paid users
+        const subsResponse = await fetch(`${API_BASE_URL}/api/user-subscriptions?page=0&size=1000`);
+        const subsData = await subsResponse.json();
+        const activePaidUsers = subsData.content.filter((sub: any) => sub.active).length;
+        setPaidUsers(activePaidUsers);
+
+        // Fetch total revenue for completed orders (status 2)
+        const revenue = await orderService.getTotalPriceByStatus(2);
+        setTotalRevenue(revenue);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <div className="space-y-8">
       <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">
@@ -124,13 +159,19 @@ export default function Overview() {
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <StatCard title="Tất cả người dùng" value="476" />
+        <StatCard 
+          title="Tất cả người dùng" 
+          value={isLoading ? "..." : totalUsers.toString()} 
+        />
         <StatCard
           title="Người dùng trả phí"
-          value="127"
-          subtitle="64 Basic, 38 Pro, 25 Enterprise"
+          value={isLoading ? "..." : paidUsers.toString()}
+          subtitle="Có gói đăng ký hoạt động"
         />
-        <StatCard title="Tổng doanh thu" value="21,402$" />
+        <StatCard 
+          title="Tổng doanh thu" 
+          value={isLoading ? "..." : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalRevenue)}
+        />
       </div>
 
       <ChartContainer title="Biểu đồ người dùng" filterOptions={["Tuần", "Tháng", "Năm"]}>

@@ -42,7 +42,7 @@ const ResourceChart = ({ title, unit, max, data }: { title: string; unit: string
       {
         label: 'Usage',
         data: data.map(d => d.uv),
-        borderColor: '#1e3a8a',
+        borderColor: '#3b82f6',
         borderWidth: 3,
         pointRadius: 0, // Ẩn các điểm chấm trên đường line
         tension: 0.4,   // Làm mượt đường cong
@@ -85,17 +85,17 @@ const ResourceChart = ({ title, unit, max, data }: { title: string; unit: string
   };
 
   return (
-    <div className="w-full bg-white rounded-2xl overflow-hidden p-8">
-      <h2 className="text-black text-4xl font-bold font-['Unbounded']">{title}</h2>
-      <div className="flex justify-between text-neutral-800 text-base font-normal mt-10">
+    <div className="w-full bg-neutral-900 rounded-lg border border-zinc-700 overflow-hidden p-8">
+      <h2 className="text-white text-2xl font-bold font-['Unbounded'] mb-2">{title}</h2>
+      <div className="flex justify-between text-gray-400 text-sm font-normal font-['Inter'] mt-6 mb-2">
         <span>{unit}</span>
         <span>{max}</span>
       </div>
       {/* SỬA ĐỔI: Sử dụng Line component và container có chiều cao cố định */}
-      <div style={{ position: 'relative', height: '350px' }}>
+      <div style={{ position: 'relative', height: '300px' }}>
         <Line options={chartOptions} data={chartData} />
       </div>
-      <div className="flex justify-between text-neutral-800 text-base font-normal">
+      <div className="flex justify-between text-gray-400 text-sm font-normal font-['Inter'] mt-2">
           <span>60 giây</span>
           <span>0%</span>
       </div>
@@ -107,11 +107,16 @@ const ResourceChart = ({ title, unit, max, data }: { title: string; unit: string
 // --- COMPONENT CHÍNH ---
 export default function StatusPage() {
   return (
-    <div className="space-y-8">
-      <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Trạng thái & Tài nguyên</h1>
-      <ResourceChart title="CPU" unit="% Sử dụng" max="100%" data={usageData} />
-      <ResourceChart title="CPU của GPU" unit="% Sử dụng" max="100%" data={usageData} />
-      <ResourceChart title="RAM của GPU (VRAM)" unit="Bộ nhớ đã dùng" max="15.4 GB" data={usageData} />
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-white font-['Unbounded'] mb-2">Server Status & Resources</h1>
+        <p className="text-gray-400 font-['Inter']">Real-time monitoring of system resources</p>
+      </div>
+      <div className="space-y-6">
+        <ResourceChart title="CPU" unit="% Sử dụng" max="100%" data={usageData} />
+        <ResourceChart title="GPU CPU" unit="% Sử dụng" max="100%" data={usageData} />
+        <ResourceChart title="GPU RAM (VRAM)" unit="Bộ nhớ đã dùng" max="15.4 GB" data={usageData} />
+      </div>
     </div>
   );
 }

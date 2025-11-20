@@ -1,10 +1,11 @@
 // src/components/dashboard/DashboardSidebar.tsx
 "use client";
 
-import { useState, type ComponentProps } from "react"; // SỬA LỖI: Import ComponentProps
+import { useState, useEffect, type ComponentProps } from "react"; // SỬA LỖI: Import ComponentProps
 import Image from "next/image";
 import { Link, usePathname } from "@/../i18n/navigation";
 import { Icon } from "@iconify/react";
+import { api } from "@/services/api";
 
 // SỬA LỖI: Định nghĩa kiểu dữ liệu cho đường dẫn hợp lệ, lấy từ chính component Link
 type AppPath = ComponentProps<typeof Link>['href'];
@@ -39,6 +40,14 @@ const sidebarNavItems: SidebarNavItem[] = [
     icon: "mdi:view-dashboard-outline",
   },
   {
+    title: "Quản lý Người dùng",
+    icon: "mdi:account-multiple",
+    items: [
+      { title: "Danh sách Users", href: "/dashboard/users", icon: "mdi:account-group" },
+      { title: "Đơn hàng", href: "/dashboard/orders", icon: "mdi:account-group-outline" },
+    ],
+  },
+  {
     title: "Quản lý Máy chủ",
     icon: "mdi:server",
     items: [
@@ -50,14 +59,9 @@ const sidebarNavItems: SidebarNavItem[] = [
     title: "Quản lý Kinh doanh",
     icon: "mdi:briefcase-outline",
     items: [
-      { title: "Khách hàng", href: "/dashboard/customers", icon: "mdi:account-group-outline" },
       { title: "Giao dịch", href: "/dashboard/transactions", icon: "mdi:swap-horizontal" },
+      { title: "Doanh thu", href: "/dashboard/revenue", icon: "mdi:finance" },
     ],
-  },
-  {
-    title: "Báo cáo & Thống kê",
-    icon: "mdi:chart-bar",
-    items: [{ title: "Doanh thu", href: "/dashboard/revenue", icon: "mdi:finance" }],
   },
   {
     title: "Hệ thống",
@@ -83,6 +87,21 @@ export default function DashboardSidebar({ isCollapsed, toggleCollapse }: Dashbo
   const [openDropdowns, setOpenDropdowns] = useState<string[]>(
     activeParent ? [activeParent.title] : []
   );
+  const [userName, setUserName] = useState<string>('User');
+  const [userRole, setUserRole] = useState<string>('');
+
+  useEffect(() => {
+    // Get user info from JWT token
+    const displayName = api.auth.getUserDisplayName();
+    const role = api.auth.getUserRole();
+    
+    if (displayName) {
+      setUserName(displayName);
+    }
+    if (role) {
+      setUserRole(role);
+    }
+  }, []);
 
   const handleDropdownToggle = (title: string) => {
     setOpenDropdowns(prev => {
@@ -102,9 +121,9 @@ export default function DashboardSidebar({ isCollapsed, toggleCollapse }: Dashbo
         ${isCollapsed ? 'w-20 p-2' : 'w-72 p-4'}
       `}
     >
-      <div className="flex flex-shrink-0 items-center justify-center h-[60px]">
+      <Link href="/" className="flex flex-shrink-0 items-center justify-center h-[60px] cursor-pointer">
         <Image src="/logo/dark.png" alt="V2R Logo" width={isCollapsed ? 35 : 43} height={isCollapsed ? 22 : 27} className="transition-all"/>
-      </div>
+      </Link>
       
       <nav className={`flex flex-col mt-5 w-full flex-grow overflow-y-auto overflow-x-hidden`}>
         {isCollapsed && (
@@ -190,9 +209,15 @@ export default function DashboardSidebar({ isCollapsed, toggleCollapse }: Dashbo
       {/* Footer Section */}
       <div className="mt-auto border-t border-gray-200 pt-4 w-full flex-shrink-0">
         <div className={`bg-gray-400 rounded-lg p-2 flex items-center gap-x-4 overflow-hidden ${isCollapsed ? 'justify-center' : ''}`}>
-            <div className="w-9 h-9 bg-neutral-900 rounded-full flex-shrink-0" />
+            <div className="w-9 h-9 bg-neutral-900 rounded-full flex-shrink-0 flex items-center justify-center">
+              <span className="text-white text-sm font-bold">
+                {userName.charAt(0).toUpperCase()}
+              </span>
+            </div>
             <div className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'hidden' : 'opacity-100'}`}>
-                <p className="text-neutral-950 text-sm font-bold truncate">Alex Ng. (admin)</p>
+                <p className="text-neutral-950 text-sm font-bold truncate">
+                  {userName} {userRole && `(${userRole})`}
+                </p>
             </div>
         </div>
         <button 

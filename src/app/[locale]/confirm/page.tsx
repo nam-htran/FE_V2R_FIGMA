@@ -3,11 +3,17 @@
 
 import { useTranslations } from "next-intl";
 import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { authService } from "@/services/api/auth";
 
 export default function OtpPage() {
   const t = useTranslations("OTP");
   const [otp, setOtp] = useState<string[]>(new Array(5).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const router = useRouter();
+  const params = useParams();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (index: number, e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -42,8 +48,6 @@ export default function OtpPage() {
           {otp.map((digit, index) => (
             <input
               key={index}
-              // === SỬA LỖI TẠI ĐÂY ===
-              // Bọc phép gán trong khối lệnh `{}` để hàm không trả về giá trị
               ref={(el) => {
                 inputRefs.current[index] = el;
               }}
@@ -57,15 +61,71 @@ export default function OtpPage() {
           ))}
         </div>
 
-        <button className="w-56 h-20 bg-blue-900 rounded-2xl hover:bg-blue-800 transition-colors">
-          <span className="text-white text-2xl font-semibold font-['Unbounded']">
-            {t("continue_button")}
-          </span>
-        </button>
+        <div className="flex flex-col items-center gap-4">
+          {error && <div className="text-red-600 text-sm">{error}</div>}
+
+          <button
+            disabled={loading}
+            onClick={async () => {
+              setError(null);
+              const otpCode = otp.join("");
+              if (otpCode.length === 0) {
+                setError(t("enter_otp"));
+                return;
+              }
+
+              const email = authService.getRegistrationEmail() || sessionStorage.getItem("registrationEmail");
+              if (!email) {
+                setError(t("no_email_found"));
+                return;
+              }
+
+              try {
+                setLoading(true);
+                const res = await authService.verifyOtp({ email, otpCode });
+                if ((res as any).token) {
+                  authService.setAuthToken((res as any).token as string);
+                }
+
+                const isAdmin = authService.isAdmin();
+                const locale = params?.locale || "";
+                if (isAdmin) {
+                  router.push(`/${locale}/dashboard`);
+                } else {
+                  router.push(`/${locale}/`);
+                }
+              } catch (err: any) {
+                const msg = err?.message || t("invalid_otp");
+                setError(msg);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="w-56 h-20 bg-blue-900 rounded-2xl hover:bg-blue-800 transition-colors disabled:opacity-60"
+          >
+            <span className="text-white text-2xl font-semibold font-['Unbounded']">
+              {loading ? t("verifying") : t("continue_button")}
+            </span>
+          </button>
+        </div>
 
         <p className="mt-12 text-black text-xl font-normal font-['Inter']">
-          {t("did_not_receive")}{" "}
-          <button className="text-blue-800 font-medium hover:underline">
+          {t("did_not_receive")} {" "}
+          <button
+            onClick={async () => {
+              const email = authService.getRegistrationEmail() || sessionStorage.getItem("registrationEmail");
+              if (!email) {
+                setError(t("no_email_found"));
+                return;
+              }
+              try {
+                await authService.resendOtp(email);
+              } catch (e) {
+                /* ignore */
+              }
+            }}
+            className="text-blue-800 font-medium hover:underline"
+          >
             {t("resend")}
           </button>
         </p>

@@ -60,7 +60,9 @@ const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen,
                <AnimatePresence>
                  {!isCollapsed && (
                    <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
-                     <Image src="/logo/dark.png" alt="Logo" width={40} height={25} />
+                     <Link href="/">
+                       <Image src="/logo/dark.png" alt="Logo" width={40} height={25} />
+                     </Link>
                    </motion.div>
                  )}
                </AnimatePresence>
@@ -79,7 +81,9 @@ const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen,
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
               >
-                <Image src="/logo/dark.png" alt="Logo" width={32} height={20} />
+                <Link href="/">
+                  <Image src="/logo/dark.png" alt="Logo" width={32} height={20} />
+                </Link>
               </motion.div>
             )}
           </AnimatePresence>

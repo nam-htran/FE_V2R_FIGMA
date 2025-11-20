@@ -8,15 +8,28 @@ import { Icon } from '@iconify/react';
 import Home from '../page';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 
 export default function LoginPage() {
   const t = useTranslations('Login');
   const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    login();
+    setError(null);
+    setLoading(true);
+    try {
+      await login(email, password);
+    } catch (err: any) {
+      setError(err?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,18 +65,24 @@ export default function LoginPage() {
               placeholder={t('email_placeholder')}
               className="w-full h-9 px-4 bg-white/40 rounded-[10px] backdrop-blur-md text-zinc-800 placeholder:text-zinc-600 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
             <input
               type="password"
               placeholder={t('password_placeholder')}
               className="w-full h-9 px-4 bg-white/40 rounded-[10px] backdrop-blur-md text-zinc-800 placeholder:text-zinc-600 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
+            {error && <div className="text-red-600 text-sm">{error}</div>}
             <button
               type="submit"
               className="w-full h-9 bg-gradient-to-r from-cyan-600 to-sky-300 rounded-xl text-white text-xs font-bold font-['Unbounded'] hover:opacity-90 transition-opacity"
+              disabled={loading}
             >
-              {t('continue_button')}
+              {loading ? t('continue_button') + '...' : t('continue_button')}
             </button>
           </form>
           <div className="text-center mt-2">

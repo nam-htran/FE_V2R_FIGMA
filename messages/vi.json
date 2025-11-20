@@ -78,6 +78,7 @@
     "welcome": "Chào mừng đến với V2R",
     "get_started": "Nhập Email của bạn để bắt đầu",
     "email_placeholder": "Email",
+    "full_name_placeholder": "Họ và tên",
     "password_placeholder": "Mật khẩu",
     "confirm_password_placeholder": "Xác nhận mật khẩu",
     "continue_button": "Tiếp tục",
@@ -141,7 +142,11 @@
     "subtitle": "Mã xác thực đã được gửi đến *******762",
     "did_not_receive": "Chưa nhận được mã?",
     "resend": "Gửi lại",
-    "continue_button": "Tiếp tục"
+    "continue_button": "Tiếp tục",
+    "verifying": "Đang xác thực...",
+    "enter_otp": "Vui lòng nhập mã OTP.",
+    "no_email_found": "Không tìm thấy email đăng ký. Vui lòng đăng ký lại.",
+    "invalid_otp": "Mã OTP không hợp lệ. Vui lòng thử lại."
   },
   "Dashboard": {
     "overview": "Tổng quan",

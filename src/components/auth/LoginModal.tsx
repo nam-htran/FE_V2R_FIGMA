@@ -8,7 +8,9 @@ import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useUI } from '@/context/UIContext';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { useToast } from '@/context/ToastContext';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -19,8 +21,28 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const t = useTranslations('Login');
   const { login } = useAuth();
   const { openRegisterModal } = useUI();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
-  const handleSubmit = (e: FormEvent) => { e.preventDefault(); onClose(); login(); };
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      await login(email, password);
+      showToast('Logged in successfully', 'success');
+      onClose();
+    } catch (err: any) {
+      const msg = err?.message || 'Login failed';
+      setError(msg);
+      showToast(msg, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
   const switchToRegister = () => { onClose(); setTimeout(openRegisterModal, 300); };
 
   // --- TẠO MỘT BIẾN ĐỂ TÁI SỬ DỤNG CLASS CHO GỌN ---
@@ -41,11 +63,29 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             <div className="w-full h-full p-6 flex flex-col">
               <Image src="/logo/dark.png" alt="V2R Logo" width={92} height={57} className="mx-auto mt-16 mb-8" />
               <form className="space-y-4" onSubmit={handleSubmit}>
-                {/* --- THAY ĐỔI TẠI ĐÂY --- */}
-                <input type="email" placeholder={t('email_placeholder')} className={inputClasses} required />
-                <input type="password" placeholder={t('password_placeholder')} className={inputClasses} required />
-                <button type="submit" className="w-full h-10 bg-gradient-to-r from-cyan-600 to-sky-300 rounded-xl text-white text-sm font-bold font-unbounded hover:opacity-90 transition-opacity">
-                  {t('continue_button')}
+                <input
+                  type="email"
+                  placeholder={t('email_placeholder')}
+                  className={inputClasses}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder={t('password_placeholder')}
+                  className={inputClasses}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                {error && <div className="text-red-600 text-sm">{error}</div>}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-10 bg-gradient-to-r from-cyan-600 to-sky-300 rounded-xl text-white text-sm font-bold font-unbounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {loading ? t('continue_button') + '...' : t('continue_button')}
                 </button>
               </form>
               <div className="text-center text-sm font-semibold mt-4">

@@ -18,6 +18,7 @@ export const routing = defineRouting({
     '/terms': '/terms',
     '/privacy': '/privacy',
     '/confirm': '/confirm',
+    '/profile': '/profile',
     
     // Thêm luôn các đường dẫn từ Header và Footer để tránh lỗi sau này
     '/community': '/community',
@@ -32,6 +33,8 @@ export const routing = defineRouting({
 
     // Dashboard routes
     '/dashboard': '/dashboard',
+    "/dashboard/orders": "/dashboard/orders",
+    '/dashboard/users': '/dashboard/users',
     '/dashboard/status': '/dashboard/status',
     '/dashboard/reports': '/dashboard/reports',
     '/dashboard/console': '/dashboard/console',

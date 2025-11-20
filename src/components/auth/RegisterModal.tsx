@@ -3,11 +3,14 @@
 
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { Link } from '@/../i18n/navigation';
+import { Link, useRouter } from '@/../i18n/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useUI } from '@/context/UIContext';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { authService } from '@/services/api/auth';
+import { useToast } from '@/context/ToastContext';
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -18,8 +21,42 @@ export default function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
   const t = useTranslations('Register');
   const { login } = useAuth();
   const { openLoginModal } = useUI();
+  const router = useRouter();
 
-  const handleSubmit = (e: FormEvent) => { e.preventDefault(); onClose(); login(); };
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authService.register({ email, password, fullName });
+      // Store registration email for verification flow
+      if (typeof window !== 'undefined') sessionStorage.setItem('registrationEmail', email);
+      onClose();
+      showToast('Registration successful — check your email for verification', 'success');
+      // Redirect to confirmation (OTP) page
+      router.push('/confirm');
+    } catch (err: any) {
+      const msg = err?.message || 'Registration failed';
+      setError(msg);
+      showToast(msg, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
   const switchToLogin = () => { onClose(); setTimeout(openLoginModal, 300); };
 
   // --- TẠO MỘT BIẾN ĐỂ TÁI SỬ DỤNG CLASS CHO GỌN ---
@@ -41,11 +78,45 @@ export default function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
               <Image src="/logo/dark.png" alt="V2R Logo" width={92} height={57} className="mx-auto mt-10 mb-8" />
               <form className="space-y-4" onSubmit={handleSubmit}>
                 {/* --- THAY ĐỔI TẠI ĐÂY --- */}
-                <input type="email" placeholder={t('email_placeholder')} className={inputClasses} required />
-                <input type="password" placeholder={t('password_placeholder')} className={inputClasses} required />
-                <input type="password" placeholder={t('confirm_password_placeholder')} className={inputClasses} required />
-                <button type="submit" className="w-full h-10 bg-gradient-to-r from-cyan-600 to-sky-300 rounded-xl text-white text-sm font-bold font-unbounded hover:opacity-90 transition-opacity">
-                  {t('continue_button')}
+                <input
+                  type="text"
+                  placeholder={t('full_name_placeholder')}
+                  className={inputClasses}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder={t('email_placeholder')}
+                  className={inputClasses}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder={t('password_placeholder')}
+                  className={inputClasses}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <input
+                  type="password"
+                  placeholder={t('confirm_password_placeholder')}
+                  className={inputClasses}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+                {error && <div className="text-red-600 text-sm">{error}</div>}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-10 bg-gradient-to-r from-cyan-600 to-sky-300 rounded-xl text-white text-sm font-bold font-unbounded hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {loading ? t('continue_button') + '...' : t('continue_button')}
                 </button>
               </form>
               <div className="text-center text-sm font-semibold mt-8">

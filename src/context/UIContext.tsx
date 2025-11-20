@@ -7,8 +7,11 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 interface UIContextType {
   isLoginModalOpen: boolean;
   isRegisterModalOpen: boolean;
+  isSubscriptionModalOpen: boolean;
+  subscriptionPayload?: { plan: string; price: string } | null;
   openLoginModal: () => void;
   openRegisterModal: () => void;
+  openSubscriptionModal: (payload: { plan: string; price: string }) => void;
   closeAllModals: () => void;
 }
 
@@ -19,6 +22,8 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 export const UIProvider = ({ children }: { children: ReactNode }) => {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
+  const [isSubscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
+  const [subscriptionPayload, setSubscriptionPayload] = useState<{ plan: string; price: string } | null>(null);
 
   const openLoginModal = () => {
     setRegisterModalOpen(false); // Đảm bảo modal kia đã đóng
@@ -30,18 +35,31 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     setRegisterModalOpen(true);
   };
 
+  const openSubscriptionModal = (payload: { plan: string; price: string }) => {
+    // Close others and open subscription modal with payload
+    setLoginModalOpen(false);
+    setRegisterModalOpen(false);
+    setSubscriptionPayload(payload);
+    setSubscriptionModalOpen(true);
+  };
+
   const closeAllModals = () => {
     setLoginModalOpen(false);
     setRegisterModalOpen(false);
+    setSubscriptionModalOpen(false);
+    setSubscriptionPayload(null);
   };
 
   return (
-    <UIContext.Provider value={{ 
-      isLoginModalOpen, 
-      isRegisterModalOpen, 
-      openLoginModal, 
-      openRegisterModal, 
-      closeAllModals 
+    <UIContext.Provider value={{
+      isLoginModalOpen,
+      isRegisterModalOpen,
+      isSubscriptionModalOpen,
+      subscriptionPayload,
+      openLoginModal,
+      openRegisterModal,
+      openSubscriptionModal,
+      closeAllModals,
     }}>
       {children}
     </UIContext.Provider>
