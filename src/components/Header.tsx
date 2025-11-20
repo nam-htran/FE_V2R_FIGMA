@@ -1,51 +1,54 @@
+// ===== .\src\components\Header.tsx =====
 "use client";
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Link } from '../../i18n/navigation'; // Sử dụng Link từ next-intl
+import { Link, usePathname } from '../../i18n/navigation';
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { useAuth } from '@/context/AuthContext'; // 1. Import useAuth hook
+import { useAuth } from '@/context/AuthContext';
 import { Icon } from '@iconify/react';
+import { useUI } from '@/context/UIContext'; // --- BỔ SUNG ---
 
 const Header = () => {
   const t = useTranslations('Header');
-  const { isAuthenticated, logout } = useAuth(); // 2. Lấy trạng thái và hàm logout
+  const pathname = usePathname();
+  const { isAuthenticated, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { openLoginModal, openRegisterModal } = useUI(); // --- BỔ SUNG ---
+
+  const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="absolute top-0 left-0 w-full z-10">
+    <header className="absolute top-0 left-0 w-full z-20">
       <nav className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24">
+        {/* ... phần logo và menu giữ nguyên ... */}
         <div className="flex items-center">
           <Link href="/">
-            <Image src="/logo/dark.png" alt="Logo" width={50} height={50} />
+            <Image src="/logo/dark.png" alt="Logo" width={90} height={56} priority />
           </Link>
         </div>
-        <div className="hidden md:flex items-center space-x-8 text-gray-800 font-['Unbounded'] text-lg">
-          <Link href="/" className="bg-neutral-900 text-neutral-100 rounded-xl px-6 py-2.5 font-bold">{t('home')}</Link>
-          <Link href="/community">{t('community')}</Link>
-          <Link href="/features">{t('features')}</Link>
-          <Link href="/pricing">{t('pricing')}</Link>
+        <div className="hidden md:flex items-center space-x-12 text-lg font-['Unbounded']">
+          <Link href="/" className={`relative font-medium transition-colors ${isActive('/') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>
+            {t('home')}
+            {isActive('/') && <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4/5 h-[3px] bg-black rounded-full"></span>}
+          </Link>
+          <Link href="/community" className={`font-medium transition-colors ${isActive('/community') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>{t('community')}</Link>
+          <Link href="/features" className={`font-medium transition-colors ${isActive('/features') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>{t('features')}</Link>
+          <Link href="/pricing" className={`font-medium transition-colors ${isActive('/pricing') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>{t('pricing')}</Link>
         </div>
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-6">
           <LanguageSwitcher />
 
-          {/* 3. Hiển thị có điều kiện */}
           {isAuthenticated ? (
-            <div className="relative">
-              <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="w-10 h-10 bg-zinc-300 rounded-full flex items-center justify-center">
-                <Icon icon="mdi:user" className="w-6 h-6 text-black" />
+             <div className="relative">
+              <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="w-12 h-12 bg-zinc-300 rounded-full flex items-center justify-center ring-2 ring-offset-2 ring-blue-500">
+                <Icon icon="mdi:user" className="w-7 h-7 text-black" />
               </button>
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
                   <Link href="/workspace" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Workspace</Link>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setIsDropdownOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
+                  <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Log Out
                   </button>
                 </div>
@@ -53,8 +56,12 @@ const Header = () => {
             </div>
           ) : (
             <>
-              <Link href="/login" className="text-gray-800 font-['Unbounded'] text-lg">{t('log_in')}</Link>
-              <Link href="/start" className="bg-neutral-900 text-neutral-100 rounded-xl px-6 py-2.5 font-['Unbounded'] text-lg">{t('start_for_free')}</Link>
+              {/* --- THAY ĐỔI: Chuyển Link thành button --- */}
+              <button onClick={openLoginModal} className="text-neutral-800 font-['Unbounded'] text-lg font-medium hover:text-black transition-colors">{t('log_in')}</button>
+              {/* --- THAY ĐỔI: Chuyển Link thành button --- */}
+              <button onClick={openRegisterModal} className="bg-gradient-to-r from-[#2980B9] to-[#6DD5FA] text-white rounded-xl px-7 py-3 font-['Unbounded'] text-base hover:opacity-90 transition-opacity shadow-md">
+                {t('start_for_free')}
+              </button>
             </>
           )}
         </div>

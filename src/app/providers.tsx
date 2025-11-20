@@ -1,13 +1,18 @@
 "use client";
 
 import { AuthProvider } from "@/context/AuthContext";
+import { GenerationProvider } from "@/context/GenerationContext";
+import { UIProvider } from "@/context/UIContext"; // --- BỔ SUNG ---
 import { ReactNode } from "react";
 
-// Component này sẽ đóng vai trò là điểm vào phía client cho các provider
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
+    <UIProvider>
+      <AuthProvider>
+        <GenerationProvider>
+          {children}
+        </GenerationProvider>
+      </AuthProvider>
+    </UIProvider>
   );
 }

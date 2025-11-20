@@ -1,103 +1,104 @@
+// ===== .\src\app\[locale]\login\page.tsx =====
 "use client";
 
-import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { Link } from '../../../../i18n/navigation';
-import { useAuth } from '@/context/AuthContext'; // 1. Import useAuth
-import React from 'react';
+import { Link } from '@/../i18n/navigation';
+import { Icon } from '@iconify/react';
+import Home from '../page';
+import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import type { FormEvent } from 'react';
 
 export default function LoginPage() {
   const t = useTranslations('Login');
-  const { login } = useAuth(); // 2. Lấy hàm login
+  const { login } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault(); // Ngăn form submit lại trang
-    login(); // 3. Gọi hàm login để cập nhật trạng thái và chuyển hướng
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    login();
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-neutral-800">
-      <div className="w-full max-w-sm mx-auto bg-stone-900 text-white rounded-2xl shadow-lg p-8">
-        
-        <div className="text-center mb-4">
-          <Image src="/logo/light.png" alt="V2R Logo" width={50} height={31} className="mx-auto mb-6" />
-          <h1 className="text-xl font-semibold font-['Unbounded']">{t('welcome')}</h1>
-          <p className="text-sm text-gray-300 font-['Inter'] mt-2">{t('get_started')}</p>
-        </div>
-
-        {/* 4. Gắn sự kiện onSubmit */}
-        <form className="space-y-4" onSubmit={handleLogin}>
-          <div>
-            <input 
-              type="email" 
-              placeholder={t('email_placeholder')}
-              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 font-['Inter'] focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <input 
-              type="password" 
-              placeholder={t('password_placeholder')}
-              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 font-['Inter'] focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button 
-            type="submit"
-            className="w-full h-10 bg-blue-800 rounded-lg text-sm font-bold font-['Unbounded'] hover:bg-blue-700 transition-colors"
-          >
-            {t('continue_button')}
-          </button>
-        </form>
-
-        <div className="text-center mt-4">
-          <Link href="/forgot-password" className="text-xs text-cyan-300 hover:underline font-semibold font-['Inter']">
-            {t('forgot_password')}
-          </Link>
-        </div>
-        
-        <div className="flex items-center my-6">
-          <hr className="w-full border-zinc-700" />
-          <span className="px-2 text-xs text-stone-300 font-['Inter']">{t('or')}</span>
-          <hr className="w-full border-zinc-700" />
-        </div>
-
-        <button className="w-full h-10 mt-4 bg-white text-black rounded-lg text-sm font-semibold font-['Inter'] flex items-center justify-center hover:bg-gray-200 transition-colors">
-          <Icon icon="flat-color-icons:google" className="w-5 h-5 mr-2" />
-          {t('continue_with_google')}
-        </button>
-
-        <div className="flex justify-center space-x-4 mt-6">
-            <Link href="/" className="w-9 h-9 bg-white rounded-full flex items-center justify-center" aria-label="Continue with Facebook">
-                <Icon icon="logos:facebook" className="w-full h-full" />
-            </Link>
-            <Link href="/" className="w-9 h-9 bg-black rounded-full flex items-center justify-center border border-gray-600" aria-label="Continue with X">
-                <Icon icon="fa6-brands:square-x-twitter" className="w-full h-full" />
-            </Link>
-            <Link href="/" className="w-9 h-9 bg-[#5865F2] rounded-full flex items-center justify-center" aria-label="Continue with Discord">
-                <Icon icon="skill-icons:discord" className="w-full h-full" />
-            </Link>
-            <Link href="/" className="w-9 h-9 bg-[#26A5E4] rounded-full flex items-center justify-center" aria-label="Continue with Telegram">
-                <Icon icon="streamline-color:telegram-flat" className="w-full h-full" />
-            </Link>
-        </div>
-
-        <div className="text-center text-xs text-white font-medium font-['Inter'] mt-6">
-          {t('no_account')}{' '}
-          <Link href="/register" className="text-cyan-300 hover:underline">
-            {t('register_now')}
-          </Link>
-        </div>
-
-        <div className="text-center text-zinc-400 text-[9px] font-medium font-['Inter'] mt-8">
-          <span>{t('terms_prefix')} </span>
-          <Link href="/terms" className="text-cyan-300 hover:underline">{t('terms_of_use')}</Link>
-          <span> {t('terms_and')} </span>
-          <Link href="/privacy" className="text-cyan-300 hover:underline">{t('privacy_policy')}</Link>
-          <span>.</span>
-        </div>
-
+    <div className="relative w-screen h-screen overflow-hidden">
+      {/* Lớp 1: Nền là toàn bộ trang Landing Page */}
+      {/* --- THAY ĐỔI TẠI ĐÂY --- */}
+      {/* Thêm 'blur-md' để làm mờ component Home */}
+      {/* Thêm 'scale-105' để phóng to nhẹ, tránh viền mờ ở cạnh màn hình */}
+      <div className="absolute inset-0 blur-md scale-105">
+        <Home />
       </div>
-    </main>
+
+      {/* Lớp 2: Lớp phủ mờ toàn màn hình (vẫn giữ để làm tối nền) */}
+      <div className="absolute inset-0 bg-black/30 z-10" />
+
+      {/* Lớp 3: Panel Đăng nhập ở giữa */}
+      <main className="relative z-20 flex items-center justify-center min-h-screen p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="relative w-full max-w-sm h-auto bg-white/40 shadow-2xl backdrop-blur-2xl rounded-2xl overflow-hidden p-8 font-['Inter']"
+        >
+          {/* ... Phần còn lại của component giữ nguyên ... */}
+          <div className="absolute w-96 h-[503px] left-[365px] top-[509px] origin-top-left rotate-[127deg] bg-gradient-to-b from-gray-400 to-cyan-400 rounded-full -z-10" />
+          <div className="absolute w-96 h-[503px] left-[337px] top-[-130px] origin-top-left rotate-[127deg] bg-gradient-to-b from-gray-400 to-cyan-400 rounded-full -z-10" />
+          <div className="text-center mb-8">
+            <Image src="/logo/dark.png" alt="V2R Logo" width={92} height={57} className="mx-auto" />
+          </div>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <input
+              type="email"
+              placeholder={t('email_placeholder')}
+              className="w-full h-9 px-4 bg-white/40 rounded-[10px] backdrop-blur-md text-zinc-800 placeholder:text-zinc-600 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
+            <input
+              type="password"
+              placeholder={t('password_placeholder')}
+              className="w-full h-9 px-4 bg-white/40 rounded-[10px] backdrop-blur-md text-zinc-800 placeholder:text-zinc-600 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full h-9 bg-gradient-to-r from-cyan-600 to-sky-300 rounded-xl text-white text-xs font-bold font-['Unbounded'] hover:opacity-90 transition-opacity"
+            >
+              {t('continue_button')}
+            </button>
+          </form>
+          <div className="text-center mt-2">
+            <Link href="/forgot-password" className="text-cyan-600 text-xs font-semibold underline hover:text-cyan-700">
+              {t('forgot_password')}
+            </Link>
+          </div>
+          <div className="flex items-center my-4">
+            <hr className="flex-grow border-black/20" />
+            <span className="px-2 text-zinc-800 text-[10px]">Hoặc</span>
+            <hr className="flex-grow border-black/20" />
+          </div>
+          <button className="w-full h-9 bg-white/40 rounded-[10px] backdrop-blur-md flex items-center justify-center gap-x-2 text-black text-xs font-semibold hover:bg-white/60 transition-colors">
+            <Icon icon="flat-color-icons:google" className="w-4 h-4" />
+            {t('continue_with_google')}
+          </button>
+          <div className="flex justify-center space-x-4 my-4">
+            <Link href="/" className="w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"><Icon icon="logos:facebook" className="w-full h-full" /></Link>
+            <Link href="/" className="w-7 h-7 bg-indigo-500 rounded-full flex items-center justify-center p-1.5 shadow-md hover:scale-110 transition-transform"><Icon icon="skill-icons:discord" className="text-white" /></Link>
+            <Link href="/" className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center p-1.5 shadow-md hover:scale-110 transition-transform"><Icon icon="logos:telegram" className="text-white" /></Link>
+            <Link href="/" className="w-7 h-7 bg-black rounded-full flex items-center justify-center p-1.5 shadow-md hover:scale-110 transition-transform"><Icon icon="fa6-brands:x-twitter" className="text-white" /></Link>
+          </div>
+          <div className="text-center text-xs font-semibold">
+            <span className="text-zinc-800">{t('no_account')}{' '}</span>
+            <Link href="/register" className="text-cyan-600 underline hover:text-cyan-700">{t('register_now')}</Link>
+          </div>
+          <div className="text-center text-[8px] font-medium text-zinc-800 mt-6">
+            <span>{t('terms_prefix')}{' '}</span>
+            <Link href="/terms" className="text-cyan-600 hover:underline">{t('terms_of_use')}</Link>
+            <span>{' '}{t('terms_and')}{' '}</span>
+            <Link href="/privacy" className="text-cyan-600 hover:underline">{t('privacy_policy')}</Link>
+            <span>.</span>
+          </div>
+        </motion.div>
+      </main>
+    </div>
   );
 }

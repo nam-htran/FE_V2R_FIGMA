@@ -1,4 +1,3 @@
-// tailwind.config.js or tailwind.config.ts
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
@@ -10,9 +9,18 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        // Cú pháp này cho phép bạn dùng class như font-inter, font-unbounded
         inter: ['var(--font-inter)', 'sans-serif'],
         unbounded: ['var(--font-unbounded)', 'sans-serif'],
+      },
+      // --- PHẦN TÙY CHỈNH box-shadow VÀ backdrop-blur ĐÃ ĐƯỢC XÓA ---
+      keyframes: {
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
       },
     },
   },

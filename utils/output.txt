@@ -62,14 +62,17 @@ export default withNextIntl(nextConfig);
     "@iconify/react": "^6.0.2",
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.3.0",
+    "@upstash/redis": "^1.35.6",
+    "chart.js": "^4.5.1",
+    "framer-motion": "^12.23.24",
     "leva": "^0.10.0",
     "next": "15.5.4",
     "next-intl": "^4.3.9",
     "next-themes": "^0.4.6",
     "react": "19.1.0",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "19.1.0",
     "react-resizable-panels": "^3.0.6",
-    "recharts": "^3.3.0",
     "three": "^0.180.0"
   },
   "devDependencies": {
@@ -87,7 +90,6 @@ export default withNextIntl(nextConfig);
 
 
 ===== .\tailwind.config.ts =====
-// tailwind.config.js or tailwind.config.ts
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
@@ -99,9 +101,18 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        // Cú pháp này cho phép bạn dùng class như font-inter, font-unbounded
         inter: ['var(--font-inter)', 'sans-serif'],
         unbounded: ['var(--font-unbounded)', 'sans-serif'],
+      },
+      // CẬP NHẬT: Thêm keyframes và animation
+      keyframes: {
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
       },
     },
   },
@@ -383,7 +394,7 @@ export const routing = defineRouting({
     "explore": "KHÁM PHÁ"
   },
   "ImageGallery": {
-    "title": "Bước vào Thế giới Tưởng tượng 3D",
+    "title": "Bước vào Thế giới Tưởng tượng của bạn",
     "description": "Khám phá và tải xuống nhiều mô hình 3D độc đáo từ cộng đồng sôi động của chúng tôi.",
     "load_more": "Tải thêm"
   },
@@ -561,51 +572,99 @@ export const config = {
 }
 
 body {
-  background: var(--background);
+  /* Nền trong suốt để hiển thị ảnh từ layout.tsx */
+  background: transparent;
   color: var(--foreground);
 }
 
 /* CẬP NHẬT: Thêm CSS để buộc Leva dropdown mở lên trên */
-/* [data-leva-root] là selector ổn định cho container của Leva */
-[data-leva-root] .leva-c-hPncDm { /* Đây là class của panel nổi */
-  bottom: calc(100% + 8px) !important; /* Đẩy panel lên trên + 8px khoảng cách */
-  top: auto !important; /* Tắt định vị top mặc định */
+[data-leva-root] .leva-c-hPncDm {
+  bottom: calc(100% + 8px) !important;
+  top: auto !important;
 }
 
 ===== .\src\app\providers.tsx =====
 "use client";
 
 import { AuthProvider } from "@/context/AuthContext";
+import { GenerationProvider } from "@/context/GenerationContext";
+import { UIProvider } from "@/context/UIContext"; // --- BỔ SUNG ---
 import { ReactNode } from "react";
 
-// Component này sẽ đóng vai trò là điểm vào phía client cho các provider
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <AuthProvider>
-      {children}
-    </AuthProvider>
+    <UIProvider>
+      <AuthProvider>
+        <GenerationProvider>
+          {children}
+        </GenerationProvider>
+      </AuthProvider>
+    </UIProvider>
   );
 }
 
+===== .\src\app\api\get-backend-url\route.ts =====
+// ===== .\src\app\api\get-backend-url\route.ts =====
+import { Redis } from '@upstash/redis';
+import { NextResponse } from 'next/server';
+
+// Khởi tạo Redis client từ biến môi trường
+// QUAN TRỌNG: Các biến này phải được đặt trong tệp .env.local của bạn
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_URL!,
+  token: process.env.UPSTASH_REDIS_TOKEN!,
+});
+
+// Đảm bảo route này không bị cache và luôn lấy dữ liệu mới nhất
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  try {
+    // Lấy URL từ key 'active_ai_service_url' trong Redis
+    const url = await redis.get('active_ai_service_url');
+
+    if (!url) {
+      return NextResponse.json(
+        { error: 'Backend service URL not found in Redis.' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ url });
+  } catch (error) {
+    console.error('Error fetching backend URL from Redis:', error);
+    return NextResponse.json(
+      { error: 'Failed to connect to Redis and fetch backend URL.' },
+      { status: 500 }
+    );
+  }
+}
+
 ===== .\src\app\[locale]\layout.tsx =====
+// ===== .\src\app\[locale]\layout.tsx =====
 import { ThemeProvider } from "@/context/ThemeProvider";
 import { Providers } from "../providers";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Inter, Unbounded } from "next/font/google";
+import Image from "next/image";
 import "../globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const unbounded = Unbounded({ subsets: ["latin"], variable: "--font-unbounded" });
 
+export const metadata = {
+  title: "V2R",
+  description: "The NO.1 AI 3D Model Generator for Everyone",
+};
+
 export default async function RootLayout({
   children,
-  params,
+  params: { locale },
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale: string }>;
+  params: { locale: string };
 }) {
-  const { locale } = await params;
   const messages = await getMessages();
 
   return (
@@ -614,9 +673,21 @@ export default async function RootLayout({
         className={`${inter.variable} ${unbounded.variable} font-inter`}
         suppressHydrationWarning
       >
+        <div className="fixed inset-0 -z-20">
+          <Image
+            src="/landing-page/background/full.png"
+            alt="V2R landing page background"
+            layout="fill"
+            objectFit="fill" // Giữ nguyên objectFit của bạn
+            quality={100}
+            priority
+          />
+        </div>
+        
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>
             <Providers>
+              {/* Nội dung trang sẽ được render ở đây */}
               <main>{children}</main>
             </Providers>
           </ThemeProvider>
@@ -626,28 +697,13 @@ export default async function RootLayout({
   );
 }
 
-
 ===== .\src\app\[locale]\page.tsx =====
-"use client";
-
-import Footer from "@/components/Footer";
-import Hero from "@/components/Hero";
-import ImageGallery from "@/components/ImageGallery";
-import WorkflowCTA from "@/components/WorkflowCTA";
-import Header from "@/components/Header";
-import Pricing from "@/components/Pricing";
+// ===== .\src\app\[locale]\page.tsx =====
+import LandingPage from "@/components/LandingPage";
 
 export default function Home() {
-  return (
-    <>
-      <Header />
-      <Hero />
-      <ImageGallery />
-      <Pricing />
-      <WorkflowCTA />
-      <Footer />
-    </>
-  );
+  // Chỉ cần render component client LandingPage là đủ
+  return <LandingPage />;
 }
 
 ===== .\src\app\[locale]\confirm\page.tsx =====
@@ -742,25 +798,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    // Container này cần có position relative để làm gốc cho các phần tử con
-    <div className="relative min-h-screen bg-gray-400">
+    <div className="bg-gray-400 min-h-screen">
+      {/* Sidebar giờ đây được đặt ở position: fixed, tách biệt khỏi luồng layout */}
       <DashboardSidebar 
         isCollapsed={isCollapsed} 
         toggleCollapse={toggleSidebar} 
       />
-      
       {/* 
-        VÙNG NỘI DUNG CHÍNH:
-        - Có transition-all để thay đổi padding-left một cách mượt mà.
-        - padding-left (pl) sẽ tương ứng với chiều rộng của sidebar (w-72 -> pl-72, w-20 -> pl-20).
-        - h-screen và overflow-y-auto đảm bảo chỉ vùng nội dung này cuộn, sidebar đứng yên.
+        - Vùng main content sẽ có padding-left thay đổi mượt mà.
+        - Transition trên padding sẽ tạo ra hiệu ứng đẩy/co nội dung rất trôi chảy.
       */}
       <main className={`
         transition-all duration-300 ease-in-out
-        h-screen overflow-y-auto
         ${isCollapsed ? 'pl-20' : 'pl-72'}
       `}>
-        {/* Thêm một div bọc ngoài với padding như cũ */}
         <div className="p-10">
           {children}
         </div>
@@ -774,37 +825,6 @@ import Overview from "@/components/dashboard/Overview";
 
 export default function DashboardOverviewPage() {
   return <Overview />;
-}
-
-===== .\src\app\[locale]\dashboard\console\page.tsx =====
-// ===== .\src\app\[locale]\dashboard\console\page.tsx =====
-import { Icon } from "@iconify/react";
-
-export default function ConsolePage() {
-    return (
-        <div className="space-y-8 h-full flex flex-col">
-            <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Console</h1>
-            <div className="flex-grow bg-black rounded-[10px] overflow-hidden flex flex-col">
-                <div className="w-full h-6 bg-blue-900 flex-shrink-0" />
-                <div className="p-7 text-white text-sm font-normal font-mono flex-grow overflow-y-auto">
-                    <pre>
-{`#include <iostream>
-
-int main() { 
-    std::cout << "Hello World!"; 
-    return 0; 
-}`}
-                    </pre>
-                </div>
-                <div className="p-4 flex-shrink-0">
-                    <div className="w-full h-9 bg-zinc-300 rounded-[4.83px] flex items-center px-3">
-                        <span className="text-black text-sm font-normal font-mono">Type here...</span>
-                        <Icon icon="mdi:send" className="w-4 h-4 ml-auto text-black" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
 }
 
 ===== .\src\app\[locale]\dashboard\customers\page.tsx =====
@@ -894,8 +914,35 @@ export default function NotificationsPage() {
 ===== .\src\app\[locale]\dashboard\reports\page.tsx =====
 // ===== .\src\app\[locale]\dashboard\reports\page.tsx =====
 "use client";
-import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+// SỬA ĐỔI: Import Line component từ react-chartjs-2
+import { Line } from 'react-chartjs-2';
+// SỬA ĐỔI: Import các thành phần cần thiết từ chart.js
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler, // Cần Filler để tô màu vùng dưới đường line
+} from 'chart.js';
+
+// Đăng ký các thành phần với ChartJS
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+// --- DỮ LIỆU GỐC (Không đổi) ---
 const costData = [
   { name: '06/07', gpu: 18000, backend: 22000 },
   { name: '07/07', gpu: 16000, backend: 21000 },
@@ -905,6 +952,73 @@ const costData = [
   { name: '11/07', gpu: 20000, backend: 25000 },
   { name: '12/07', gpu: 18500, backend: 23500 },
 ];
+
+// --- CẤU HÌNH BIỂU ĐỒ CHO CHART.JS ---
+
+const labels = costData.map(d => d.name);
+
+const chartData = {
+  labels,
+  datasets: [
+    {
+      label: 'GPU',
+      data: costData.map(d => d.gpu),
+      borderColor: '#818cf8',
+      backgroundColor: '#a5b4fc',
+      fill: true, // Bật tô màu vùng
+      tension: 0.4, // Làm cho đường cong mượt hơn
+    },
+    {
+      label: 'Backend',
+      data: costData.map(d => d.backend),
+      borderColor: '#312e81',
+      backgroundColor: '#4338ca',
+      fill: true, // Bật tô màu vùng
+      tension: 0.4,
+    },
+  ],
+};
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false, // Ẩn legend mặc định để dùng legend tùy chỉnh bên ngoài
+    },
+    tooltip: {
+      callbacks: {
+        // Tùy chỉnh tooltip để hiển thị dạng '...K'
+        label: function(context: any) {
+            let label = context.dataset.label || '';
+            if (label) {
+                label += ': ';
+            }
+            if (context.parsed.y !== null) {
+                label += `${context.parsed.y / 1000}K`;
+            }
+            return label;
+        }
+      }
+    }
+  },
+  scales: {
+    y: {
+      stacked: true, // Bật chế độ xếp chồng
+      ticks: {
+        // Tùy chỉnh các nhãn trên trục Y
+        callback: function(value: any) {
+          return `${value / 1000}K`;
+        }
+      }
+    },
+    x: {
+        grid: {
+            display: false, // Ẩn đường kẻ dọc
+        }
+    }
+  },
+};
 
 export default function ReportsPage() {
     return (
@@ -926,24 +1040,45 @@ export default function ReportsPage() {
                            <span className="text-neutral-950 text-xs font-semibold font-['Unbounded']">Backend</span>
                        </div>
                   </div>
-                 <ResponsiveContainer width="100%" height={400}>
-                     <AreaChart data={costData} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
-                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                         <XAxis dataKey="name" dy={10} />
-                         <YAxis unit="K" dx={-10} />
-                         <Tooltip formatter={(value: number) => `${value / 1000}K`} />
-                         <Area type="monotone" dataKey="gpu" stackId="1" stroke="#818cf8" fill="#a5b4fc" />
-                         <Area type="monotone" dataKey="backend" stackId="1" stroke="#312e81" fill="#4338ca" />
-                     </AreaChart>
-                 </ResponsiveContainer>
+                 {/* SỬA ĐỔI: Sử dụng Line component và container có chiều cao cố định */}
+                 <div style={{ position: 'relative', height: '400px' }}>
+                    <Line options={chartOptions} data={chartData} />
+                 </div>
              </div>
         </div>
     );
 }
 
 ===== .\src\app\[locale]\dashboard\revenue\page.tsx =====
+// ===== .\src\app\[locale]\dashboard\revenue\page.tsx =====
 "use client";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  ChartOptions,
+  ScriptableContext,
+  TooltipItem // SỬA LỖI: Import kiểu TooltipItem để sử dụng
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 const revenueData = [
   { name: '06/07', value: 22000 }, { name: '07/07', value: 19000 },
@@ -951,6 +1086,70 @@ const revenueData = [
   { name: '10/07', value: 24000 }, { name: '11/07', value: 25000 },
   { name: '12/07', value: 23000 },
 ];
+
+const labels = revenueData.map(d => d.name);
+
+const chartData = {
+  labels,
+  datasets: [
+    {
+      label: 'Doanh thu',
+      data: revenueData.map(d => d.value),
+      borderColor: '#1e3a8a',
+      borderWidth: 3,
+      pointRadius: 0,
+      tension: 0.4,
+      fill: true,
+      backgroundColor: (context: ScriptableContext<"line">) => {
+        const ctx = context.chart.ctx;
+        if (!ctx) return 'rgba(59, 130, 246, 0)';
+        const gradient = ctx.createLinearGradient(0, 0, 0, context.chart.height);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+        return gradient;
+      },
+    },
+  ],
+};
+
+const chartOptions: ChartOptions<'line'> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      callbacks: {
+        // SỬA LỖI: Thêm bước kiểm tra giá trị null
+        label: function(context: TooltipItem<'line'>) {
+          // Chỉ định dạng label nếu giá trị y tồn tại và là một con số
+          if (context.parsed.y !== null && typeof context.parsed.y === 'number') {
+            return `$${context.parsed.y.toLocaleString()}`;
+          }
+          // Nếu không, trả về một chuỗi rỗng để tránh lỗi
+          return '';
+        }
+      }
+    }
+  },
+  scales: {
+    y: {
+      min: 0,
+      max: 25000,
+      ticks: {
+        callback: function(value) {
+          return `${Number(value) / 1000}K`;
+        }
+      }
+    },
+    x: {
+        grid: {
+            display: false,
+        }
+    }
+  },
+};
 
 export default function RevenuePage() {
     return (
@@ -962,21 +1161,9 @@ export default function RevenuePage() {
                  <button className="w-24 h-11 bg-white rounded-md text-neutral-950 text-base font-semibold font-['Unbounded']">NĂM</button>
              </div>
              <div className="w-full bg-white rounded-2xl p-8">
-                 <ResponsiveContainer width="100%" height={400}>
-                     <AreaChart data={revenueData} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
-                         <defs>
-                             <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                                 <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                             </linearGradient>
-                         </defs>
-                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                         <XAxis dataKey="name" dy={10} />
-                         <YAxis unit="K" dx={-10} domain={[0, 25000]} tickFormatter={(value) => `${value / 1000}`} />
-                         <Tooltip formatter={(value: number) => `$${value.toLocaleString()}`} />
-                         <Area type="monotone" dataKey="value" stroke="#1e3a8a" strokeWidth={3} fill="url(#revenueGradient)" />
-                     </AreaChart>
-                 </ResponsiveContainer>
+                 <div style={{ position: 'relative', height: '400px' }}>
+                    <Line options={chartOptions} data={chartData} />
+                 </div>
              </div>
         </div>
     );
@@ -985,40 +1172,111 @@ export default function RevenuePage() {
 ===== .\src\app\[locale]\dashboard\status\page.tsx =====
 // ===== .\src\app\[locale]\dashboard\status\page.tsx =====
 "use client";
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
-const usageData = Array.from({ length: 60 }, (_, i) => ({
-  name: i + 1,
-  uv: Math.random() * 80 + 10,
-}));
+// SỬA ĐỔI: Import Line component từ react-chartjs-2
+import { Line } from 'react-chartjs-2';
+// SỬA ĐỔI: Import các thành phần cần thiết từ chart.js
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  ScriptableContext
+} from 'chart.js';
 
-const ResourceChart = ({ title, unit, max, data }: { title: string; unit: string; max: string; data: any[];}) => (
-  <div className="w-full bg-white rounded-2xl overflow-hidden p-8">
-    <h2 className="text-black text-4xl font-bold font-['Unbounded']">{title}</h2>
-    <div className="flex justify-between text-neutral-800 text-base font-normal mt-10">
-      <span>{unit}</span>
-      <span>{max}</span>
-    </div>
-    <ResponsiveContainer width="100%" height={350}>
-      <AreaChart data={data} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
-        <defs>
-          <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
-            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-          </linearGradient>
-        </defs>
-        <YAxis hide={true} domain={[0, 100]} />
-        <XAxis hide={true} />
-        <Area type="monotone" dataKey="uv" stroke="#1e3a8a" strokeWidth={3} fillOpacity={1} fill="url(#colorUv)" />
-      </AreaChart>
-    </ResponsiveContainer>
-    <div className="flex justify-between text-neutral-800 text-base font-normal">
-        <span>60 giây</span>
-        <span>0%</span>
-    </div>
-  </div>
+// Đăng ký các thành phần với ChartJS
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip
 );
 
+// --- DỮ LIỆU GỐC (Không đổi) ---
+// Tạo dữ liệu ngẫu nhiên để mô phỏng việc sử dụng tài nguyên
+const usageData = Array.from({ length: 60 }, (_, i) => ({
+  name: i + 1,
+  uv: Math.random() * 80 + 10, // Giá trị ngẫu nhiên từ 10 đến 90
+}));
+
+// --- COMPONENT BIỂU ĐỒ CON ĐÃ CHUYỂN ĐỔI ---
+const ResourceChart = ({ title, unit, max, data }: { title: string; unit: string; max: string; data: any[];}) => {
+  
+  // Cấu hình dữ liệu cho Chart.js
+  const chartData = {
+    labels: data.map(d => d.name),
+    datasets: [
+      {
+        label: 'Usage',
+        data: data.map(d => d.uv),
+        borderColor: '#1e3a8a',
+        borderWidth: 3,
+        pointRadius: 0, // Ẩn các điểm chấm trên đường line
+        tension: 0.4,   // Làm mượt đường cong
+        fill: true,     // Bật tô màu vùng
+        // Tạo hiệu ứng gradient cho màu nền
+        backgroundColor: (context: ScriptableContext<"line">) => {
+            const ctx = context.chart.ctx;
+            if (!ctx) return 'rgba(59, 130, 246, 0)';
+            const gradient = ctx.createLinearGradient(0, 0, 0, context.chart.height);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+            return gradient;
+        },
+      },
+    ],
+  };
+
+  // Cấu hình tùy chọn cho Chart.js
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false, // Ẩn chú thích
+      },
+      tooltip: {
+        enabled: false, // Tắt tooltip
+      },
+    },
+    scales: {
+      y: {
+        display: false, // Ẩn trục Y
+        min: 0,
+        max: 100, // Giữ giới hạn từ 0-100%
+      },
+      x: {
+        display: false, // Ẩn trục X
+      }
+    },
+  };
+
+  return (
+    <div className="w-full bg-white rounded-2xl overflow-hidden p-8">
+      <h2 className="text-black text-4xl font-bold font-['Unbounded']">{title}</h2>
+      <div className="flex justify-between text-neutral-800 text-base font-normal mt-10">
+        <span>{unit}</span>
+        <span>{max}</span>
+      </div>
+      {/* SỬA ĐỔI: Sử dụng Line component và container có chiều cao cố định */}
+      <div style={{ position: 'relative', height: '350px' }}>
+        <Line options={chartOptions} data={chartData} />
+      </div>
+      <div className="flex justify-between text-neutral-800 text-base font-normal">
+          <span>60 giây</span>
+          <span>0%</span>
+      </div>
+    </div>
+  );
+};
+
+
+// --- COMPONENT CHÍNH ---
 export default function StatusPage() {
   return (
     <div className="space-y-8">
@@ -1080,311 +1338,285 @@ export default function TransactionsPage() {
 }
 
 ===== .\src\app\[locale]\login\page.tsx =====
-"use client";
-
-import { Icon } from '@iconify/react';
-import { useTranslations } from 'next-intl';
-import Image from 'next/image';
-import { Link } from '../../../../i18n/navigation';
-import { useAuth } from '@/context/AuthContext'; // 1. Import useAuth
-import React from 'react';
-
-export default function LoginPage() {
-  const t = useTranslations('Login');
-  const { login } = useAuth(); // 2. Lấy hàm login
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault(); // Ngăn form submit lại trang
-    login(); // 3. Gọi hàm login để cập nhật trạng thái và chuyển hướng
-  };
-
-  return (
-    <main className="flex items-center justify-center min-h-screen bg-neutral-800">
-      <div className="w-full max-w-sm mx-auto bg-stone-900 text-white rounded-2xl shadow-lg p-8">
-        
-        <div className="text-center mb-4">
-          <Image src="/logo/light.png" alt="V2R Logo" width={50} height={31} className="mx-auto mb-6" />
-          <h1 className="text-xl font-semibold font-['Unbounded']">{t('welcome')}</h1>
-          <p className="text-sm text-gray-300 font-['Inter'] mt-2">{t('get_started')}</p>
-        </div>
-
-        {/* 4. Gắn sự kiện onSubmit */}
-        <form className="space-y-4" onSubmit={handleLogin}>
-          <div>
-            <input 
-              type="email" 
-              placeholder={t('email_placeholder')}
-              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 font-['Inter'] focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <input 
-              type="password" 
-              placeholder={t('password_placeholder')}
-              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 font-['Inter'] focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button 
-            type="submit"
-            className="w-full h-10 bg-blue-800 rounded-lg text-sm font-bold font-['Unbounded'] hover:bg-blue-700 transition-colors"
-          >
-            {t('continue_button')}
-          </button>
-        </form>
-
-        <div className="text-center mt-4">
-          <Link href="/forgot-password" className="text-xs text-cyan-300 hover:underline font-semibold font-['Inter']">
-            {t('forgot_password')}
-          </Link>
-        </div>
-        
-        <div className="flex items-center my-6">
-          <hr className="w-full border-zinc-700" />
-          <span className="px-2 text-xs text-stone-300 font-['Inter']">{t('or')}</span>
-          <hr className="w-full border-zinc-700" />
-        </div>
-
-        <button className="w-full h-10 mt-4 bg-white text-black rounded-lg text-sm font-semibold font-['Inter'] flex items-center justify-center hover:bg-gray-200 transition-colors">
-          <Icon icon="flat-color-icons:google" className="w-5 h-5 mr-2" />
-          {t('continue_with_google')}
-        </button>
-
-        <div className="flex justify-center space-x-4 mt-6">
-            <Link href="/" className="w-9 h-9 bg-white rounded-full flex items-center justify-center" aria-label="Continue with Facebook">
-                <Icon icon="logos:facebook" className="w-full h-full" />
-            </Link>
-            <Link href="/" className="w-9 h-9 bg-black rounded-full flex items-center justify-center border border-gray-600" aria-label="Continue with X">
-                <Icon icon="fa6-brands:square-x-twitter" className="w-full h-full" />
-            </Link>
-            <Link href="/" className="w-9 h-9 bg-[#5865F2] rounded-full flex items-center justify-center" aria-label="Continue with Discord">
-                <Icon icon="skill-icons:discord" className="w-full h-full" />
-            </Link>
-            <Link href="/" className="w-9 h-9 bg-[#26A5E4] rounded-full flex items-center justify-center" aria-label="Continue with Telegram">
-                <Icon icon="streamline-color:telegram-flat" className="w-full h-full" />
-            </Link>
-        </div>
-
-        <div className="text-center text-xs text-white font-medium font-['Inter'] mt-6">
-          {t('no_account')}{' '}
-          <Link href="/register" className="text-cyan-300 hover:underline">
-            {t('register_now')}
-          </Link>
-        </div>
-
-        <div className="text-center text-zinc-400 text-[9px] font-medium font-['Inter'] mt-8">
-          <span>{t('terms_prefix')} </span>
-          <Link href="/terms" className="text-cyan-300 hover:underline">{t('terms_of_use')}</Link>
-          <span> {t('terms_and')} </span>
-          <Link href="/privacy" className="text-cyan-300 hover:underline">{t('privacy_policy')}</Link>
-          <span>.</span>
-        </div>
-
-      </div>
-    </main>
-  );
-}
-
-===== .\src\app\[locale]\register\page.tsx =====
+// ===== .\src\app\[locale]\login\page.tsx =====
 "use client";
 
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { Link } from '@/../i18n/navigation';
+import { Icon } from '@iconify/react';
+import Home from '../page';
+import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import type { FormEvent } from 'react';
+
+export default function LoginPage() {
+  const t = useTranslations('Login');
+  const { login } = useAuth();
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    login();
+  };
+
+  return (
+    <div className="relative w-screen h-screen overflow-hidden">
+      {/* Lớp 1: Nền là toàn bộ trang Landing Page */}
+      {/* --- THAY ĐỔI TẠI ĐÂY --- */}
+      {/* Thêm 'blur-md' để làm mờ component Home */}
+      {/* Thêm 'scale-105' để phóng to nhẹ, tránh viền mờ ở cạnh màn hình */}
+      <div className="absolute inset-0 blur-md scale-105">
+        <Home />
+      </div>
+
+      {/* Lớp 2: Lớp phủ mờ toàn màn hình (vẫn giữ để làm tối nền) */}
+      <div className="absolute inset-0 bg-black/30 z-10" />
+
+      {/* Lớp 3: Panel Đăng nhập ở giữa */}
+      <main className="relative z-20 flex items-center justify-center min-h-screen p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="relative w-full max-w-sm h-auto bg-white/40 shadow-2xl backdrop-blur-2xl rounded-2xl overflow-hidden p-8 font-['Inter']"
+        >
+          {/* ... Phần còn lại của component giữ nguyên ... */}
+          <div className="absolute w-96 h-[503px] left-[365px] top-[509px] origin-top-left rotate-[127deg] bg-gradient-to-b from-gray-400 to-cyan-400 rounded-full -z-10" />
+          <div className="absolute w-96 h-[503px] left-[337px] top-[-130px] origin-top-left rotate-[127deg] bg-gradient-to-b from-gray-400 to-cyan-400 rounded-full -z-10" />
+          <div className="text-center mb-8">
+            <Image src="/logo/dark.png" alt="V2R Logo" width={92} height={57} className="mx-auto" />
+          </div>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <input
+              type="email"
+              placeholder={t('email_placeholder')}
+              className="w-full h-9 px-4 bg-white/40 rounded-[10px] backdrop-blur-md text-zinc-800 placeholder:text-zinc-600 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
+            <input
+              type="password"
+              placeholder={t('password_placeholder')}
+              className="w-full h-9 px-4 bg-white/40 rounded-[10px] backdrop-blur-md text-zinc-800 placeholder:text-zinc-600 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full h-9 bg-gradient-to-r from-cyan-600 to-sky-300 rounded-xl text-white text-xs font-bold font-['Unbounded'] hover:opacity-90 transition-opacity"
+            >
+              {t('continue_button')}
+            </button>
+          </form>
+          <div className="text-center mt-2">
+            <Link href="/forgot-password" className="text-cyan-600 text-xs font-semibold underline hover:text-cyan-700">
+              {t('forgot_password')}
+            </Link>
+          </div>
+          <div className="flex items-center my-4">
+            <hr className="flex-grow border-black/20" />
+            <span className="px-2 text-zinc-800 text-[10px]">Hoặc</span>
+            <hr className="flex-grow border-black/20" />
+          </div>
+          <button className="w-full h-9 bg-white/40 rounded-[10px] backdrop-blur-md flex items-center justify-center gap-x-2 text-black text-xs font-semibold hover:bg-white/60 transition-colors">
+            <Icon icon="flat-color-icons:google" className="w-4 h-4" />
+            {t('continue_with_google')}
+          </button>
+          <div className="flex justify-center space-x-4 my-4">
+            <Link href="/" className="w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"><Icon icon="logos:facebook" className="w-full h-full" /></Link>
+            <Link href="/" className="w-7 h-7 bg-indigo-500 rounded-full flex items-center justify-center p-1.5 shadow-md hover:scale-110 transition-transform"><Icon icon="skill-icons:discord" className="text-white" /></Link>
+            <Link href="/" className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center p-1.5 shadow-md hover:scale-110 transition-transform"><Icon icon="logos:telegram" className="text-white" /></Link>
+            <Link href="/" className="w-7 h-7 bg-black rounded-full flex items-center justify-center p-1.5 shadow-md hover:scale-110 transition-transform"><Icon icon="fa6-brands:x-twitter" className="text-white" /></Link>
+          </div>
+          <div className="text-center text-xs font-semibold">
+            <span className="text-zinc-800">{t('no_account')}{' '}</span>
+            <Link href="/register" className="text-cyan-600 underline hover:text-cyan-700">{t('register_now')}</Link>
+          </div>
+          <div className="text-center text-[8px] font-medium text-zinc-800 mt-6">
+            <span>{t('terms_prefix')}{' '}</span>
+            <Link href="/terms" className="text-cyan-600 hover:underline">{t('terms_of_use')}</Link>
+            <span>{' '}{t('terms_and')}{' '}</span>
+            <Link href="/privacy" className="text-cyan-600 hover:underline">{t('privacy_policy')}</Link>
+            <span>.</span>
+          </div>
+        </motion.div>
+      </main>
+    </div>
+  );
+}
+
+===== .\src\app\[locale]\register\page.tsx =====
+// ===== .\src\app\[locale]\register\page.tsx =====
+"use client";
+
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import { Link } from '@/../i18n/navigation';
+import Home from '../page';
+import { motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import type { FormEvent } from 'react';
 
 export default function RegisterPage() {
   const t = useTranslations('Register');
+  const { login } = useAuth();
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    login();
+  };
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-neutral-800">
-      <div className="w-full max-w-sm mx-auto bg-stone-900 text-white rounded-2xl shadow-lg p-8">
-        
-        <div className="text-center mb-4">
-          <Image src="/logo/light.png" alt="V2R Logo" width={50} height={31} className="mx-auto mb-6" />
-          <h1 className="text-xl font-semibold font-['Unbounded']">{t('welcome')}</h1>
-          <p className="text-sm text-gray-300 font-['Inter'] mt-2">{t('get_started')}</p>
-        </div>
-
-        <form className="space-y-4">
-          <div>
-            <input 
-              type="email" 
-              placeholder={t('email_placeholder')}
-              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <input 
-              type="password" 
-              placeholder={t('password_placeholder')}
-              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-           <div>
-            <input 
-              type="password" 
-              placeholder={t('confirm_password_placeholder')}
-              className="w-full h-10 px-4 bg-stone-900 border border-zinc-700 rounded-lg text-sm text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button 
-            type="submit"
-            className="w-full h-10 bg-blue-800 rounded-lg text-sm font-bold font-['Unbounded'] hover:bg-blue-700 transition-colors"
-          >
-            {t('continue_button')}
-          </button>
-        </form>
-
-        <div className="text-center text-xs text-white font-medium font-['Inter'] mt-6">
-          {t('have_account')}{' '}
-          <Link href="/login" className="text-cyan-300 hover:underline font-semibold">
-            {t('login_now')}
-          </Link>
-        </div>
-
-        <div className="text-center text-zinc-400 text-[9px] font-medium font-roboto mt-8">
-          <span>{t('terms_prefix')} </span>
-          <Link href="/terms" className="text-cyan-300 hover:underline">{t('terms_of_use')}</Link>
-          <span> {t('terms_and')} </span>
-          <Link href="/privacy" className="text-cyan-300 hover:underline">{t('privacy_policy')}</Link>
-          <span>.</span>
-        </div>
-
+    <div className="relative w-screen h-screen overflow-hidden">
+      {/* Lớp 1: Nền là toàn bộ trang Landing Page */}
+      {/* --- THAY ĐỔI TẠI ĐÂY --- */}
+      <div className="absolute inset-0 blur-md scale-105">
+        <Home />
       </div>
-    </main>
+
+      {/* Lớp 2: Lớp phủ mờ toàn màn hình */}
+      <div className="absolute inset-0 bg-black/30 z-10" />
+
+      {/* Lớp 3: Panel Đăng ký ở giữa */}
+      <main className="relative z-20 flex items-center justify-center min-h-screen p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className="relative w-full max-w-sm h-auto bg-white/40 shadow-2xl backdrop-blur-2xl rounded-2xl overflow-hidden p-8 font-['Inter']"
+        >
+          {/* ... Phần còn lại của component giữ nguyên ... */}
+          <div className="absolute w-96 h-[503px] left-[427px] top-[676px] origin-top-left rotate-[-162deg] bg-gradient-to-b from-gray-400 to-cyan-400 rounded-full -z-10" />
+          <div className="text-center mb-8">
+            <Image src="/logo/dark.png" alt="V2R Logo" width={92} height={57} className="mx-auto" />
+          </div>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <input
+              type="email"
+              placeholder={t('email_placeholder')}
+              className="w-full h-9 px-4 bg-white/40 rounded-[10px] backdrop-blur-md text-zinc-800 placeholder:text-zinc-600 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
+            <input
+              type="password"
+              placeholder={t('password_placeholder')}
+              className="w-full h-9 px-4 bg-white/40 rounded-[10px] backdrop-blur-md text-zinc-800 placeholder:text-zinc-600 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
+            <input
+              type="password"
+              placeholder={t('confirm_password_placeholder')}
+              className="w-full h-9 px-4 bg-white/40 rounded-[10px] backdrop-blur-md text-zinc-800 placeholder:text-zinc-600 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full h-9 bg-gradient-to-r from-cyan-600 to-sky-300 rounded-xl text-white text-xs font-bold font-['Unbounded'] hover:opacity-90 transition-opacity"
+            >
+              {t('continue_button')}
+            </button>
+          </form>
+          <div className="text-center text-xs font-semibold mt-8">
+            <span className="text-zinc-800">{t('have_account')}{' '}</span>
+            <Link href="/login" className="text-cyan-600 underline hover:text-cyan-700">{t('login_now')}</Link>
+          </div>
+          <div className="text-center text-[8px] font-medium text-zinc-800 mt-5">
+            <span>{t('terms_prefix')}{' '}</span>
+            <Link href="/terms" className="text-cyan-600 hover:underline">{t('terms_of_use')}</Link>
+            <span>{' '}{t('terms_and')}{' '}</span>
+            <Link href="/privacy" className="text-cyan-600 hover:underline">{t('privacy_policy')}</Link>
+            <span>.</span>
+          </div>
+        </motion.div>
+      </main>
+    </div>
   );
 }
 
 ===== .\src\app\[locale]\workspace\page.tsx =====
+// ===== .\src\app\[locale]\workspace\page.tsx =====
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import {
-  Panel,
-  PanelGroup,
-  PanelResizeHandle,
-  type ImperativePanelHandle, // SỬA LỖI 1: Dùng type đúng là ImperativePanelHandle
-} from "react-resizable-panels";
-
+import { useState } from "react";
 import Sidebar from "@/components/workspace/Sidebar";
 import ViewPanel from "@/components/workspace/ViewPanel";
 import LibraryPanel from "@/components/workspace/LibraryPanel";
-import { Leva } from "leva";
 import { Icon } from "@iconify/react";
-import { useTheme } from "next-themes";
-
-const SIDE_PANEL_EXPANDED_PX = 288;
-const SIDE_PANEL_COLLAPSED_PX = 56;
 
 export default function WorkspacePage() {
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isLibraryPanelCollapsed, setLibraryPanelCollapsed] = useState(false);
 
-  const { resolvedTheme } = useTheme();
-  
-  const [sidePanelSize, setSidePanelSize] = useState(20);
-  const [collapsedSize, setCollapsedSize] = useState(4);
-  
-  const [viewPanelBg, setViewPanelBg] = useState("bg-neutral-900");
-  const [handleBg, setHandleBg] = useState("bg-neutral-900");
+  const toggleSidebar = () => setSidebarCollapsed(!isSidebarCollapsed);
+  const toggleLibraryPanel = () => setLibraryPanelCollapsed(!isLibraryPanelCollapsed);
 
-  useEffect(() => {
-    const updatePanelSizes = () => {
-      const screenWidth = window.innerWidth;
-      setSidePanelSize((SIDE_PANEL_EXPANDED_PX / screenWidth) * 100);
-      setCollapsedSize((SIDE_PANEL_COLLAPSED_PX / screenWidth) * 100);
-    };
-
-    updatePanelSizes();
-    window.addEventListener('resize', updatePanelSizes);
-    return () => window.removeEventListener('resize', updatePanelSizes);
-  }, []);
-
-
-  useEffect(() => {
-    if (resolvedTheme === 'light') {
-      setViewPanelBg("bg-indigo-50");
-      setHandleBg("bg-indigo-50");
-    } else {
-      setViewPanelBg("bg-neutral-900");
-      setHandleBg("bg-neutral-900");
+  const expandLibraryPanel = () => {
+    if (isLibraryPanelCollapsed) {
+      setLibraryPanelCollapsed(false);
     }
-  }, [resolvedTheme]);
-
-  const sidebarPanelRef = useRef<ImperativePanelHandle>(null); // SỬA LỖI 1
-  const libraryPanelRef = useRef<ImperativePanelHandle>(null); // SỬA LỖI 1
-
-  const toggleSidebar = () => {
-    const panel = sidebarPanelRef.current;
-    if (panel) { panel.isCollapsed() ? panel.expand() : panel.collapse(); }
-  };
-
-  const toggleLibraryPanel = () => {
-    const panel = libraryPanelRef.current;
-    if (panel) { panel.isCollapsed() ? panel.expand() : panel.collapse(); }
   };
 
   return (
-    <main className="w-screen h-screen overflow-hidden select-none">
-      <button
-        onClick={() => setMobileSidebarOpen(true)}
-        className="absolute top-4 left-4 z-50 lg:hidden p-2 bg-gray-700/50 text-white rounded-md"
-        aria-label="Open sidebar"
-      >
-        <Icon icon="mdi:menu" width={24} />
-      </button>
-
-      <PanelGroup direction="horizontal">
-        <Panel
-          ref={sidebarPanelRef}
-          defaultSize={sidePanelSize}
-          minSize={15}
-          collapsible={true}
-          collapsedSize={collapsedSize}
-          onCollapse={() => setSidebarCollapsed(true)}
-          onExpand={() => setSidebarCollapsed(false)}
-        >
+    <div className="w-screen h-screen overflow-hidden select-none relative font-['Inter']">
+      {/* CẬP NHẬT: Thay thế các khối màu trang trí theo thiết kế mới */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden -z-20 pointer-events-none">
+        <div
+          className="absolute bg-gradient-to-b from-[#928DAB] to-[#00D2FF] rounded-full"
+          style={{
+            width: '387.15px',
+            height: '503.17px',
+            left: '66.87px',
+            top: '461.99px',
+            transform: 'rotate(-145deg)',
+            transformOrigin: 'top left',
+          }}
+        />
+        <div
+          className="absolute bg-gradient-to-b from-[#928DAB] to-[#00D2FF] rounded-full"
+          style={{
+            width: '592.95px',
+            height: '884.18px',
+            left: '1326.21px',
+            top: '462px',
+            transform: 'rotate(69deg)',
+            transformOrigin: 'top left',
+          }}
+        />
+      </div>
+      {/* CẬP NHẬT: Lớp mờ glassmorphism */}
+      <div className="absolute inset-0 bg-white/[.43] backdrop-blur-[35px] -z-10"></div>
+      
+      {/* CÁC LỚP UI VÀ CANVAS (Giữ nguyên) */}
+      <div className="fixed inset-0 z-10">
+        <ViewPanel />
+      </div>
+      <div className="fixed inset-0 z-20 pointer-events-none">
+        <div className={`absolute top-0 left-0 h-full pointer-events-auto transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-[56px]' : 'w-[288px]'}`}>
           <Sidebar
             isCollapsed={isSidebarCollapsed}
             toggleCollapse={toggleSidebar}
             isSidebarOpen={isMobileSidebarOpen}
             setIsSidebarOpen={setMobileSidebarOpen}
+            expandLibraryPanel={expandLibraryPanel}
           />
-        </Panel>
-        
-        <PanelResizeHandle className={`w-1.5 transition-colors duration-200 group ${handleBg}`}>
-          <div className="h-full w-px bg-transparent group-hover:bg-blue-600 transition-colors duration-200" />
-        </PanelResizeHandle>
-
-        <Panel minSize={30}>
-          <div className={`h-full relative ${viewPanelBg}`}>
-            <ViewPanel />
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[300px] z-10">
-              <Leva fill oneLineLabels collapsed />
-            </div>
-          </div>
-        </Panel>
-
-        <PanelResizeHandle className={`w-1.5 transition-colors duration-200 group ${handleBg}`}>
-           <div className="h-full w-px bg-transparent group-hover:bg-blue-600 transition-colors duration-200" />
-        </PanelResizeHandle>
-
-        <Panel
-          ref={libraryPanelRef}
-          defaultSize={sidePanelSize}
-          minSize={15}
-          collapsible={true}
-          collapsedSize={collapsedSize}
-          onCollapse={() => setLibraryPanelCollapsed(true)}
-          onExpand={() => setLibraryPanelCollapsed(false)}
-        >
-          <LibraryPanel
-            isCollapsed={isLibraryPanelCollapsed}
-            toggleCollapse={toggleLibraryPanel}
+        </div>
+        <div className={`absolute top-0 right-0 h-full pointer-events-auto transition-all duration-300 ease-in-out ${isLibraryPanelCollapsed ? 'w-[56px]' : 'w-[288px]'}`}>
+          <LibraryPanel 
+            isCollapsed={isLibraryPanelCollapsed} 
+            toggleCollapse={toggleLibraryPanel} 
           />
-        </Panel>
-      </PanelGroup>
-    </main>
+        </div>
+        <div className={`absolute top-0 h-full transition-all duration-300 ease-in-out p-4 md:p-6 ${isSidebarCollapsed ? 'left-[56px]' : 'left-[288px]'} ${isLibraryPanelCollapsed ? 'right-[56px]' : 'right-[288px]'}`}>
+           <div className="h-full w-full relative border-2 border-[#2980B9] rounded-2xl shadow-lg"></div>
+        </div>
+      </div>
+      <button
+        onClick={() => setMobileSidebarOpen(true)}
+        className="absolute top-4 left-4 z-30 lg:hidden p-2 bg-black/20 text-white rounded-md"
+        aria-label="Open sidebar"
+      >
+        <Icon icon="mdi:menu" width={24} />
+      </button>
+    </div>
   );
 }
 
@@ -1400,10 +1632,10 @@ const Footer: FC = () => {
   const t = useTranslations('Footer');
 
   return (
-    <footer className="relative bg-gradient-to-b from-stone-50 to-blue-800 rounded-t-3xl pt-24 pb-12">
+    <footer className="relative pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8 text-neutral-900">
-        {/* Subscription */}
         <div className="lg:col-span-2">
+          {/* === CHỈNH SỬA TẠI ĐÂY === */}
           <h3 className="text-xl font-semibold font-['Unbounded']">{t('subscribe_title')}</h3>
           <p className="mt-2 text-lg font-['Inter']">{t('subscribe_description')}</p>
           <form className="mt-4 flex flex-col sm:flex-row gap-4">
@@ -1412,14 +1644,15 @@ const Footer: FC = () => {
               placeholder={t('email_placeholder')}
               className="w-full sm:w-80 h-11 px-4 rounded-[10px] bg-white text-stone-500 font-['Inter']" 
             />
-        <button className="bg-blue-800 text-white text-lg font-medium font-['Unbounded'] rounded-[10px] h-11 px-8 whitespace-nowrap">
-          {t('subscribe_button')}
-        </button>
+            {/* === CHỈNH SỬA TẠI ĐÂY === */}
+            <button className="bg-gradient-to-r from-cyan-600 to-sky-300 text-white text-lg font-medium font-['Unbounded'] rounded-[10px] h-11 px-8 whitespace-nowrap">
+              {t('subscribe_button')}
+            </button>
           </form>
         </div>
         
-        {/* Links */}
         <div>
+          {/* === CHỈNH SỬA TẠI ĐÂY === */}
           <h3 className="text-xl font-semibold font-['Unbounded']">{t('features_title')}</h3>
           <ul className="mt-4 space-y-2 text-lg font-['Inter']">
             <li><Link href="/features#text-to-3d">{t('text_to_3d')}</Link></li>
@@ -1428,6 +1661,7 @@ const Footer: FC = () => {
         </div>
 
         <div>
+          {/* === CHỈNH SỬA TẠI ĐÂY === */}
           <h3 className="text-xl font-semibold font-['Unbounded']">{t('product_title')}</h3>
           <ul className="mt-4 space-y-2 text-lg font-['Inter']">
             <li><Link href="/pricing">{t('pricing')}</Link></li>
@@ -1438,6 +1672,7 @@ const Footer: FC = () => {
         </div>
 
         <div>
+          {/* === CHỈNH SỬA TẠI ĐÂY === */}
           <h3 className="text-xl font-semibold font-['Unbounded']">{t('company_title')}</h3>
           <ul className="mt-4 space-y-2 text-lg font-['Inter']">
             <li><Link href="/about">{t('about')}</Link></li>
@@ -1456,54 +1691,57 @@ const Footer: FC = () => {
 export default Footer;
 
 ===== .\src\components\Header.tsx =====
+// ===== .\src\components\Header.tsx =====
 "use client";
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Link } from '../../i18n/navigation'; // Sử dụng Link từ next-intl
+import { Link, usePathname } from '../../i18n/navigation';
 import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { useAuth } from '@/context/AuthContext'; // 1. Import useAuth hook
+import { useAuth } from '@/context/AuthContext';
 import { Icon } from '@iconify/react';
+import { useUI } from '@/context/UIContext'; // --- BỔ SUNG ---
 
 const Header = () => {
   const t = useTranslations('Header');
-  const { isAuthenticated, logout } = useAuth(); // 2. Lấy trạng thái và hàm logout
+  const pathname = usePathname();
+  const { isAuthenticated, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { openLoginModal, openRegisterModal } = useUI(); // --- BỔ SUNG ---
+
+  const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="absolute top-0 left-0 w-full z-10">
+    <header className="absolute top-0 left-0 w-full z-20">
       <nav className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24">
+        {/* ... phần logo và menu giữ nguyên ... */}
         <div className="flex items-center">
           <Link href="/">
-            <Image src="/logo/dark.png" alt="Logo" width={50} height={50} />
+            <Image src="/logo/dark.png" alt="Logo" width={90} height={56} priority />
           </Link>
         </div>
-        <div className="hidden md:flex items-center space-x-8 text-gray-800 font-['Unbounded'] text-lg">
-          <Link href="/" className="bg-neutral-900 text-neutral-100 rounded-xl px-6 py-2.5 font-bold">{t('home')}</Link>
-          <Link href="/community">{t('community')}</Link>
-          <Link href="/features">{t('features')}</Link>
-          <Link href="/pricing">{t('pricing')}</Link>
+        <div className="hidden md:flex items-center space-x-12 text-lg font-['Unbounded']">
+          <Link href="/" className={`relative font-medium transition-colors ${isActive('/') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>
+            {t('home')}
+            {isActive('/') && <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4/5 h-[3px] bg-black rounded-full"></span>}
+          </Link>
+          <Link href="/community" className={`font-medium transition-colors ${isActive('/community') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>{t('community')}</Link>
+          <Link href="/features" className={`font-medium transition-colors ${isActive('/features') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>{t('features')}</Link>
+          <Link href="/pricing" className={`font-medium transition-colors ${isActive('/pricing') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>{t('pricing')}</Link>
         </div>
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-6">
           <LanguageSwitcher />
 
-          {/* 3. Hiển thị có điều kiện */}
           {isAuthenticated ? (
-            <div className="relative">
-              <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="w-10 h-10 bg-zinc-300 rounded-full flex items-center justify-center">
-                <Icon icon="mdi:user" className="w-6 h-6 text-black" />
+             <div className="relative">
+              <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="w-12 h-12 bg-zinc-300 rounded-full flex items-center justify-center ring-2 ring-offset-2 ring-blue-500">
+                <Icon icon="mdi:user" className="w-7 h-7 text-black" />
               </button>
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
                   <Link href="/workspace" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Workspace</Link>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setIsDropdownOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
+                  <button onClick={() => { logout(); setIsDropdownOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Log Out
                   </button>
                 </div>
@@ -1511,8 +1749,12 @@ const Header = () => {
             </div>
           ) : (
             <>
-              <Link href="/login" className="text-gray-800 font-['Unbounded'] text-lg">{t('log_in')}</Link>
-              <Link href="/start" className="bg-neutral-900 text-neutral-100 rounded-xl px-6 py-2.5 font-['Unbounded'] text-lg">{t('start_for_free')}</Link>
+              {/* --- THAY ĐỔI: Chuyển Link thành button --- */}
+              <button onClick={openLoginModal} className="text-neutral-800 font-['Unbounded'] text-lg font-medium hover:text-black transition-colors">{t('log_in')}</button>
+              {/* --- THAY ĐỔI: Chuyển Link thành button --- */}
+              <button onClick={openRegisterModal} className="bg-gradient-to-r from-[#2980B9] to-[#6DD5FA] text-white rounded-xl px-7 py-3 font-['Unbounded'] text-base hover:opacity-90 transition-opacity shadow-md">
+                {t('start_for_free')}
+              </button>
             </>
           )}
         </div>
@@ -1534,39 +1776,36 @@ const Hero: FC = () => {
   const t = useTranslations('Hero');
 
   return (
-    <section className="relative pt-40 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center">
-        {/* Left Content */}
-        <div className="lg:w-1/2 text-left">
-          <h1 className="text-6xl font-bold font-['Unbounded'] capitalize text-neutral-900">
+    <section className="relative pt-48 pb-20 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between">
+        <div className="lg:w-1/2 text-left z-10">
+          {/* === CHỈNH SỬA TẠI ĐÂY === */}
+          <h1 className="text-5xl lg:text-[52px] font-semibold font-['Unbounded'] capitalize text-[#161616] leading-tight">
             {t('title')}
           </h1>
-          <p className="mt-6 text-lg font-['Inter'] text-neutral-900 max-w-lg">
+          {/* === CHỈNH SỬA TẠI ĐÂY === */}
+          <p className="mt-6 text-lg font-['Inter'] text-[#171717] max-w-lg">
             {t('description')}
           </p>
-          <div className="mt-8 flex items-center space-x-4">
-            <button className="bg-blue-900 text-white text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[30px] px-8 py-4 text-center flex items-center hover:bg-blue-800 transition-colors">
+          <div className="mt-10 flex items-center space-x-4">
+            {/* === CHỈNH SỬA TẠI ĐÂY === */}
+            <button className="bg-gradient-to-r from-[#2980B9] to-[#6DD5FA] text-white text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[64px] px-10 py-5 text-center flex items-center hover:opacity-90 transition-opacity shadow-lg">
               {t('start_for_free')}
-            </button>
-            <button className="bg-neutral-900 text-neutral-100 text-xl font-semibold font-['Unbounded'] tracking-wide rounded-[30px] px-8 py-4 flex items-center">
-              {t('explore')}
-              <div className="ml-2 w-7 h-7 flex items-center justify-center">
-                 <div className="w-0 h-0 border-t-[7px] border-t-transparent border-l-[10px] border-l-neutral-100 border-b-[7px] border-b-transparent"></div>
-              </div>
             </button>
           </div>
         </div>
 
-        {/* Right Image */}
-        <div className="lg:w-1/2 mt-12 lg:mt-0 relative flex justify-center items-center lg:pl-60">
-          <div className="w-96 h-[520px] bg-gradient-to-l from-zinc-900 via-gray-400 to-zinc-900 rounded-[20px] relative">
-             <Image 
-                src="/landing-page/untiltlsed 3.png" 
-                alt="Featured 3D Model" 
-                width={368} 
-                height={465}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 object-cover rounded-xl"
-             />
+        <div className="lg:w-1/2 mt-12 lg:mt-0 relative flex justify-center items-center">
+          <div className="w-[335px] h-[423px] bg-white/45 shadow-2xl rounded-[50px] backdrop-blur-lg p-4 border border-white/30">
+             <div className="w-full h-full relative rounded-[35px] overflow-hidden">
+                <Image 
+                    src="/landing-page/untiltlsed 3.png" 
+                    alt="Featured 3D Model" 
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    priority
+                />
+             </div>
           </div>
         </div>
       </div>
@@ -1577,72 +1816,195 @@ const Hero: FC = () => {
 export default Hero;
 
 ===== .\src\components\ImageGallery.tsx =====
+// ===== .\src/components/ImageGallery.tsx =====
 "use client";
-import type { FC } from 'react';
+import { useState, type FC } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { Icon } from '@iconify/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-interface ImageItem {
-  src: string;
-  width: number;
-  height: number;
-  alt: string;
-}
-
-const images: ImageItem[] = [
-  { src: '/landing-page/image 4.png', width: 413, height: 576, alt: '3D model render' },
-  { src: '/landing-page/image 9.png', width: 413, height: 180, alt: '3D model render' },
-  { src: '/landing-page/image 10.png', width: 413, height: 592, alt: '3D model render' },
-  { src: '/landing-page/image 11.png', width: 413, height: 619, alt: '3D model render' },
-  { src: '/landing-page/image 13.png', width: 413, height: 425, alt: '3D model render' },
-  { src: '/landing-page/image 14.png', width: 413, height: 674, alt: '3D model render' },
-  { src: '/landing-page/image 15.png', width: 413, height: 701, alt: '3D model render' },
-  { src: '/landing-page/image 16.png', width: 413, height: 401, alt: '3D model render' },
-  { src: '/landing-page/image 17.png', width: 413, height: 592, alt: '3D model render' },
-  { src: '/landing-page/image 18.png', width: 413, height: 592, alt: '3D model render' },
-  { src: '/landing-page/image 19.png', width: 413, height: 425, alt: '3D model render' },
-  { src: '/landing-page/image 20.png', width: 413, height: 269, alt: '3D model render' },
-  { src: '/landing-page/image 21.png', width: 413, height: 619, alt: '3D model render' },
-  { src: '/landing-page/image 22.png', width: 413, height: 425, alt: '3D model render' },
-  { src: '/landing-page/image 23.png', width: 413, height: 592, alt: '3D model render' },
-  // Bạn có thể thêm các ảnh còn lại vào đây
+// Dữ liệu mẫu (không đổi)
+const allGalleryItems = [
+  { src: '/landing-page/image 4.png', alt: '3D model 1', name: 'Yua Mikami', timestamp: '1 ngày trước' },
+  { src: '/landing-page/image 13.png', alt: '3D model 2', name: 'Asuka Langley', timestamp: '3 ngày trước' },
+  { src: '/landing-page/image 9.png', alt: '3D model 3', name: 'Eimi Fukada', timestamp: '2 ngày trước' },
+  { src: '/landing-page/image 11.png', alt: '3D model 4', name: 'Rei Ayanami', timestamp: '4 ngày trước' },
+  { src: '/landing-page/image 14.png', alt: '3D model 5', name: 'Shinji Ikari', timestamp: '5 ngày trước' },
+  { src: '/landing-page/image 10.png', alt: '3D model 6', name: 'Kaworu Nagisa', timestamp: '6 ngày trước' },
+  { src: '/landing-page/image 15.png', alt: '3D model 7', name: 'Mari Illustrious', timestamp: '7 ngày trước' },
+  { src: '/landing-page/image 16.png', alt: '3D model 8', name: 'Toji Suzuhara', timestamp: '8 ngày trước' },
+  { src: '/landing-page/image 17.png', alt: '3D model 9', name: 'Kensuke Aida', timestamp: '9 ngày trước' },
 ];
+
+// ... (variants không đổi) ...
+const carouselVariants = {
+  main: { x: -250, y: 0, scale: 1, opacity: 1, zIndex: 3 },
+  next: { x: 150, y: 100, scale: 0.7, opacity: 1, zIndex: 2 },
+  secondNext: { x: 440, y: 100, scale: 0.7, opacity: 0.7, zIndex: 1 },
+  prev: { x: -600, scale: 0.7, opacity: 0, zIndex: 2 },
+  hidden: { x: 550, scale: 0.7, opacity: 0, zIndex: 1 },
+};
+const textVariants = {
+    enter: { y: 20, opacity: 0 },
+    center: { y: 0, opacity: 1 },
+    exit: { y: -20, opacity: 0 },
+};
 
 const ImageGallery: FC = () => {
   const t = useTranslations('ImageGallery');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
+  // ... (logic không đổi) ...
+  const paginate = (direction: number) => {
+    setActiveIndex((prevIndex) => {
+        const newIndex = (prevIndex + direction + allGalleryItems.length) % allGalleryItems.length;
+        return newIndex;
+    });
+  };
+  const getVariantName = (itemIndex: number) => {
+    const total = allGalleryItems.length;
+    if (itemIndex === activeIndex) return 'main';
+    if (itemIndex === (activeIndex + 1) % total) return 'next';
+    if (itemIndex === (activeIndex + 2) % total) return 'secondNext';
+    if (itemIndex === (activeIndex - 1 + total) % total) return 'prev';
+    return 'hidden';
+  };
+  const activeItem = allGalleryItems[activeIndex];
 
   return (
-    <section className="py-20">
-      <div className="text-center max-w-3xl mx-auto px-4">
-        <h2 className="text-4xl font-bold font-['Unbounded'] text-neutral-900">{t('title')}</h2>
-        <p className="mt-4 text-xl font-['Inter'] text-neutral-900">{t('description')}</p>
-      </div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 columns-1 md:columns-2 lg:columns-3 gap-8">
-        {images.map((image) => (
-          <div key={image.src} className="mb-8 break-inside-avoid">
-            <Image 
-              src={image.src} 
-              alt={image.alt}
-              width={image.width} 
-              height={image.height}
-              className="rounded-[35px] w-full h-auto"
-              sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-            />
-          </div>
-        ))}
-      </div>
-      
-      <div className="text-center mt-12">
-        <button className="bg-neutral-900 text-white text-lg font-medium font-['Unbounded'] rounded-[10px] px-8 py-3">
-          {t('load_more')}
-        </button>
-      </div>
+    <section className="relative">
+        {/* Lớp nền (không đổi) */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+            <AnimatePresence>
+                {!isExpanded && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }} className="absolute inset-0"
+                        style={{ backgroundImage: `url(/landing-page/background/background-image-gallery.png)`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}/>
+                )}
+            </AnimatePresence>
+             <motion.div initial={{ opacity: 0 }} animate={{ opacity: isExpanded ? 1 : 0 }} transition={{ duration: 0.5 }} className="absolute inset-0 bg-neutral-950"/>
+        </div>
+
+        {/* Lớp nội dung */}
+        <div className="relative z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+                <div className="text-center max-w-3xl mx-auto mb-16">
+                    <h2 className="text-4xl font-['Unbounded'] font-medium text-white">{t('title')}</h2>
+                    <p className="mt-4 text-xl font-['Inter'] text-white/80">{t('description')}</p>
+                </div>
+                
+                <AnimatePresence mode="wait">
+                    {!isExpanded && (
+                        <motion.div key="carousel" className="relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+
+                            {/* === CHỈNH SỬA TẠI ĐÂY: Tăng khoảng cách === */}
+                            <button onClick={() => paginate(-1)} className="absolute left-[-80px] top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-gray-800/50 rounded-full flex items-center justify-center text-white hover:bg-gray-700/70 transition-colors">
+                                <Icon icon="mdi:chevron-left" width={28} />
+                            </button>
+                            
+                            {/* === CHỈNH SỬA TẠI ĐÂY: Tăng khoảng cách === */}
+                            <button onClick={() => paginate(1)} className="absolute right-[-80px] top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-gray-800/50 rounded-full flex items-center justify-center text-white hover:bg-gray-700/70 transition-opacity">
+                                <Icon icon="mdi:chevron-right" width={28} />
+                            </button>
+
+                            {/* "Sân khấu" cho Carousel (không đổi) */}
+                            <div className="relative h-[600px] flex items-center justify-center overflow-hidden">
+                                <div className="relative w-full max-w-5xl h-[550px]">
+                                    <AnimatePresence mode="wait" initial={false}>
+                                        <motion.div key={activeIndex} variants={textVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }} className="absolute top-12 left-[calc(50%+50px)] w-[400px] z-20">
+                                            <h3 className="text-white text-4xl font-['Unbounded'] font-medium">{activeItem.name}</h3>
+                                            <p className="text-white/70 text-lg font-['Inter'] font-light mt-1">{activeItem.timestamp}</p>
+                                            <button className="!mt-4 w-fit flex items-center gap-x-2 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-lg px-3 py-1.5 text-white text-sm font-['Inter'] font-light tracking-wider hover:opacity-90 transition-opacity">
+                                                <Icon icon="mdi:download-outline" width={18} /> Tải về
+                                            </button>
+                                        </motion.div>
+                                    </AnimatePresence>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        {allGalleryItems.map((item, index) => (
+                                            <motion.div key={item.name} className="absolute w-[380px] h-[550px]" animate={getVariantName(index)} variants={carouselVariants} transition={{ type: 'spring', stiffness: 200, damping: 25 }} style={{ originY: 0.5, originX: 0.5 }}>
+                                               <div className="w-full h-full p-3 rounded-3xl">
+                                                    <div className="w-full h-full relative rounded-2xl overflow-hidden">
+                                                         <Image src={item.src} alt={item.alt} layout="fill" objectFit={getVariantName(index) === 'main' ? 'contain' : 'cover'} />
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* Layout khi mở rộng (grid, không đổi) */}
+                    {isExpanded && (
+                        <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                {allGalleryItems.map((item) => (
+                                    <div key={item.name} className="group relative aspect-[3/4] overflow-hidden rounded-2xl">
+                                        <Image src={item.src} alt={item.alt} layout="fill" objectFit="cover" className="group-hover:scale-105 transition-transform duration-300"/>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"/>
+                                        <div className="absolute bottom-0 left-0 p-4">
+                                            <h3 className="text-white font-semibold">{item.name}</h3>
+                                            <p className="text-white/70 text-sm">{item.timestamp}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+            
+            {/* Nút Tải thêm (không đổi) */}
+            <div className="text-center pt-10 pb-16">
+                 <button onClick={() => setIsExpanded(!isExpanded)} className="bg-neutral-800 text-white font-['Unbounded'] px-8 py-3 rounded-lg hover:bg-neutral-700 transition-colors">
+                    {isExpanded ? 'Thu gọn' : t('load_more')}
+                </button>
+            </div>
+        </div>
     </section>
   );
 };
 
 export default ImageGallery;
+
+===== .\src\components\LandingPage.tsx =====
+// ===== .\src\components\LandingPage.tsx =====
+"use client";
+
+import { useUI } from "@/context/UIContext";
+import Footer from "@/components/Footer";
+import Hero from "@/components/Hero";
+import ImageGallery from "@/components/ImageGallery";
+import WorkflowCTA from "@/components/WorkflowCTA";
+import Header from "@/components/Header";
+import Pricing from "@/components/Pricing";
+import LoginModal from "@/components/auth/LoginModal";
+import RegisterModal from "@/components/auth/RegisterModal";
+
+export default function LandingPage() {
+  const { isLoginModalOpen, isRegisterModalOpen, closeAllModals } = useUI();
+
+  return (
+    <>
+      {/* 
+        Nội dung trang chủ được render trực tiếp, không cần div bọc nữa
+      */}
+      <Header />
+      <Hero />
+      <ImageGallery />
+      <Pricing />
+      <WorkflowCTA />
+      <Footer />
+      
+      {/* 
+        Các modal vẫn được render ở đây. Chúng sẽ tự xử lý hiệu ứng blur.
+      */}
+      <LoginModal isOpen={isLoginModalOpen} onClose={closeAllModals} />
+      <RegisterModal isOpen={isRegisterModalOpen} onClose={closeAllModals} />
+    </>
+  );
+}
 
 ===== .\src\components\LanguageSwitcher.tsx =====
 "use client";
@@ -1732,6 +2094,25 @@ export default function LanguageSwitcher() {
   );
 }
 
+===== .\src\components\ModalRenderer.tsx =====
+// ===== .\src/components/ModalRenderer.tsx =====
+"use client"; // --- QUAN TRỌNG: Đánh dấu đây là Client Component ---
+
+import { useUI } from '@/context/UIContext';
+import LoginModal from '@/components/auth/LoginModal';
+import RegisterModal from '@/components/auth/RegisterModal';
+
+export default function ModalRenderer() {
+  const { isLoginModalOpen, isRegisterModalOpen, closeAllModals } = useUI();
+
+  return (
+    <>
+      <LoginModal isOpen={isLoginModalOpen} onClose={closeAllModals} />
+      <RegisterModal isOpen={isRegisterModalOpen} onClose={closeAllModals} />
+    </>
+  );
+}
+
 ===== .\src\components\Pricing.tsx =====
 // ===== .\src\components\Pricing.tsx =====
 "use client";
@@ -1740,7 +2121,7 @@ import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
 import type { FC } from 'react';
 
-// Component con cho mỗi thẻ giá, được thiết kế lại để khớp với hình ảnh
+// ... (Component PricingCard giữ nguyên) ...
 const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => {
   const t = useTranslations(`Pricing.${plan}`);
   const isPro = plan === 'pro';
@@ -1751,22 +2132,18 @@ const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => 
         flex flex-col p-8 rounded-2xl border transition-all duration-300
         ${isPro 
           ? 'bg-neutral-900 text-white border-blue-700 shadow-2xl lg:scale-105 lg:z-10' 
-          : 'bg-white text-neutral-900 border-gray-200 shadow-lg'
+          // CẬP NHẬT: Thêm hiệu ứng trong suốt cho thẻ Basic và Enterprise
+          : 'bg-white/60 backdrop-blur-sm text-neutral-900 border-gray-200/50 shadow-lg'
         }
       `}
     >
-      {/* Tên gói */}
       <h3 className="text-2xl font-bold font-['Inter']">{t('name')}</h3>
-      
-      {/* CẬP NHẬT: Thêm 'whitespace-nowrap' để ngăn xuống dòng */}
       <div className="flex items-baseline mt-8 mb-10 whitespace-nowrap">
         <span className="text-5xl font-bold font-['Inter'] tracking-tight">{t('price')}</span>
         <span className={`text-lg font-medium ml-1 ${isPro ? 'text-gray-400' : 'text-gray-500'}`}>
           /{t('price_period')}
         </span>
       </div>
-
-      {/* Nút CTA */}
       <button 
         className={`
           w-full h-12 rounded-lg text-base font-semibold transition-colors
@@ -1778,11 +2155,7 @@ const PricingCard: FC<{ plan: 'basic' | 'pro' | 'enterprise' }> = ({ plan }) => 
       >
         {t('cta_button')}
       </button>
-
-      {/* Đường kẻ ngang */}
-      <hr className={`my-8 ${isPro ? 'border-zinc-700' : 'border-gray-300'}`} />
-
-      {/* Danh sách tính năng */}
+      <hr className={`my-8 ${isPro ? 'border-zinc-700' : 'border-gray-300/50'}`} />
       <ul className="space-y-4 flex-grow">
         {t.raw('features').map((feature: string, index: number) => (
           <li key={index} className="flex items-center text-base font-medium font-['Inter']">
@@ -1807,19 +2180,15 @@ const Pricing: FC = () => {
   const t = useTranslations('Pricing');
 
   return (
-    <section className="bg-white py-20 lg:py-24">
+    // CẬP NHẬT: Xóa bỏ "bg-white" để làm trong suốt section này
+    <section id="pricing" className="py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Phần tiêu đề đã được ẩn đi để khớp với ảnh thứ 2, bạn có thể mở lại nếu cần */}
-        
         <div className="text-center">
           <h1 className="text-4xl font-bold font-['Unbounded'] text-neutral-900">{t('title')}</h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg font-medium font-['Inter'] text-neutral-600">
             {t('subtitle')}
           </p>
         </div>
-       
-
-        {/* Căn giữa các thẻ trên màn hình lớn */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-center">
           <PricingCard plan="basic" />
           <PricingCard plan="pro" />
@@ -1844,7 +2213,7 @@ const WorkflowCTA: FC = () => {
   return (
     <section className="py-20 text-center">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl font-bold font-['Inter'] text-neutral-900">{t('title')}</h2>
+        <h2 className="text-4xl font-bold font-['Unbounded'] text-neutral-900">{t('title')}</h2>
         <p className="mt-4 text-xl font-['Inter'] text-neutral-900">
           {t('description')}
         </p>
@@ -1866,110 +2235,352 @@ const WorkflowCTA: FC = () => {
 
 export default WorkflowCTA;
 
+===== .\src\components\auth\LoginModal.tsx =====
+// ===== .\src\components\auth\LoginModal.tsx =====
+"use client";
+
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import { Link } from '@/../i18n/navigation';
+import { Icon } from '@iconify/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import { useUI } from '@/context/UIContext';
+import type { FormEvent } from 'react';
+
+// ... (interface và khai báo component không đổi)
+interface LoginModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+  const t = useTranslations('Login');
+  const { login } = useAuth();
+  const { openRegisterModal } = useUI();
+
+  const handleSubmit = (e: FormEvent) => { e.preventDefault(); onClose(); login(); };
+  const switchToRegister = () => { onClose(); setTimeout(openRegisterModal, 300); };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        // --- THAY ĐỔI TẠI ĐÂY ---
+        // Thêm "backdrop-blur-md" để làm mờ mọi thứ phía sau tấm nền này.
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
+          className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4 font-inter">
+          
+          <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.2, ease: "easeOut" }} onClick={(e) => e.stopPropagation()}
+            // Panel này vẫn giữ backdrop-blur-2xl để có hiệu ứng kính mờ
+            className="relative w-72 bg-white/40 shadow-2xl backdrop-blur-2xl rounded-2xl overflow-hidden p-6 flex flex-col">
+            
+            {/* ...Toàn bộ nội dung bên trong giữ nguyên... */}
+            <div className="absolute w-96 h-[503px] left-[365px] top-[509px] origin-top-left rotate-[127deg] bg-gradient-to-b from-gray-400 to-cyan-400 rounded-full -z-10" />
+            <div className="absolute w-96 h-[503px] left-[337px] top-[-130px] origin-top-left rotate-[127deg] bg-gradient-to-b from-gray-400 to-cyan-400 rounded-full -z-10" />
+            <Image src="/logo/dark.png" alt="V2R Logo" width={92} height={57} className="mx-auto mt-16 mb-8" />
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <input type="email" placeholder={t('email_placeholder')} className="w-full h-10 px-4 bg-white/40 rounded-[10px] text-zinc-800 placeholder:text-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" required />
+              <input type="password" placeholder={t('password_placeholder')} className="w-full h-10 px-4 bg-white/40 rounded-[10px] text-zinc-800 placeholder:text-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" required />
+              <button type="submit" className="w-full h-10 bg-gradient-to-r from-cyan-600 to-sky-300 rounded-xl text-white text-sm font-bold font-unbounded hover:opacity-90 transition-opacity">
+                {t('continue_button')}
+              </button>
+            </form>
+            <div className="text-center text-sm font-semibold mt-4">
+              <span className="text-zinc-800">{t('no_account')}{' '}</span>
+              <button onClick={switchToRegister} className="text-cyan-600 underline hover:text-cyan-700">{t('register_now')}</button>
+            </div>
+            <div className="text-center mt-1">
+              <Link href="/forgot-password" className="text-cyan-600 text-sm font-semibold underline hover:text-cyan-700">
+                {t('forgot_password')}
+              </Link>
+            </div>
+            <div className="flex items-center my-4">
+              <hr className="flex-grow border-black/20" /><span className="px-2 text-zinc-800 text-xs">{t('or')}</span><hr className="flex-grow border-black/20" />
+            </div>
+            <button className="w-full h-10 mb-4 bg-white/40 rounded-[10px] flex items-center justify-center gap-x-2 text-black text-sm font-semibold hover:bg-white/60 transition-colors">
+              <Icon icon="flat-color-icons:google" className="w-5 h-5" />
+              {t('continue_with_google')}
+            </button>
+            <div className="flex justify-center space-x-4">
+              <Link href="/" className="w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"><Icon icon="logos:facebook" className="w-full h-full" /></Link>
+              <Link href="/" className="w-7 h-7 bg-indigo-500 rounded-full flex items-center justify-center p-1.5 shadow-md hover:scale-110 transition-transform"><Icon icon="skill-icons:discord" className="text-white" /></Link>
+              <Link href="/" className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center p-1.5 shadow-md hover:scale-110 transition-transform"><Icon icon="logos:telegram" className="text-white" /></Link>
+              <Link href="/" className="w-7 h-7 bg-black rounded-full flex items-center justify-center p-1.5 shadow-md hover:scale-110 transition-transform"><Icon icon="fa6-brands:x-twitter" className="text-white" /></Link>
+            </div>
+            <div className="text-center text-[10px] font-medium text-zinc-800 mt-auto pt-6">
+              <span>{t('terms_prefix')}{' '}</span><Link href="/terms" className="text-cyan-600 hover:underline">{t('terms_of_use')}</Link><span>{' '}{t('terms_and')}{' '}</span><Link href="/privacy" className="text-cyan-600 hover:underline">{t('privacy_policy')}</Link>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+===== .\src\components\auth\RegisterModal.tsx =====
+// ===== .\src/components/auth/RegisterModal.tsx =====
+"use client";
+
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import { Link } from '@/../i18n/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
+import { useUI } from '@/context/UIContext';
+import type { FormEvent } from 'react';
+
+interface RegisterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
+  const t = useTranslations('Register');
+  const { login } = useAuth();
+  const { openLoginModal } = useUI();
+
+  const handleSubmit = (e: FormEvent) => { e.preventDefault(); onClose(); login(); };
+  const switchToLogin = () => { onClose(); setTimeout(openLoginModal, 300); };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        // --- THAY ĐỔI TẠI ĐÂY ---
+        // Thêm "backdrop-blur-md"
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
+          className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4 font-inter">
+          
+          <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.2, ease: "easeOut" }} onClick={(e) => e.stopPropagation()}
+            className="relative w-72 bg-white/40 shadow-2xl backdrop-blur-2xl rounded-2xl overflow-hidden p-6 flex flex-col">
+
+            {/* ...Toàn bộ nội dung bên trong giữ nguyên... */}
+            <div className="absolute w-96 h-[503px] left-[427px] top-[676px] origin-top-left rotate-[-162deg] bg-gradient-to-b from-gray-400 to-cyan-400 rounded-full -z-10" />
+            <Image src="/logo/dark.png" alt="V2R Logo" width={92} height={57} className="mx-auto mt-10 mb-8" />
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <input type="email" placeholder={t('email_placeholder')} className="w-full h-10 px-4 bg-white/40 rounded-[10px] text-zinc-800 placeholder:text-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" required />
+              <input type="password" placeholder={t('password_placeholder')} className="w-full h-10 px-4 bg-white/40 rounded-[10px] text-zinc-800 placeholder:text-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" required />
+              <input type="password" placeholder={t('confirm_password_placeholder')} className="w-full h-10 px-4 bg-white/40 rounded-[10px] text-zinc-800 placeholder:text-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500" required />
+              <button type="submit" className="w-full h-10 bg-gradient-to-r from-cyan-600 to-sky-300 rounded-xl text-white text-sm font-bold font-unbounded hover:opacity-90 transition-opacity">
+                {t('continue_button')}
+              </button>
+            </form>
+            <div className="text-center text-sm font-semibold mt-8">
+              <span className="text-zinc-800">{t('have_account')}{' '}</span>
+              <button onClick={switchToLogin} className="text-cyan-600 underline hover:text-cyan-700">{t('login_now')}</button>
+            </div>
+            <div className="text-center text-[10px] font-medium text-zinc-800 mt-auto pt-6">
+              <span>{t('terms_prefix')}{' '}</span><Link href="/terms" className="text-cyan-600 hover:underline">{t('terms_of_use')}</Link><span>{' '}{t('terms_and')}{' '}</span><Link href="/privacy" className="text-cyan-600 hover:underline">{t('privacy_policy')}</Link>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 ===== .\src\components\dashboard\DashboardSidebar.tsx =====
 // src/components/dashboard/DashboardSidebar.tsx
 "use client";
 
+import { useState, type ComponentProps } from "react"; // SỬA LỖI: Import ComponentProps
 import Image from "next/image";
 import { Link, usePathname } from "@/../i18n/navigation";
 import { Icon } from "@iconify/react";
+
+// SỬA LỖI: Định nghĩa kiểu dữ liệu cho đường dẫn hợp lệ, lấy từ chính component Link
+type AppPath = ComponentProps<typeof Link>['href'];
+
+// SỬA LỖI: Định nghĩa kiểu cho một mục menu đơn lẻ
+interface NavItem {
+  title: string;
+  href: AppPath;
+  icon: string;
+}
+
+// SỬA LỖI: Định nghĩa kiểu cho một mục dropdown
+interface NavDropdown {
+  title: string;
+  icon: string;
+  items: NavItem[];
+}
+
+// Kiểu dữ liệu tổng hợp cho một mục trong sidebar
+type SidebarNavItem = NavItem | NavDropdown;
 
 interface DashboardSidebarProps {
   isCollapsed: boolean;
   toggleCollapse: () => void;
 }
-const sidebarNavItems = [
-    { title: "Tổng quan", href: "/dashboard", icon: "mdi:view-dashboard-outline" },
-    {
-      title: "Quản lý Máy chủ",
-      items: [
-        { title: "Trạng thái & Tài nguyên", href: "/dashboard/status", icon: "mdi:server-network" },
-        { title: "Báo cáo Chi phí", href: "/dashboard/reports", icon: "mdi:chart-line" },
-        { title: "Console", href: "/dashboard/console", icon: "mdi:console" },
-      ],
-    },
-    {
-      title: "Quản lý Kinh doanh",
-      items: [
-        { title: "Khách hàng", href: "/dashboard/customers", icon: "mdi:account-group-outline" },
-        { title: "Giao dịch", href: "/dashboard/transactions", icon: "mdi:swap-horizontal" },
-      ],
-    },
-    {
-      title: "Báo cáo & Thống kê",
-      items: [{ title: "Doanh thu", href: "/dashboard/revenue", icon: "mdi:finance" }],
-    },
-    {
-      title: "Hệ thống",
-      items: [{ title: "Thông báo", href: "/dashboard/notifications", icon: "mdi:bell-outline" }],
-    },
+
+// SỬA LỖI: Áp dụng kiểu dữ liệu đã định nghĩa vào mảng
+const sidebarNavItems: SidebarNavItem[] = [
+  {
+    title: "Tổng quan",
+    href: "/dashboard",
+    icon: "mdi:view-dashboard-outline",
+  },
+  {
+    title: "Quản lý Máy chủ",
+    icon: "mdi:server",
+    items: [
+      { title: "Trạng thái & Tài nguyên", href: "/dashboard/status", icon: "mdi:server-network" },
+      { title: "Báo cáo Chi phí", href: "/dashboard/reports", icon: "mdi:chart-line" },
+    ],
+  },
+  {
+    title: "Quản lý Kinh doanh",
+    icon: "mdi:briefcase-outline",
+    items: [
+      { title: "Khách hàng", href: "/dashboard/customers", icon: "mdi:account-group-outline" },
+      { title: "Giao dịch", href: "/dashboard/transactions", icon: "mdi:swap-horizontal" },
+    ],
+  },
+  {
+    title: "Báo cáo & Thống kê",
+    icon: "mdi:chart-bar",
+    items: [{ title: "Doanh thu", href: "/dashboard/revenue", icon: "mdi:finance" }],
+  },
+  {
+    title: "Hệ thống",
+    icon: "mdi:cog-outline",
+    items: [{ title: "Thông báo", href: "/dashboard/notifications", icon: "mdi:bell-outline" }],
+  },
 ];
+
+// "Làm phẳng" danh sách menu để dùng cho chế độ thu gọn
+const flattenedNavItems: NavItem[] = sidebarNavItems.flatMap(item => {
+    // Dùng type guard để TypeScript hiểu logic
+    if ('items' in item) {
+        return item.items;
+    }
+    return item;
+});
 
 export default function DashboardSidebar({ isCollapsed, toggleCollapse }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const activeParent = sidebarNavItems.find(item =>
+    'items' in item && item.items?.some(subItem => subItem.href === pathname)
+  );
+  const [openDropdowns, setOpenDropdowns] = useState<string[]>(
+    activeParent ? [activeParent.title] : []
+  );
+
+  const handleDropdownToggle = (title: string) => {
+    setOpenDropdowns(prev => {
+      if (prev.includes(title)) {
+        return prev.filter(item => item !== title);
+      } else {
+        return [...prev, title];
+      }
+    });
+  };
 
   return (
-    <aside 
+    <aside
       className={`
-        fixed top-0 left-0 h-full bg-white p-4 flex flex-col z-30
+        fixed top-0 left-0 h-full bg-white flex flex-col z-30
         transition-all duration-300 ease-in-out
-        ${isCollapsed ? 'w-20' : 'w-72'} 
+        ${isCollapsed ? 'w-20 p-2' : 'w-72 p-4'}
       `}
     >
-      {/* Logic bên trong giữ nguyên vì đã tối ưu cho việc ẩn/hiện text mượt mà */}
-      <div className="py-4 px-2 flex justify-center">
+      <div className="flex flex-shrink-0 items-center justify-center h-[60px]">
         <Image src="/logo/dark.png" alt="V2R Logo" width={isCollapsed ? 35 : 43} height={isCollapsed ? 22 : 27} className="transition-all"/>
       </div>
       
-      <nav className="flex flex-col gap-y-2 mt-8 w-full overflow-hidden">
-        {sidebarNavItems.map((item, index) => (
-          <div key={index}>
-            {item.href ? (
-              <Link
-                href={item.href}
-                title={isCollapsed ? item.title : ''}
-                className={`flex items-center gap-x-3 p-2 rounded-md transition-colors hover:bg-gray-200 ${
-                  pathname === item.href ? "bg-gray-300 font-bold text-neutral-950" : "text-neutral-950"
-                } ${isCollapsed ? 'justify-center' : ''}`}
-              >
-                <Icon icon={item.icon} className="w-6 h-6 flex-shrink-0" />
-                <span className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>{item.title}</span>
-              </Link>
-            ) : (
-              <h3 className={`text-lg font-bold text-neutral-950 p-2 mt-2 transition-all duration-200 whitespace-nowrap overflow-hidden ${isCollapsed ? 'opacity-0 h-0 p-0 m-0' : 'opacity-100'}`}>{item.title}</h3>
-            )}
-            
-            {item.items && (
-              <div className={`flex flex-col transition-all duration-300 ${isCollapsed ? 'items-center' : 'ml-4'}`}>
-                {item.items.map((subItem, subIndex) => (
-                  <Link
-                    key={subIndex}
-                    href={subItem.href}
-                    title={isCollapsed ? subItem.title : ''}
-                    className={`flex items-center gap-x-3 p-2 rounded-md transition-colors hover:bg-gray-200 ${
-                      pathname === subItem.href ? "bg-gray-300 font-semibold text-neutral-950" : "text-neutral-950"
-                    } ${isCollapsed ? 'justify-center mt-1' : ''}`}
-                  >
-                    <Icon icon={subItem.icon} className="w-6 h-6 flex-shrink-0" />
-                    <span className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>{subItem.title}</span>
-                  </Link>
+      <nav className={`flex flex-col mt-5 w-full flex-grow overflow-y-auto overflow-x-hidden`}>
+        {isCollapsed && (
+            <div className="flex flex-col items-center gap-y-2">
+                {flattenedNavItems.map(item => (
+                    // Giờ đây `item.href` có kiểu AppPath, hoàn toàn tương thích
+                    <Link
+                        key={item.href.toString()} // toString() để xử lý trường hợp href là object
+                        href={item.href}
+                        title={item.title}
+                        className={`flex items-center justify-center p-2 rounded-md transition-colors hover:bg-gray-200 w-full ${
+                            pathname === item.href ? "bg-gray-300" : ""
+                        }`}
+                    >
+                        <Icon icon={item.icon} className={`w-6 h-6 flex-shrink-0 text-neutral-950`} />
+                    </Link>
                 ))}
-              </div>
-            )}
-          </div>
-        ))}
+            </div>
+        )}
+
+        {!isCollapsed && (
+            <div className="flex flex-col">
+                {sidebarNavItems.map((item) => {
+                  // Dùng type guard để phân biệt
+                  if ('items' in item) { // Đây là một NavDropdown
+                    const isDropdownOpen = openDropdowns.includes(item.title);
+                    const isParentActive = item.items?.some(sub => sub.href === pathname);
+                    return (
+                      <div key={item.title} className="w-full">
+                        <button
+                          onClick={() => handleDropdownToggle(item.title)}
+                          className={`flex items-center justify-between p-2 rounded-md transition-colors hover:bg-gray-200 w-full text-lg font-bold font-['Inter'] ${
+                            isParentActive ? "text-blue-900" : "text-neutral-950"
+                          }`}
+                        >
+                          <div className="flex items-center gap-x-3">
+                            <Icon icon={item.icon} className="w-6 h-6 flex-shrink-0" />
+                            <span>{item.title}</span>
+                          </div>
+                          <Icon
+                            icon="mdi:chevron-down"
+                            className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                        <div
+                          className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                            isDropdownOpen ? 'max-h-40' : 'max-h-0'
+                          } flex flex-col gap-y-1 ml-4 mt-1`}
+                        >
+                          {item.items.map(subItem => (
+                            <Link
+                              key={subItem.href.toString()}
+                              href={subItem.href}
+                              className={`p-2 rounded-md text-lg font-normal font-['Inter'] hover:bg-gray-200 ${
+                                pathname === subItem.href ? 'bg-gray-300 text-neutral-950' : 'text-neutral-950'
+                              }`}
+                            >
+                              {subItem.title}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  } else { // Đây là một NavItem (Link trực tiếp)
+                    return (
+                      <Link
+                        key={item.href.toString()}
+                        href={item.href}
+                        className={`flex items-center gap-x-3 p-2 rounded-md transition-colors hover:bg-gray-200 w-full text-lg font-bold font-['Inter'] ${
+                          pathname === item.href ? "bg-gray-300 text-neutral-950" : "text-neutral-950"
+                        }`}
+                      >
+                        <Icon icon={item.icon} className="w-6 h-6 flex-shrink-0" />
+                        <span>{item.title}</span>
+                      </Link>
+                    );
+                  }
+                })}
+            </div>
+        )}
       </nav>
 
-      <div className={`mt-auto border-t border-gray-200 pt-4 w-full`}>
+      {/* Footer Section */}
+      <div className="mt-auto border-t border-gray-200 pt-4 w-full flex-shrink-0">
         <div className={`bg-gray-400 rounded-lg p-2 flex items-center gap-x-4 overflow-hidden ${isCollapsed ? 'justify-center' : ''}`}>
             <div className="w-9 h-9 bg-neutral-900 rounded-full flex-shrink-0" />
-            <div className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>
-                <p className="text-neutral-950 text-lg font-bold">Alex Ng. (admin)</p>
+            <div className={`transition-opacity duration-200 whitespace-nowrap ${isCollapsed ? 'hidden' : 'opacity-100'}`}>
+                <p className="text-neutral-950 text-sm font-bold truncate">Alex Ng. (admin)</p>
             </div>
         </div>
         <button 
             onClick={toggleCollapse} 
-            className="w-full flex items-center justify-center mt-4 p-2 rounded-md hover:bg-gray-200 transition-colors"
+            className="w-full flex items-center justify-center mt-2 p-2 rounded-md hover:bg-gray-200 transition-colors"
             title={isCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
         >
             <Icon icon={isCollapsed ? "mdi:arrow-right" : "mdi:arrow-left"} className="w-6 h-6 text-neutral-800" />
@@ -1983,20 +2594,33 @@ export default function DashboardSidebar({ isCollapsed, toggleCollapse }: Dashbo
 // ===== .\src\components\dashboard\Overview.tsx =====
 "use client";
 
+// SỬA ĐỔI: Import component Bar và Doughnut từ react-chartjs-2
+import { Bar, Doughnut } from 'react-chartjs-2';
+// SỬA ĐỔI: Import các thành phần cần thiết từ chart.js
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
   Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  Legend,
+} from 'chart.js';
 
-const userChartData = [
+// SỬA ĐỔI: Đăng ký các thành phần với ChartJS. Đây là bước bắt buộc!
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+// --- DỮ LIỆU GỐC (Không đổi) ---
+const originalUserChartData = [
   { name: "06/07", free: 300, basic: 400, pro: 200, enterprise: 100 },
   { name: "07/07", free: 350, basic: 410, pro: 220, enterprise: 110 },
   { name: "08/07", free: 320, basic: 420, pro: 210, enterprise: 120 },
@@ -2006,19 +2630,85 @@ const userChartData = [
   { name: "12/07", free: 400, basic: 460, pro: 260, enterprise: 160 },
 ];
 
-const revenueChartData = [
+const originalRevenueChartData = [
     { name: 'Spring 2025', basic: 64, pro: 38, enterprise: 25 },
     { name: 'Summer 2025', basic: 70, pro: 42, enterprise: 28 },
     { name: 'Fall 2025', basic: 80, pro: 45, enterprise: 30 },
     { name: 'Winter 2025', basic: 90, pro: 50, enterprise: 35 },
 ];
 
-const userDistributionData = [
+const originalUserDistributionData = [
   { name: "Người dùng miễn phí", value: 56 },
   { name: "Người dùng trả phí", value: 44 },
 ];
-const COLORS = ["#A5B4FC", "#1E3A8A"];
 
+// --- CẤU HÌNH BIỂU ĐỒ CHO CHART.JS ---
+
+// Cấu hình chung
+const commonChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false, // Rất quan trọng để biểu đồ lấp đầy container
+  plugins: {
+    legend: {
+      position: 'top' as const,
+    },
+  },
+};
+
+// 1. Dữ liệu và tùy chọn cho Biểu đồ người dùng (User Chart - Stacked Bar)
+const userChartLabels = originalUserChartData.map(d => d.name);
+const userChartData = {
+  labels: userChartLabels,
+  datasets: [
+    { label: 'Free', data: originalUserChartData.map(d => d.free), backgroundColor: '#A5B4FC' },
+    { label: 'Basic', data: originalUserChartData.map(d => d.basic), backgroundColor: '#6366F1' },
+    { label: 'Pro', data: originalUserChartData.map(d => d.pro), backgroundColor: '#4338CA' },
+    { label: 'Enterprise', data: originalUserChartData.map(d => d.enterprise), backgroundColor: '#1E3A8A' },
+  ],
+};
+const userChartOptions = {
+  ...commonChartOptions,
+  scales: {
+    x: { stacked: true }, // Bật chế độ xếp chồng cho trục X
+    y: { stacked: true }, // Bật chế độ xếp chồng cho trục Y
+  },
+};
+
+// 2. Dữ liệu và tùy chọn cho Phân bổ người dùng (User Distribution - Doughnut)
+const userDistributionData = {
+  labels: originalUserDistributionData.map(d => d.name),
+  datasets: [
+    {
+      label: 'Phân bổ người dùng',
+      data: originalUserDistributionData.map(d => d.value),
+      backgroundColor: ['#A5B4FC', '#1E3A8A'], // Màu tương ứng với labels
+      borderColor: ['#FFFFFF'],
+      borderWidth: 2,
+    },
+  ],
+};
+const userDistributionOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom' as const, // Di chuyển chú thích xuống dưới cho đẹp hơn
+    },
+  },
+};
+
+// 3. Dữ liệu và tùy chọn cho Doanh thu theo gói (Revenue Chart - Bar)
+const revenueChartLabels = originalRevenueChartData.map(d => d.name);
+const revenueChartData = {
+  labels: revenueChartLabels,
+  datasets: [
+    { label: 'Basic', data: originalRevenueChartData.map(d => d.basic), backgroundColor: '#C7D2FE' },
+    { label: 'Pro', data: originalRevenueChartData.map(d => d.pro), backgroundColor: '#A5B4FC' },
+    { label: 'Enterprise', data: originalRevenueChartData.map(d => d.enterprise), backgroundColor: '#312E81' },
+  ],
+};
+
+// --- COMPONENT CHÍNH ---
 export default function Overview() {
   return (
     <div className="space-y-8">
@@ -2026,7 +2716,6 @@ export default function Overview() {
         Tổng quan
       </h1>
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <StatCard title="Tất cả người dùng" value="476" />
         <StatCard
@@ -2037,59 +2726,33 @@ export default function Overview() {
         <StatCard title="Tổng doanh thu" value="21,402$" />
       </div>
 
-      {/* User Chart */}
       <ChartContainer title="Biểu đồ người dùng" filterOptions={["Tuần", "Tháng", "Năm"]}>
-        <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={userChartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="free" stackId="a" fill="#A5B4FC" name="Free" />
-            <Bar dataKey="basic" stackId="a" fill="#6366F1" name="Basic" />
-            <Bar dataKey="pro" stackId="a" fill="#4338CA" name="Pro" />
-            <Bar dataKey="enterprise" stackId="a" fill="#1E3A8A" name="Enterprise" />
-          </BarChart>
-        </ResponsiveContainer>
+        {/* SỬA ĐỔI: Sử dụng component Bar của Chart.js */}
+        <div style={{ position: 'relative', height: '350px' }}>
+            <Bar options={userChartOptions} data={userChartData} />
+        </div>
       </ChartContainer>
       
-      {/* User Distribution and Revenue Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <ChartContainer title="Phân bổ người dùng">
-            <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                    <Pie data={userDistributionData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={120} fill="#8884d8" label>
-                        {userDistributionData.map((entry, index) => (
-                            <Pie key={`cell-${index}`} cx="50%" cy="50%" outerRadius={120} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                </PieChart>
-            </ResponsiveContainer>
+            {/* SỬA ĐỔI: Sử dụng component Doughnut của Chart.js */}
+            <div style={{ position: 'relative', height: '300px' }}>
+                <Doughnut data={userDistributionData} options={userDistributionOptions} />
+            </div>
         </ChartContainer>
 
         <ChartContainer title="Doanh thu theo gói" filterOptions={["Tuần", "Tháng", "Quý", "Năm"]}>
-            <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={revenueChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="basic" fill="#C7D2FE" name="Basic" />
-                    <Bar dataKey="pro" fill="#A5B4FC" name="Pro" />
-                    <Bar dataKey="enterprise" fill="#312E81" name="Enterprise" />
-                </BarChart>
-            </ResponsiveContainer>
+            {/* SỬA ĐỔI: Sử dụng component Bar của Chart.js */}
+            <div style={{ position: 'relative', height: '350px' }}>
+                <Bar options={commonChartOptions} data={revenueChartData} />
+            </div>
         </ChartContainer>
       </div>
     </div>
   );
 }
 
-// Reusable components
+// --- CÁC COMPONENT PHỤ (Không đổi) ---
 function StatCard({ title, value, subtitle }: { title: string; value: string; subtitle?: string; }) {
   return (
     <div className="bg-white rounded-xl p-6 shadow">
@@ -2136,89 +2799,129 @@ function ChartContainer({ title, children, filterOptions }: { title: string; chi
 ===== .\src\components\workspace\LibraryPanel.tsx =====
 // ===== .\src\components\workspace\LibraryPanel.tsx =====
 "use client";
-import { useState, type FC, useEffect } from 'react';
+import { useState, type FC } from 'react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { useTheme } from 'next-themes';
+import { useGeneration } from '@/context/GenerationContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// ... (Interface không đổi)
+const LoadingItem: FC<{ prompt: string; status: string }> = ({ prompt, status }) => (
+    <div className="flex flex-col gap-y-2 p-1 rounded-lg">
+        <div className="w-full aspect-square rounded-md bg-gray-200/60 animate-pulse flex flex-col items-center justify-center">
+            <Icon icon="eos-icons:bubble-loading" className="w-8 h-8 text-blue-600" />
+            <p className="text-xs mt-2 font-semibold capitalize text-blue-800">{status}...</p>
+        </div>
+    </div>
+);
+const ErrorItem: FC<{ prompt: string; error?: string }> = ({ prompt, error }) => (
+    <div className="flex flex-col gap-y-2 p-1 rounded-lg" title={error || 'Failed'}>
+        <div className="w-full aspect-square rounded-md bg-red-100 flex flex-col items-center justify-center">
+            <Icon icon="mdi:alert-circle-outline" className="w-8 h-8 text-red-600" />
+            <p className="text-xs mt-2 font-semibold capitalize text-red-700">Failed</p>
+        </div>
+    </div>
+);
+
 interface LibraryPanelProps { isCollapsed: boolean; toggleCollapse: () => void; }
+
+const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 }}};
+const itemVariants = { hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 }};
 
 const LibraryPanel: FC<LibraryPanelProps> = ({ isCollapsed, toggleCollapse }) => {
   const t = useTranslations('Workspace');
-  const { theme, resolvedTheme } = useTheme();
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const activeTheme = !mounted ? "dark" : (resolvedTheme || theme || "dark");
-  const isLight = activeTheme === 'light';
+  const { library, setCurrentModelUrl, currentModelUrl } = useGeneration();
   
-  const themeClass = (light: string, dark: string) => isLight ? light : dark;
-
-  const libraryItems = Array(15).fill('/landing-page/image 13.png');
-  const itemsPerPage = 6;
+  const itemsPerPage = 9;
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(libraryItems.length / itemsPerPage);
-  const currentItems = libraryItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(library.length / itemsPerPage) || 1;
+  const currentItems = library.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
-    <aside 
-      className={`
-        flex flex-col h-full w-full
-        ${themeClass(
-          'bg-white text-black border-l border-gray-200', // Light Mode
-          'bg-stone-950 text-white' // Dark Mode: Dùng bg-stone-950 như thiết kế
-        )}
-        ${isCollapsed ? 'p-2' : 'p-6'}
-      `}
-    >
-        {/* ... toàn bộ nội dung bên trong LibraryPanel không thay đổi ... */}
-        <div className={`flex items-center mb-4 flex-shrink-0 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-             {!isCollapsed && (<h2 className={`text-lg font-semibold whitespace-nowrap`}>{t('my_library')}</h2>)}
-             <button onClick={toggleCollapse} className={`${themeClass('text-gray-600 hover:text-black', 'text-gray-400 hover:text-white')}`} aria-label={isCollapsed ? 'Expand panel' : 'Collapse panel'}>
+    <aside className={`flex flex-col h-full w-full bg-white/[.43] backdrop-blur-[35px] text-black border-l border-black/10 ${isCollapsed ? 'p-2 items-center' : 'p-4'}`}>        <div className={`flex items-center mb-4 flex-shrink-0 h-12 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+             <AnimatePresence>
+               {/* CẬP NHẬT: Thêm font-['Unbounded'] cho tiêu đề */}
+               {!isCollapsed && <motion.h2 initial={{opacity:0, width: 0}} animate={{opacity:1, width: 'auto'}} exit={{opacity:0, width: 0}} className="text-lg font-['Unbounded'] font-semibold whitespace-nowrap overflow-hidden">{t('my_library')}</motion.h2>}
+             </AnimatePresence>
+             <motion.button whileHover={{scale: 1.1}} whileTap={{scale: 0.9}} onClick={toggleCollapse} className="text-gray-600 hover:text-black" aria-label={isCollapsed ? 'Expand panel' : 'Collapse panel'}>
                  <Icon icon={isCollapsed ? "mdi:arrow-left" : "mdi:arrow-right"} width={20} />
-             </button>
+             </motion.button>
         </div>
-        <div className={`flex flex-col flex-grow min-w-0 overflow-hidden gap-y-5 transition-opacity duration-200 ease-in-out ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-            <div className="flex items-center gap-x-4">
-                 <div className="relative flex-grow">
-                     <Icon icon="mdi:search" className={`absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 ${themeClass('text-gray-500', 'text-gray-400')}`} />
-                     <input type="text" placeholder={t('search')} className={`w-full h-12 rounded-lg pl-12 pr-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-700 ${themeClass('bg-indigo-100 text-black placeholder:text-gray-500', 'bg-neutral-800 text-white placeholder:text-gray-400')}`} />
-                 </div>
-                 <button className="w-36 h-12 bg-blue-900 rounded-lg text-base font-semibold text-white flex items-center justify-center gap-x-2 hover:bg-blue-800 transition-colors flex-shrink-0">
-                     <Icon icon="mdi:upload" className="w-6 h-6" />{t('upload')}
-                 </button>
-            </div>
-            <div className={`h-12 rounded-lg flex items-center justify-between px-4 ${themeClass('bg-indigo-100', 'bg-neutral-800')}`}>
-                 <Icon icon="mdi:folder-outline" className={`w-6 h-6`} />
-                 <Icon icon="mdi:arrow-expand-all" className={`w-5 h-5`} />
-            </div>
-            <div className={`flex-grow rounded-xl p-4 flex flex-col min-h-0 ${themeClass('bg-indigo-100', 'bg-neutral-900')}`}>
-                <div className="flex-grow overflow-y-auto pr-2">
-                     <div className="grid grid-cols-3 gap-4">
-                         {currentItems.map((src, index) => (
-                         <div key={index} className={`w-full aspect-square rounded-xl overflow-hidden relative ${themeClass('bg-white', 'bg-neutral-800')}`}>
-                             <Image src={src} alt={`Library item ${index + 1}`} fill style={{ objectFit: 'cover' }} className="opacity-70" />
+        
+        <div className={`flex-grow min-w-0 overflow-hidden ${isCollapsed ? 'hidden' : 'flex flex-col gap-y-5'}`}>
+            <AnimatePresence>
+              {!isCollapsed && (
+                <motion.div 
+                  initial={{ opacity: 0 }} animate={{ opacity: 1, transition:{delay: 0.2} }} exit={{ opacity: 0 }}
+                  className="flex flex-col flex-grow min-w-0 overflow-hidden gap-y-5"
+                >
+                    <div className="flex items-center gap-x-4">
+                         <div className="relative flex-grow">
+                             <Icon icon="mdi:search" className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                             <input type="text" placeholder={t('search')} className="w-full h-10 rounded-lg pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700 bg-white/80 border border-gray-300" />
                          </div>
-                         ))}
-                     </div>
-                </div>
-            </div>
-            <div className="flex items-center justify-center gap-x-2 flex-shrink-0">
-                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className={`w-9 h-9 rounded-md flex items-center justify-center disabled:opacity-50 ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}`}>
-                     <Icon icon="mdi:chevron-left" className="w-6 h-6" />
-                </button>
-                <div className={`px-4 py-1.5 rounded-md text-sm ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}`}>{currentPage} / {totalPages}</div>
-                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className={`w-9 h-9 rounded-md flex items-center justify-center disabled:opacity-50 ${themeClass('bg-blue-900 text-white', 'bg-neutral-800 text-white')}`}>
-                     <Icon icon="mdi:chevron-right" className="w-6 h-6" />
-                </button>
-            </div>
+                         <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} className="w-auto h-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-x-2 flex-shrink-0 px-4 shadow-md">
+                             <Icon icon="mdi:upload" className="w-5 h-5" />
+                             <span>{t('upload')}</span>
+                         </motion.button>
+                    </div>
+                    
+                    <div className="flex-grow rounded-xl p-2 bg-white/40 min-h-0 border border-white/50">
+                        <motion.div 
+                          key={currentPage} 
+                          variants={containerVariants} initial="hidden" animate="visible"
+                          className="h-full overflow-y-auto pr-2"
+                        >
+                             <div className="grid grid-cols-3 gap-2">
+                                 {currentItems.map((item) => (
+                                   <motion.div key={item.jobId} variants={itemVariants} className="w-full">
+                                        {item.status === 'completed' ? (
+                                            <motion.div
+                                                whileHover={{ scale: 1.05, zIndex: 10 }} whileTap={{ scale: 0.95 }}
+                                                onClick={() => setCurrentModelUrl(item.url)}
+                                                className={`p-1 rounded-lg cursor-pointer transition-all border-2 ${currentModelUrl === item.url ? 'border-blue-500 bg-blue-100/50' : 'border-transparent'}`}
+                                            >
+                                                <div className="w-full aspect-square rounded-md overflow-hidden relative bg-gray-200">
+                                                    <Image src={item.thumbnailUrl} alt={item.prompt} fill style={{ objectFit: 'cover' }} />
+                                                </div>
+                                            </motion.div>
+                                        ) : item.status === 'failed' ? (
+                                            <ErrorItem prompt={item.prompt} error={item.error} />
+                                        ) : (
+                                            <LoadingItem prompt={item.prompt} status={item.status} />
+                                        )}
+                                   </motion.div>
+                                 ))}
+                             </div>
+                        </motion.div>
+                    </div>
+                    <div className="flex items-center justify-center gap-x-2 flex-shrink-0">
+                        <motion.button whileHover={{scale:1.1}} whileTap={{scale:0.9}} onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="w-9 h-9 rounded-md flex items-center justify-center disabled:opacity-50 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-sm">
+                             <Icon icon="mdi:chevron-left" className="w-6 h-6" />
+                        </motion.button>
+                        <div className="px-4 py-1.5 rounded-md text-sm bg-white shadow-inner font-semibold text-gray-700">{currentPage} / {totalPages}</div>
+                        <motion.button whileHover={{scale:1.1}} whileTap={{scale:0.9}} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="w-9 h-9 rounded-md flex items-center justify-center disabled:opacity-50 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-sm">
+                             <Icon icon="mdi:chevron-right" className="w-6 h-6" />
+                        </motion.button>
+                    </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
         </div>
-        <div className={`flex flex-col items-center space-y-1 mt-auto transition-opacity duration-200 ease-in-out ${isCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('search')}><Icon icon="mdi:search" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} /></div>
-            <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('upload')}><Icon icon="mdi:upload" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} /></div>
-            <div className={`w-10 h-10 flex items-center justify-center rounded-md cursor-pointer ${themeClass('hover:bg-indigo-100', 'hover:bg-neutral-800')}`} title={t('my_library')}><Icon icon="mdi:folder-multiple-image" className={`w-6 h-6 ${themeClass('text-gray-600', 'text-gray-300')}`} /></div>
+        
+        <div className={`mt-auto ${isCollapsed ? 'block' : 'hidden'}`}>
+          <AnimatePresence>
+          {isCollapsed && (
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="flex flex-col items-center space-y-2"
+              >
+                  <motion.div whileHover={{scale: 1.1}} whileTap={{scale: 0.9}} className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer hover:bg-blue-100/60" title={t('search')}><Icon icon="mdi:search" className="w-6 h-6 text-gray-700" /></motion.div>
+                  <motion.div whileHover={{scale: 1.1}} whileTap={{scale: 0.9}} className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer hover:bg-blue-100/60" title={t('upload')}><Icon icon="mdi:upload" className="w-6 h-6 text-gray-700" /></motion.div>
+                  <motion.div whileHover={{scale: 1.1}} whileTap={{scale: 0.9}} className="w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer hover:bg-blue-100/60" title={t('my_library')}><Icon icon="mdi:folder-multiple-image" className="w-6 h-6 text-gray-700" /></motion.div>
+              </motion.div>
+          )}
+          </AnimatePresence>
         </div>
     </aside>
   );
@@ -2228,119 +2931,192 @@ export default LibraryPanel;
 ===== .\src\components\workspace\Sidebar.tsx =====
 // ===== .\src\components\workspace\Sidebar.tsx =====
 "use client";
-import { type FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
+import { useGeneration } from "@/context/GenerationContext";
+import { Link } from '@/../i18n/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// ... (Interface và NavItem không đổi)
-interface SidebarProps { isCollapsed: boolean; toggleCollapse: () => void; isSidebarOpen: boolean; setIsSidebarOpen: (isOpen: boolean) => void; }
-const NavItem: FC<{ icon: string; text: string; isCollapsed: boolean; themeClass: (l: string, d: string) => string; }> = ({ icon, text, isCollapsed, themeClass }) => ( <a href="#" className={`block flex items-center rounded-md transition-colors ${isCollapsed ? "w-10 h-10 justify-center" : "p-2"} ${themeClass("hover:bg-indigo-100", "hover:bg-neutral-800")}`}> <Icon icon={icon} className={`w-6 h-6 flex-shrink-0 ${themeClass("text-zinc-700", "text-gray-300")}`} /> {!isCollapsed && (<span className={`ml-3 text-sm font-medium whitespace-nowrap`}>{text}</span>)} </a>);
+interface SidebarProps { 
+  isCollapsed: boolean; 
+  toggleCollapse: () => void; 
+  isSidebarOpen: boolean; 
+  setIsSidebarOpen: (isOpen: boolean) => void;
+  expandLibraryPanel: () => void;
+}
 
-
-const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen, setIsSidebarOpen, }) => {
+const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen, setIsSidebarOpen, expandLibraryPanel }) => {
   const t = useTranslations("Sidebar");
   const tWorkspace = useTranslations("Workspace");
   const { theme, resolvedTheme, setTheme } = useTheme();
   
+  const [prompt, setPrompt] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [projectName, setProjectName] = useState('');
+  const [activeTab, setActiveTab] = useState<'image' | 'text'>('image');
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const { submitJob, isRateLimited } = useGeneration();
+
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const activeTheme = !mounted ? "dark" : (resolvedTheme || theme || "dark");
-  const themeClass = (light: string, dark: string) => activeTheme === "light" ? light : dark;
+
+  const handleGenerate = () => {
+    if (activeTab === 'image' && imageFile) {
+      submitJob({ type: 'image', imageFile });
+    } else if (activeTab === 'text' && prompt) {
+      submitJob({ type: 'text', caption: prompt });
+    } else {
+      alert('Please provide an image or a text prompt.');
+    }
+  };
+  
+  const handleNewProject = () => {
+    setPrompt(''); setImageFile(null); setProjectName('');
+    if (imageInputRef.current) imageInputRef.current.value = '';
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0]);
+  };
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full w-full bg-white/[.43] backdrop-blur-[35px] text-black border-r border-black/10">      <div className={`flex flex-col flex-grow min-h-0 overflow-hidden ${isCollapsed ? "p-2" : "p-4"}`}>
+          <div className={`flex items-center h-12 ${isCollapsed ? 'justify-center mb-4' : 'justify-between mb-6'}`}>
+               <AnimatePresence>
+                 {!isCollapsed && (
+                   <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+                     <Image src="/logo/dark.png" alt="Logo" width={40} height={25} />
+                   </motion.div>
+                 )}
+               </AnimatePresence>
+               <motion.button whileHover={{scale: 1.1}} whileTap={{scale: 0.9}} onClick={toggleCollapse} className="hidden lg:block text-gray-600 hover:text-black" aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
+                   <Icon icon={isCollapsed ? "mdi:arrow-right" : "mdi:arrow-left"} width={20} />
+               </motion.button>
+               <AnimatePresence>
+                 {!isCollapsed && <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-black" aria-label="Close sidebar" > <Icon icon="mdi:close" width={28} /> </button>}
+               </AnimatePresence>
+          </div>
+          <AnimatePresence>
+            {isCollapsed && (
+              <motion.div 
+                className="mb-6 flex justify-center"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Image src="/logo/dark.png" alt="Logo" width={32} height={20} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <nav className={`${isCollapsed ? "flex flex-col items-center space-y-2" : "space-y-1"}`}>
+              <motion.button whileHover={{scale: 1.05}} whileTap={{scale: 0.95}} onClick={handleNewProject} title={tWorkspace("new_project")} className={`w-full flex items-center rounded-lg transition-colors ${isCollapsed ? "w-10 h-10 justify-center" : "p-2"} hover:bg-blue-100/60`}>
+                  <Icon icon="mdi:plus-box-outline" className="w-6 h-6 flex-shrink-0 text-zinc-800" />
+                  <AnimatePresence>{!isCollapsed && <motion.span initial={{opacity:0, width: 0}} animate={{opacity:1, width: 'auto', transition:{duration: 0.2}}} exit={{opacity:0, width: 0}} className="ml-3 text-sm font-['Unbounded'] font-medium whitespace-nowrap overflow-hidden">{tWorkspace("new_project")}</motion.span>}</AnimatePresence>
+              </motion.button>
+              <motion.button whileHover={{scale: 1.05}} whileTap={{scale: 0.95}} onClick={expandLibraryPanel} title={tWorkspace("your_library")} className={`w-full flex items-center rounded-lg transition-colors ${isCollapsed ? "w-10 h-10 justify-center" : "p-2"} hover:bg-blue-100/60`}>
+                  <Icon icon="mdi:folder-multiple-image" className="w-6 h-6 flex-shrink-0 text-zinc-800" />
+                  <AnimatePresence>{!isCollapsed && <motion.span initial={{opacity:0, width: 0}} animate={{opacity:1, width: 'auto', transition:{duration: 0.2}}} exit={{opacity:0, width: 0}} className="ml-3 text-sm font-['Unbounded'] font-medium whitespace-nowrap overflow-hidden">{tWorkspace("your_library")}</motion.span>}</AnimatePresence>
+              </motion.button>
+              <motion.div whileHover={{scale: 1.05}} whileTap={{scale: 0.95}}>
+                <Link href={{ pathname: '/', hash: 'pricing' }} title={tWorkspace("upgrade_account")} className={`block flex items-center rounded-lg transition-colors ${isCollapsed ? "w-10 h-10 justify-center" : "p-2"} hover:bg-blue-100/60`}>
+                    <Icon icon="mdi:crown-outline" className="w-6 h-6 flex-shrink-0 text-zinc-800" />
+                    <AnimatePresence>{!isCollapsed && <motion.span initial={{opacity:0, width: 0}} animate={{opacity:1, width: 'auto', transition:{duration: 0.2}}} exit={{opacity:0, width: 0}} className="ml-3 text-sm font-['Unbounded'] font-medium whitespace-nowrap overflow-hidden">{tWorkspace("upgrade_account")}</motion.span>}</AnimatePresence>
+                </Link>
+              </motion.div>
+          </nav>
+          <div className={`flex-grow min-w-0 overflow-y-auto ${isCollapsed ? 'hidden' : 'block'}`}>
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0.2 } }} exit={{ opacity: 0 }} className="mt-4 pr-1">
+                     <hr className="border-gray-300/70 mb-4" />
+                     <div className="bg-white/60 border border-gray-300/50 rounded-lg p-1 mb-6 flex">
+                         <button onClick={() => setActiveTab('text')} className={`flex-1 p-1.5 text-xs rounded-md font-bold transition-all ${activeTab === 'text' ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow' : 'text-zinc-600'}`}>{t("text_to_3d")}</button>
+                         <button onClick={() => setActiveTab('image')} className={`flex-1 p-1.5 text-xs rounded-md font-bold transition-all ${activeTab === 'image' ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow' : 'text-zinc-600'}`}>{t("image_to_3d")}</button>
+                     </div>
+                      {activeTab === 'image' ? (
+                        <div className="mb-5">
+                            <label className="text-sm font-['Unbounded'] font-semibold mb-2 block">{t("image_label")}</label>
+                            <input type="file" ref={imageInputRef} onChange={handleImageUpload} accept="image/png, image/jpeg, image/webp" className="hidden" />
+                            <div onClick={() => imageInputRef.current?.click()} className="bg-white/80 border-2 border-dashed border-gray-400/80 rounded-lg w-full h-36 flex flex-col justify-center items-center text-center p-4 cursor-pointer hover:bg-blue-50/70 transition-colors">
+                                <Icon icon="icon-park-outline:upload-picture" className="w-8 h-8 mb-2 text-stone-500" />
+                                {imageFile ? (<p className="text-xs font-semibold text-stone-700 break-all">{imageFile.name}</p>) : (<>
+                                    <p className="text-sm font-semibold text-stone-600">{t("uploader_title")}</p>
+                                    <p className="text-[10px] font-normal mt-1 text-neutral-500">{t("uploader_formats")}</p>
+                                </>)}
+                            </div>
+                        </div>
+                      ) : (
+                        <div className="mb-5">
+                            <label className="text-sm font-['Unbounded'] font-semibold mb-2 block">Text Prompt</label>
+                            <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="A delicious hamburger" className="bg-white/80 border border-gray-300 w-full h-36 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+                        </div>
+                      )}
+                     <div className="mb-5">
+                         <label className="text-sm font-['Unbounded'] font-semibold mb-2 block">{t("name_label")}</label>
+                         <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder={t("name_placeholder")} className="bg-white/80 border border-gray-300 w-full h-10 rounded-lg px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                     </div>
+                     <div className="mb-6">
+                         <label className="text-sm font-['Unbounded'] font-semibold mb-2 block">{t("symmetry_label")}</label>
+                         <div className="bg-white/80 border border-gray-300 rounded-md p-1 flex">
+                             <button className="flex-1 p-1 text-xs rounded-sm font-bold text-zinc-600">{t("symmetry_off")}</button>
+                             <button className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-sm font-bold p-1 text-xs shadow-sm">{t("symmetry_auto")}</button>
+                             <button className="flex-1 p-1 text-xs rounded-sm font-bold text-zinc-600">{t("symmetry_on")}</button>
+                         </div>
+                     </div>
+                     <div className="flex justify-center items-center space-x-3 mb-4 text-xs font-light text-neutral-600">
+                         <span>{t("cost_info_model")}</span>
+                         <div className="bg-neutral-400 w-px h-4" />
+                         <span>{t("cost_info_tokens")}</span>
+                     </div>
+                     <motion.button 
+                        whileHover={{ y: -2, boxShadow: '0 8px 20px -5px rgb(59 130 246 / 0.5)' }} whileTap={{ scale: 0.98 }}
+                        onClick={handleGenerate} disabled={isRateLimited} 
+                        className="w-full h-11 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg text-white text-base font-semibold font-['Unbounded'] disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={isRateLimited ? `Rate limit exceeded. Please wait.` : ''}
+                    >
+                        {t("generate_button")}
+                     </motion.button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+          </div>
+      </div>
+      {/* CẬP NHẬT: Cấu trúc lại toàn bộ phần footer */}
+      <div className={`border-t border-gray-300/70 flex-shrink-0 ${isCollapsed ? "p-2" : "p-4"}`}>
+          <div className={`flex items-center ${isCollapsed ? 'flex-col gap-y-2' : 'justify-between'}`}>
+               <div className="flex items-center min-w-0">
+                   <div className="bg-zinc-300 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
+                       <Icon icon="mdi:user" className="w-6 h-6" />
+                   </div>
+                   <AnimatePresence>
+                     {!isCollapsed && (
+                       <motion.div initial={{opacity:0, width: 0}} animate={{opacity:1, width: 'auto', transition:{duration: 0.2}}} exit={{opacity:0, width: 0}} className="ml-3 overflow-hidden">
+                           <p className="text-sm font-semibold truncate">PhuongBT</p>
+                           <p className="text-gray-600 text-sm font-light truncate">{tWorkspace("user_free_tier")}</p>
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
+               </div>
+               {/* Nút theme được đưa ra ngoài và luôn hiển thị */}
+               <motion.button whileHover={{scale: 1.1}} whileTap={{scale: 0.9}} onClick={() => setTheme(activeTheme === "light" ? "dark" : "light")} className="flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center transition-colors bg-black/5 hover:bg-black/10" title="Toggle theme">
+                   <Icon icon={activeTheme === "light" ? "mdi:weather-night" : "mdi:white-balance-sunny"} width={18} />
+               </motion.button>
+          </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
       <div className={`fixed inset-0 z-40 bg-black/30 lg:hidden transition-opacity ${isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={() => setIsSidebarOpen(false)} aria-hidden="true" />
-      <div
-        className={`
-          flex flex-col h-full w-full font-['Inter']
-          ${themeClass(
-            "bg-white text-black border-r border-gray-200", // Light Mode
-            "bg-neutral-950 text-white" // Dark Mode: Dùng bg-neutral-950 như thiết kế
-          )}
-        `}
-      >
-        {/* ... toàn bộ nội dung bên trong Sidebar không thay đổi ... */}
-        {/* Phần header */}
-        <div className={`flex flex-col flex-grow min-h-0 overflow-hidden ${isCollapsed ? "p-2" : "p-4"}`}>
-            <div className={`flex items-center mb-6 ${isCollapsed ? 'flex-col gap-y-4' : 'justify-between'}`}>
-                 <Image src={activeTheme === "light" ? "/logo/dark.png" : "/logo/light.png"} alt="Logo" width={isCollapsed ? 30 : 40} height={isCollapsed ? 19 : 25} />
-                 <div className="flex items-center">
-                     <button onClick={toggleCollapse} className={`hidden lg:block ${themeClass("text-gray-600 hover:text-black", "text-gray-400 hover:text-white")}`} aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
-                         <Icon icon={isCollapsed ? "mdi:arrow-right" : "mdi:arrow-left"} width={20} />
-                     </button>
-                     <button onClick={() => setIsSidebarOpen(false)} className={`lg:hidden ${isCollapsed ? "hidden" : ""} ${themeClass("text-black", "text-white")}`} aria-label="Close sidebar" > <Icon icon="mdi:close" width={28} /> </button>
-                 </div>
-            </div>
-            <nav className={`${isCollapsed ? "flex flex-col items-center space-y-1" : "space-y-1"}`}>
-                <NavItem icon="mdi:plus-box" text={tWorkspace("new_project")} isCollapsed={isCollapsed} themeClass={themeClass} />
-                <NavItem icon="mdi:folder-multiple-image" text={tWorkspace("your_library")} isCollapsed={isCollapsed} themeClass={themeClass} />
-                <NavItem icon="mdi:crown" text={tWorkspace("upgrade_account")} isCollapsed={isCollapsed} themeClass={themeClass} />
-            </nav>
-            <div className={`flex-grow min-w-0 overflow-y-auto transition-opacity duration-200 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                <div className="mt-4 pr-1">
-                     <hr className={`${themeClass("border-gray-300", "border-zinc-700")} mb-4`} />
-                     <div className={`${themeClass("bg-indigo-50", "bg-neutral-800")} rounded-xl p-1 mb-6 flex`}>
-                         <button className={`flex-1 p-2 rounded-lg text-sm font-bold ${themeClass("text-zinc-700", "text-neutral-400")}`}>{t("text_to_3d")}</button>
-                         <button className="flex-1 p-2 bg-blue-900 text-white rounded-lg font-bold text-sm">{t("image_to_3d")}</button>
-                     </div>
-                     <div className="mb-5">
-                         <label className={`text-sm font-normal mb-2 block`}>{t("image_label")}</label>
-                         <div className={`${themeClass("bg-indigo-100 border-indigo-200", "bg-neutral-900 border-neutral-700")} border rounded-xl w-full h-40 flex flex-col justify-center items-center text-center p-4`}>
-                             <Icon icon="icon-park-outline:upload-picture" className={`w-10 h-10 mb-2 ${themeClass("text-stone-500","text-neutral-500")}`} />
-                             <p className={`text-base font-semibold ${themeClass("text-stone-600","text-neutral-300")}`}>{t("uploader_title")}</p>
-                             <p className={`text-xs font-normal mt-1 ${themeClass("text-neutral-500","text-neutral-400")}`}>{t("uploader_formats")}</p>
-                         </div>
-                     </div>
-                     <div className="mb-5">
-                         <label className={`text-sm font-normal mb-2 block`}>{t("name_label")}</label>
-                         <input type="text" placeholder={t("name_placeholder")} className={`${themeClass("bg-indigo-100 placeholder:text-zinc-500 text-black","bg-neutral-800 placeholder:text-gray-400 text-white")} w-full h-11 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700`} />
-                     </div>
-                     <div className="mb-5">
-                         <label className={`text-sm font-normal mb-2 block`}>{t("model_label")}</label>
-                         <div className={`${themeClass("bg-indigo-100","bg-neutral-800")} flex items-center justify-between p-2 h-11 rounded-xl px-4`}>
-                             <span className={`text-sm`}>V2R</span>
-                             <Icon icon="mdi:chevron-down" className={`w-5 h-5`} />
-                         </div>
-                     </div>
-                     <div className="mb-6">
-                         <label className={`text-sm font-normal mb-2 block`}>{t("symmetry_label")}</label>
-                         <div className={`${themeClass("bg-indigo-100","bg-neutral-800")} rounded-lg p-1 flex`}>
-                             <button className={`flex-1 p-1.5 text-sm rounded-md font-bold ${themeClass("text-zinc-600","text-neutral-400")}`}>{t("symmetry_off")}</button>
-                             <button className="flex-1 bg-blue-900 text-white rounded-md font-bold p-1.5 text-sm">{t("symmetry_auto")}</button>
-                             <button className={`flex-1 p-1.5 text-sm rounded-md font-bold ${themeClass("text-zinc-600","text-neutral-400")}`}>{t("symmetry_on")}</button>
-                         </div>
-                     </div>
-                     <div className={`flex justify-center items-center space-x-3 mb-4 text-sm font-light ${themeClass("text-neutral-600","text-neutral-300")}`}>
-                         <span>{t("cost_info_model")}</span>
-                         <div className={`${themeClass("bg-neutral-400","bg-neutral-600")} w-px h-5`} />
-                         <span>{t("cost_info_tokens")}</span>
-                     </div>
-                     <button className="w-full h-11 bg-blue-900 rounded-xl text-neutral-100 text-base font-semibold font-['Unbounded'] hover:bg-blue-700 transition-colors">{t("generate_button")}</button>
-                </div>
-            </div>
-        </div>
-        {/* Phần footer */}
-        <div className={`border-t ${themeClass("border-gray-200","border-zinc-700")} flex-shrink-0 ${isCollapsed ? "p-2" : "p-4"}`}>
-            <div className={`flex items-center ${isCollapsed ? 'flex-col justify-center gap-y-2' : 'justify-between'}`}>
-                 <div className="flex items-center min-w-0">
-                     <div className={`${themeClass("bg-zinc-300","bg-zinc-600")} w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0`}>
-                         <Icon icon="mdi:user" className={`w-6 h-6`} />
-                     </div>
-                     {!isCollapsed && (
-                     <div className="ml-3 overflow-hidden">
-                         <p className={`text-sm font-semibold truncate`}>PhuongBT</p>
-                         <p className={`text-stone-500 dark:text-gray-300 text-sm font-light truncate`}>{tWorkspace("user_free_tier")}</p>
-                     </div>
-                     )}
-                 </div>
-                 <button onClick={() => setTheme(activeTheme === "light" ? "dark" : "light")} className={`flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center transition-colors ${themeClass("bg-indigo-100 text-neutral-900 hover:bg-indigo-200", "bg-neutral-800 text-white hover:bg-neutral-700")}`} title="Toggle theme">
-                     <Icon icon={activeTheme === "light" ? "mdi:weather-night" : "mdi:white-balance-sunny"} width={isCollapsed ? 16 : 18} />
-                 </button>
-            </div>
-        </div>
+      <div className={`lg:relative fixed top-0 left-0 h-full z-50 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full'} lg:translate-x-0 lg:w-full`}>
+        <SidebarContent />
       </div>
     </>
   );
@@ -2348,36 +3124,99 @@ const Sidebar: FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isSidebarOpen,
 export default Sidebar;
 
 ===== .\src\components\workspace\ViewPanel.tsx =====
-// ===== .\src\components\workspace\ViewPanel.tsx =====
+// ===== .\src/components/workspace/ViewPanel.tsx =====
 "use client";
 
 import { Suspense, type FC, useEffect, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-// Bỏ PresetsType, nó không tồn tại
-import { OrbitControls, useGLTF, Html, Environment, Grid, Edges } from '@react-three/drei';
-import { useControls } from 'leva';
+import { OrbitControls, useGLTF, Html, Environment, Grid } from '@react-three/drei';
+import { useControls, Leva } from 'leva';
 import * as THREE from 'three';
 import { useTheme } from 'next-themes';
+import { useGeneration } from '@/context/GenerationContext';
+// SỬA LỖI: Gỡ bỏ import 'Icon' không sử dụng
+// import { Icon } from '@iconify/react';
 
-// --- Các component phụ không đổi ---
-function isMesh(obj: THREE.Object3D): obj is THREE.Mesh { return (obj as THREE.Mesh).isMesh; }
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T | undefined>(undefined);
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  return ref.current;
+}
+
+// SỬA LỖI: Viết lại logic để không phụ thuộc vào state toàn cục
+const ThumbnailCapturer: FC = () => {
+  const { gl } = useThree();
+  const { library, updateThumbnail } = useGeneration();
+  const prevLibrary = usePrevious(library);
+
+  useEffect(() => {
+    // Chỉ chạy khi có prevLibrary và library đã thay đổi
+    if (prevLibrary && prevLibrary !== library) {
+      // Tìm mô hình vừa chuyển từ 'downloading' sang 'completed'
+      const newlyCompleted = library.find(currentItem => {
+        const prevItem = prevLibrary.find(p => p.jobId === currentItem.jobId);
+        return prevItem && prevItem.status === 'downloading' && currentItem.status === 'completed';
+      });
+
+      if (newlyCompleted) {
+        setTimeout(() => {
+          const dataUrl = gl.domElement.toDataURL('image/png');
+          updateThumbnail(newlyCompleted.jobId, dataUrl);
+          console.log(`Thumbnail captured for job: ${newlyCompleted.jobId}`);
+        }, 500); // 500ms delay để đảm bảo model đã render
+      }
+    }
+  }, [library, prevLibrary, gl, updateThumbnail]);
+
+  return null;
+};
+
 const Loader: FC = () => <Html center><div className="text-white text-lg font-sans">Loading 3D Model...</div></Html>;
-const Model: FC = () => { const { scene } = useGLTF('/3D-model/model.glb'); return <primitive object={scene} />; };
-interface WireframeProps { show: boolean; thickness: number; color: string; }
-const ModelWireframe: FC<WireframeProps> = ({ show, thickness, color }) => { const { nodes } = useGLTF('/3D-model/model.glb'); if (!show) return null; return (<>{Object.values(nodes).map((node: THREE.Object3D, index) => (isMesh(node) && (<mesh key={index} geometry={node.geometry}><meshBasicMaterial transparent opacity={0} /><Edges scale={1} threshold={15} color={color} linewidth={thickness} /></mesh>)))}</>); };
-interface ModelRendererProps { scale: number; rotation: [number, number, number]; autoRotate: boolean; showWireframe: boolean; polyThickness: number; polyColor: string; }
-const ModelRenderer: FC<ModelRendererProps> = (props) => { const groupRef = useRef<THREE.Group>(null!); useFrame((state, delta) => { if (props.autoRotate && groupRef.current) { groupRef.current.rotation.y += delta * 0.2; } }); return (<group ref={groupRef} scale={props.scale} rotation={props.rotation}><Model /><ModelWireframe show={props.showWireframe} thickness={props.polyThickness} color={props.polyColor} /></group>); };
-useGLTF.preload('/3D-model/model.glb');
-const CameraUpdater: FC<{ fov: number }> = ({ fov }) => { const { camera } = useThree(); useEffect(() => { if (camera instanceof THREE.PerspectiveCamera) { camera.fov = fov; camera.updateProjectionMatrix(); } }, [fov, camera]); return null; };
 
-// Tạo một "nguồn chân lý" cho các giá trị preset
+interface ModelRendererProps {
+  url: string;
+  scale: number;
+  rotation: [number, number, number];
+  autoRotate: boolean;
+}
+
+const GeneratedModelRenderer: FC<ModelRendererProps> = (props) => {
+  const groupRef = useRef<THREE.Group>(null!);
+  const { scene } = useGLTF(props.url);
+
+  useFrame((state, delta) => {
+    if (props.autoRotate && groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.2;
+    }
+  });
+
+  return (
+    <group ref={groupRef} scale={props.scale} rotation={props.rotation}>
+      <primitive object={scene} />
+    </group>
+  );
+};
+useGLTF.preload('/3D-model/model.glb');
+
+const CameraUpdater: FC<{ fov: number }> = ({ fov }) => { 
+    const { camera } = useThree(); 
+    useEffect(() => { 
+        if (camera instanceof THREE.PerspectiveCamera) { 
+            camera.fov = fov; camera.updateProjectionMatrix(); 
+        } 
+    }, [fov, camera]); 
+    return null; 
+};
+
 const environmentOptions = ['sunset', 'dawn', 'night', 'warehouse', 'forest', 'apartment', 'studio', 'city', 'park', 'lobby'] as const;
-// Tự động tạo type từ mảng trên
 type EnvironmentPresetType = typeof environmentOptions[number];
 
 
 const ViewPanel: FC = () => {
   const { resolvedTheme } = useTheme();
+  const { currentModelUrl } = useGeneration();
 
   const [sceneControls, setSceneControls] = useControls('Scene', () => ({
     backgroundColor: resolvedTheme === 'light' ? '#EEF2FF' : '#171717',
@@ -2387,7 +3226,7 @@ const ViewPanel: FC = () => {
   
   const modelControls = useControls('Model', { scale: { value: 1, min: 0.1, max: 5, step: 0.05 }, rotation: [0, 0, 0] });
   const cameraControls = useControls('Camera', { fov: { value: 45, min: 10, max: 120, step: 1 } });
-  const helperControls = useControls('Helpers', { autoRotate: true, showGrid: true, showWireframe: false, polyThickness: { value: 1, min: 0.1, max: 10, step: 0.1, render: (get) => get('Helpers.showWireframe') }, polyColor: { value: '#ffffff', render: (get) => get('Helpers.showWireframe') } });
+  const helperControls = useControls('Helpers', { autoRotate: true, showGrid: true });
 
   useEffect(() => {
     if (resolvedTheme) {
@@ -2396,29 +3235,31 @@ const ViewPanel: FC = () => {
     }
   }, [resolvedTheme, setSceneControls]);
 
+  const modelToDisplayUrl = currentModelUrl || '/3D-model/model.glb';
+
   return (
     <div className="w-full h-full relative">
-      <Canvas 
-        dpr={[1, 2]} 
-        camera={{ position: [0, 1.5, 6] }} 
-        style={{ position: "absolute", width: '100%', height: '100%' }}
-        shadows
-      >
-        <color attach="background" args={[sceneControls.backgroundColor]} />
+      <Canvas dpr={[1, 2]} camera={{ position: [0, 1.5, 6] }} style={{ position: "absolute", width: '100%', height: '100%' }} shadows gl={{ preserveDrawingBuffer: true }}>
         <CameraUpdater fov={cameraControls.fov} />
         <ambientLight intensity={sceneControls.intensity / 2} />
         <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
-        
-        {/* === SỬA LỖI TẠI ĐÂY === */}
-        {/* Ép kiểu (cast) `sceneControls.environment` thành `EnvironmentPresetType` */}
         <Environment preset={sceneControls.environment as EnvironmentPresetType} />
-        
         {helperControls.showGrid && (<Grid infiniteGrid position={[0, -0.5, 0]} sectionSize={1} cellSize={0.5} sectionColor={"#444444"} cellColor={"#222222"} fadeDistance={25} fadeStrength={1} />)}
         <Suspense fallback={<Loader />}>
-          <ModelRenderer scale={modelControls.scale} rotation={modelControls.rotation} autoRotate={helperControls.autoRotate} showWireframe={helperControls.showWireframe} polyThickness={helperControls.polyThickness} polyColor={helperControls.polyColor} />
+          <GeneratedModelRenderer
+            url={modelToDisplayUrl}
+            scale={modelControls.scale}
+            rotation={modelControls.rotation}
+            autoRotate={helperControls.autoRotate}
+          />
         </Suspense>
         <OrbitControls makeDefault />
+        <ThumbnailCapturer />
       </Canvas>
+      
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[300px] z-10">
+        <Leva fill oneLineLabels collapsed />
+      </div>
     </div>
   );
 };
@@ -2474,6 +3315,213 @@ export const useAuth = () => {
   return context;
 };
 
+===== .\src\context\GenerationContext.tsx =====
+// ===== .\src\context\GenerationContext.tsx =====
+"use client";
+
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef, useMemo } from 'react';
+
+interface GeneratedModel {
+  jobId: string;
+  url: string; 
+  prompt: string;
+  thumbnailUrl: string;
+  status: 'idle' | 'queued' | 'processing' | 'downloading' | 'completed' | 'failed';
+  error?: string;
+}
+
+interface GenerationState {
+  currentModelUrl: string | null;
+  library: GeneratedModel[];
+  isRateLimited: boolean;
+  submitJob: (payload: { type: 'text'; caption: string } | { type: 'image'; imageFile: File }) => Promise<void>;
+  setCurrentModelUrl: (url: string | null) => void;
+  updateThumbnail: (jobId: string, thumbnailUrl: string) => void;
+}
+
+const GenerationContext = createContext<GenerationState | undefined>(undefined);
+
+const MAX_REQUESTS = 5;
+const TIME_WINDOW_MINUTES = 10;
+
+async function getBackendUrl(): Promise<string> {
+  const res = await fetch('/api/get-backend-url');
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Failed to fetch backend URL');
+  }
+  const data = await res.json();
+  return data.url;
+}
+
+export const GenerationProvider = ({ children }: { children: ReactNode }) => {
+  const [currentModelUrl, setCurrentModelUrl] = useState<string | null>(null);
+  const [library, setLibrary] = useState<GeneratedModel[]>([]);
+  const [requestTimestamps, setRequestTimestamps] = useState<Date[]>([]);
+
+  const pollingIntervalsRef = useRef(new Map<string, NodeJS.Timeout>());
+
+  const isRateLimited = useMemo(() => {
+    const now = new Date();
+    const tenMinutesAgo = new Date(now.getTime() - TIME_WINDOW_MINUTES * 60 * 1000);
+    const recentRequests = requestTimestamps.filter(ts => ts > tenMinutesAgo);
+    return recentRequests.length >= MAX_REQUESTS;
+  }, [requestTimestamps]);
+
+  const updateThumbnail = (jobIdToUpdate: string, thumbnailUrl: string) => {
+    setLibrary(prevLibrary =>
+      prevLibrary.map(item =>
+        item.jobId === jobIdToUpdate ? { ...item, thumbnailUrl } : item
+      )
+    );
+  };
+
+  const updateLibraryItem = (jobId: string, updates: Partial<GeneratedModel>) => {
+      setLibrary(prev => prev.map(item => 
+          item.jobId === jobId ? { ...item, ...updates } : item
+      ));
+  };
+  
+  const stopPollingForJob = (id: string) => {
+      if (pollingIntervalsRef.current.has(id)) {
+          clearInterval(pollingIntervalsRef.current.get(id)!);
+          pollingIntervalsRef.current.delete(id);
+      }
+  };
+
+  const pollJobStatus = async (id: string, backendUrl: string) => {
+    const intervalId = setInterval(async () => {
+      try {
+        const res = await fetch(`${backendUrl}/jobs/${id}/status`, {
+          headers: { 'ngrok-skip-browser-warning': 'true' },
+        });
+
+        if (!res.ok) throw new Error(`Server responded with status ${res.status}`);
+        
+        const data = await res.json();
+        
+        if (data.status !== 'completed' && data.status !== 'failed') {
+            updateLibraryItem(id, { status: data.status });
+        }
+
+        if (data.status === 'completed' || data.status === 'failed') {
+          stopPollingForJob(id);
+
+          if (data.status === 'completed' && data.download_url) {
+            updateLibraryItem(id, { status: 'downloading' });
+            const modelUrl = `${backendUrl}${data.download_url}`;
+            const modelResponse = await fetch(modelUrl, {
+              headers: { 'ngrok-skip-browser-warning': 'true' },
+            });
+            if (!modelResponse.ok) throw new Error(`Failed to download GLB file. Status: ${modelResponse.status}`);
+            
+            const modelBlob = await modelResponse.blob();
+            const blobUrl = URL.createObjectURL(modelBlob);
+            
+            updateLibraryItem(id, { status: 'completed', url: blobUrl, thumbnailUrl: '/logo/dark.png' });
+            setCurrentModelUrl(blobUrl);
+
+          } else { 
+            const errorMsg = data.error || 'An unknown error occurred.';
+            updateLibraryItem(id, { status: 'failed', error: errorMsg });
+          }
+        }
+      } catch (err) {
+        stopPollingForJob(id);
+        const errorMsg = (err as Error).message;
+        updateLibraryItem(id, { status: 'failed', error: errorMsg });
+      }
+    }, 3000);
+    pollingIntervalsRef.current.set(id, intervalId);
+  };
+  
+  // SỬA LỖI: Khắc phục cảnh báo react-hooks/exhaustive-deps
+  useEffect(() => {
+    const pollingMap = pollingIntervalsRef.current;
+    return () => {
+      // Sử dụng biến đã được sao chép trong hàm dọn dẹp
+      pollingMap.forEach(intervalId => clearInterval(intervalId));
+    };
+  }, []);
+
+  const submitJob = async (payload: { type: 'text'; caption: string } | { type: 'image'; imageFile: File }) => {
+    if (isRateLimited) {
+        alert(`Rate limit exceeded. Please wait. (Max ${MAX_REQUESTS} requests per ${TIME_WINDOW_MINUTES} minutes)`);
+        return;
+    }
+    
+    let promptForLibrary: string;
+    let requestBody: BodyInit | null = null;
+    // SỬA LỖI: Chuyển 'let' thành 'const' vì không gán lại
+    const requestHeaders: HeadersInit = { 'ngrok-skip-browser-warning': 'true' };
+    let endpoint: string;
+
+    if (payload.type === 'text') {
+        promptForLibrary = payload.caption;
+        endpoint = '/jobs/text-to-3d';
+        requestHeaders['Content-Type'] = 'application/json';
+        requestBody = JSON.stringify({ caption: payload.caption });
+    } else {
+        promptForLibrary = payload.imageFile.name;
+        endpoint = '/jobs/image-to-3d';
+        const formData = new FormData();
+        formData.append('image', payload.imageFile);
+        requestBody = formData;
+        // Xóa 'Content-Type' để trình duyệt tự động đặt với boundary chính xác cho multipart/form-data
+        // delete requestHeaders['Content-Type']; // Dòng này không cần thiết nếu khởi tạo lại header
+    }
+
+    try {
+        const backendUrl = await getBackendUrl();
+        const response = await fetch(`${backendUrl}${endpoint}`, {
+            method: 'POST',
+            headers: requestHeaders,
+            body: requestBody,
+        });
+
+        setRequestTimestamps(prev => [...prev, new Date()]);
+      
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Job submission failed');
+        }
+
+        const data = await response.json();
+        const newJobId = data.job_id;
+      
+        const placeholderModel: GeneratedModel = {
+            jobId: newJobId,
+            url: '',
+            prompt: promptForLibrary,
+            thumbnailUrl: '',
+            status: data.status,
+        };
+        setLibrary(prev => [placeholderModel, ...prev]);
+
+        pollJobStatus(newJobId, backendUrl);
+
+    } catch (err) {
+      console.error("Job submission failed:", (err as Error).message);
+    }
+  };
+  
+  const value = { currentModelUrl, library, submitJob, setCurrentModelUrl, updateThumbnail, isRateLimited };
+
+  return (
+    <GenerationContext.Provider value={value}>
+      {children}
+    </GenerationContext.Provider>
+  );
+};
+
+export const useGeneration = () => {
+  const context = useContext(GenerationContext);
+  if (context === undefined) {
+    throw new Error('useGeneration must be used within a GenerationProvider');
+  }
+  return context;
+};
+
 ===== .\src\context\ThemeProvider.tsx =====
 "use client";
 
@@ -2492,6 +3540,66 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     </NextThemesProvider>
   );
 }
+
+===== .\src\context\UIContext.tsx =====
+// ===== .\src\context\UIContext.tsx =====
+"use client";
+
+import { createContext, useContext, useState, ReactNode } from 'react';
+
+// Định nghĩa các giá trị mà Context sẽ cung cấp
+interface UIContextType {
+  isLoginModalOpen: boolean;
+  isRegisterModalOpen: boolean;
+  openLoginModal: () => void;
+  openRegisterModal: () => void;
+  closeAllModals: () => void;
+}
+
+// Tạo Context
+const UIContext = createContext<UIContextType | undefined>(undefined);
+
+// Tạo Provider component
+export const UIProvider = ({ children }: { children: ReactNode }) => {
+  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
+
+  const openLoginModal = () => {
+    setRegisterModalOpen(false); // Đảm bảo modal kia đã đóng
+    setLoginModalOpen(true);
+  };
+
+  const openRegisterModal = () => {
+    setLoginModalOpen(false); // Đảm bảo modal kia đã đóng
+    setRegisterModalOpen(true);
+  };
+
+  const closeAllModals = () => {
+    setLoginModalOpen(false);
+    setRegisterModalOpen(false);
+  };
+
+  return (
+    <UIContext.Provider value={{ 
+      isLoginModalOpen, 
+      isRegisterModalOpen, 
+      openLoginModal, 
+      openRegisterModal, 
+      closeAllModals 
+    }}>
+      {children}
+    </UIContext.Provider>
+  );
+};
+
+// Tạo một custom hook để dễ dàng sử dụng Context
+export const useUI = () => {
+  const context = useContext(UIContext);
+  if (context === undefined) {
+    throw new Error('useUI must be used within a UIProvider');
+  }
+  return context;
+};
 
 ===== DIRECTORY TREE =====
 ./
@@ -2534,6 +3642,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             image 4.png
             image 9.png
             untiltlsed 3.png
+            background/
+                background-image-gallery.png
+                full.png
+                login.png
+                register.png
         logo/
             dark.png
             light.png
@@ -2542,6 +3655,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         app/
             globals.css
             providers.tsx
+            api/
+                get-backend-url/
+                    route.ts
             [locale]/
                 layout.tsx
                 page.tsx
@@ -2550,8 +3666,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
                 dashboard/
                     layout.tsx
                     page.tsx
-                    console/
-                        page.tsx
                     customers/
                         page.tsx
                     notifications/
@@ -2575,9 +3689,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             Header.tsx
             Hero.tsx
             ImageGallery.tsx
+            LandingPage.tsx
             LanguageSwitcher.tsx
+            ModalRenderer.tsx
             Pricing.tsx
             WorkflowCTA.tsx
+            auth/
+                LoginModal.tsx
+                RegisterModal.tsx
             dashboard/
                 DashboardSidebar.tsx
                 Overview.tsx
@@ -2587,5 +3706,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
                 ViewPanel.tsx
         context/
             AuthContext.tsx
+            GenerationContext.tsx
             ThemeProvider.tsx
+            UIContext.tsx
     utils/

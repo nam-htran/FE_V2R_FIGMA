@@ -1,21 +1,7 @@
-"use client";
-
-import Footer from "@/components/Footer";
-import Hero from "@/components/Hero";
-import ImageGallery from "@/components/ImageGallery";
-import WorkflowCTA from "@/components/WorkflowCTA";
-import Header from "@/components/Header";
-import Pricing from "@/components/Pricing";
+// ===== .\src\app\[locale]\page.tsx =====
+import LandingPage from "@/components/LandingPage";
 
 export default function Home() {
-  return (
-    <>
-      <Header />
-      <Hero />
-      <ImageGallery />
-      <Pricing />
-      <WorkflowCTA />
-      <Footer />
-    </>
-  );
+  // Chỉ cần render component client LandingPage là đủ
+  return <LandingPage />;
 }
