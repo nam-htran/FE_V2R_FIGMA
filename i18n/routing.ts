@@ -41,6 +41,6 @@ export const routing = defineRouting({
     '/dashboard/customers': '/dashboard/customers',
     '/dashboard/transactions': '/dashboard/transactions',
     '/dashboard/revenue': '/dashboard/revenue',
-    '/dashboard/notifications': '/dashboard/notifications',
+    // --- DÒNG DƯỚI ĐÂY ĐÃ BỊ XÓA ---
   }
 });

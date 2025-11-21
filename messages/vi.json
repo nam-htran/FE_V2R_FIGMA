@@ -1,145 +1,17 @@
 {
-  "Header": {
-    "home": "Trang chủ",
-    "community": "Cộng đồng",
-    "features": "Tính năng",
-    "pricing": "Bảng giá",
-    "log_in": "Đăng nhập",
-    "start_for_free": "Bắt đầu miễn phí"
-  },
-  "Hero": {
-    "title": "Trình Tạo Mô Hình 3D AI SỐ 1 Cho Mọi Người",
-    "description": "Chuyển đổi ảnh hoặc hình ảnh concept của bạn thành mô hình 3D với chi tiết tuyệt đẹp chỉ trong vài giây.",
-    "start_for_free": "BẮT ĐẦU MIỄN PHÍ",
-    "explore": "KHÁM PHÁ"
-  },
-  "ImageGallery": {
-    "title": "Bước vào Thế giới Tưởng tượng của bạn",
-    "description": "Khám phá và tải xuống nhiều mô hình 3D độc đáo từ cộng đồng sôi động của chúng tôi.",
-    "load_more": "Tải thêm"
-  },
-  "WorkflowCTA": {
-    "title": "Mở khóa quy trình làm việc 3D nhanh hơn",
-    "description": "Thay đổi quy trình thiết kế của bạn với V2R. Hãy thử ngay bây giờ và chứng kiến sự sáng tạo của bạn trở nên sống động một cách dễ dàng!",
-    "start_for_free": "BẮT ĐẦU MIỄN PHÍ",
-    "explore": "KHÁM PHÁ"
-  },
-  "Footer": {
-    "subscribe_title": "Đăng ký nhận thông tin cập nhật",
-    "subscribe_description": "Tham gia bản tin của chúng tôi để luôn cập nhật những tin tức mới nhất",
-    "email_placeholder": "Nhập email của bạn",
-    "subscribe_button": "Đăng ký",
-    "features_title": "Tính năng",
-    "text_to_3d": "Văn bản sang 3D",
-    "image_to_3d": "Hình ảnh sang 3D",
-    "product_title": "Sản phẩm",
-    "pricing": "Bảng giá",
-    "community": "Cộng đồng",
-    "plugin": "Plugin",
-    "status": "Trạng thái",
-    "company_title": "Công ty",
-    "about": "Về chúng tôi",
-    "contact": "Liên hệ"
-  },
-  "Sidebar": {
-    "text_to_3d": "Văn bản sang 3D",
-    "image_to_3d": "Hình ảnh sang 3D",
-    "image_label": "Hình ảnh",
-    "uploader_title": "Hình ảnh của bạn ở đây",
-    "uploader_formats": "Định dạng: .png, .jpg, .jpeg, .webp",
-    "name_label": "Tên",
-    "name_placeholder": "Dự án chưa có tên",
-    "model_label": "Mô hình AI",
-    "symmetry_label": "Đối xứng",
-    "symmetry_off": "Tắt",
-    "symmetry_auto": "Tự động",
-    "symmetry_on": "Bật",
-    "cost_info_model": "1 mô hình",
-    "cost_info_tokens": "10 tokens",
-    "generate_button": "Tạo"
-  },
-  "Login": {
-    "welcome": "Chào mừng đến với V2R",
-    "get_started": "Nhập Email của bạn để bắt đầu",
-    "email_placeholder": "Email",
-    "password_placeholder": "Mật khẩu",
-    "continue_button": "Tiếp tục",
-    "forgot_password": "Quên mật khẩu",
-    "or": "Hoặc",
-    "continue_with_google": "Tiếp tục với Google",
-    "no_account": "Chưa có tài khoản?",
-    "register_now": "Đăng ký ngay",
-    "terms_prefix": "Bằng việc tiếp tục, bạn đồng ý với",
-    "terms_of_use": "Điều khoản sử dụng",
-    "terms_and": "và",
-    "privacy_policy": "Chính sách bảo mật"
-  },
-  "Register": {
-    "welcome": "Chào mừng đến với V2R",
-    "get_started": "Nhập Email của bạn để bắt đầu",
-    "email_placeholder": "Email",
-    "full_name_placeholder": "Họ và tên",
-    "password_placeholder": "Mật khẩu",
-    "confirm_password_placeholder": "Xác nhận mật khẩu",
-    "continue_button": "Tiếp tục",
-    "have_account": "Đã có tài khoản?",
-    "login_now": "Đăng nhập",
-    "terms_prefix": "Bằng việc tiếp tục, bạn đồng ý với",
-    "terms_of_use": "Điều khoản sử dụng",
-    "terms_and": "và",
-    "privacy_policy": "Chính sách bảo mật"
-  },
-  "Workspace": {
-    "new_project": "Dự án mới",
-    "your_library": "Thư viện của bạn",
-    "upgrade_account": "Nâng cấp tài khoản",
-    "user_free_tier": "Miễn phí",
-    "search": "Tìm kiếm",
-    "upload": "Tải lên",
-    "my_library": "Thư viện của tôi"
-  },
-  "Pricing": {
-    "title": "Nâng cấp",
-    "subtitle": "Bắt đầu sử dụng miễn phí. Nâng cấp để nhận giá ưu đãi và thêm nhiều quyền lợi khác.",
-    "basic": {
-      "name": "Basic",
-      "price": "199.000đ",
-      "price_period": "tháng",
-      "cta_button": "Đăng ký",
-      "features": [
-        "10 Mô hình",
-        "Truy cập cộng đồng",
-        "Hỗ trợ qua email"
-      ]
-    },
-    "pro": {
-      "name": "Pro",
-      "price": "499.000đ",
-      "price_period": "tháng",
-      "cta_button": "Đăng ký",
-      "features": [
-        "30 Mô hình",
-        "API access",
-        "Hỗ trợ ưu tiên",
-        "Plugin tích hợp"
-      ]
-    },
-    "enterprise": {
-      "name": "Enterprise",
-      "price": "4.990.000đ",
-      "price_period": "tháng",
-      "cta_button": "Liên hệ",
-      "features": [
-        "Không giới hạn mô hình",
-        "Quản lý đội nhóm",
-        "Hỗ trợ riêng biệt",
-        "Bảo mật nâng cao"
-      ]
-    }
-  },
+  "Header": { "home": "Trang chủ", "community": "Cộng đồng", "features": "Tính năng", "pricing": "Bảng giá", "log_in": "Đăng nhập", "start_for_free": "Bắt đầu miễn phí" },
+  "Hero": { "title": "Trình Tạo Mô Hình 3D AI SỐ 1 Cho Mọi Người", "description": "Chuyển đổi ảnh hoặc hình ảnh concept của bạn thành mô hình 3D với chi tiết tuyệt đẹp chỉ trong vài giây.", "start_for_free": "BẮT ĐẦU MIỄN PHÍ", "explore": "KHÁM PHÁ" },
+  "ImageGallery": { "title": "Bước vào Thế giới Tưởng tượng của bạn", "description": "Khám phá và tải xuống nhiều mô hình 3D độc đáo từ cộng đồng sôi động của chúng tôi.", "load_more": "Tải thêm", "collapse": "Thu gọn"},
+  "WorkflowCTA": { "title": "Mở khóa quy trình làm việc 3D nhanh hơn", "description": "Thay đổi quy trình thiết kế của bạn với V2R. Hãy thử ngay bây giờ và chứng kiến sự sáng tạo của bạn trở nên sống động một cách dễ dàng!", "start_for_free": "BẮT ĐẦU MIỄN PHÍ", "explore": "KHÁM PHÁ" },
+  "Footer": { "subscribe_title": "Đăng ký nhận thông tin cập nhật", "subscribe_description": "Tham gia bản tin của chúng tôi để luôn cập nhật những tin tức mới nhất", "email_placeholder": "Nhập email của bạn", "subscribe_button": "Đăng ký", "features_title": "Tính năng", "text_to_3d": "Văn bản sang 3D", "image_to_3d": "Hình ảnh sang 3D", "product_title": "Sản phẩm", "pricing": "Bảng giá", "community": "Cộng đồng", "plugin": "Plugin", "status": "Trạng thái", "company_title": "Công ty", "about": "Về chúng tôi", "contact": "Liên hệ" },
+  "Sidebar": { "text_to_3d": "Văn bản sang 3D", "image_to_3d": "Hình ảnh sang 3D", "image_label": "Hình ảnh", "uploader_title": "Hình ảnh của bạn ở đây", "uploader_formats": "Định dạng: .png, .jpg, .jpeg, .webp", "name_label": "Tên", "name_placeholder": "Dự án chưa có tên", "model_label": "Mô hình AI", "symmetry_label": "Đối xứng", "symmetry_off": "Tắt", "symmetry_auto": "Tự động", "symmetry_on": "Bật", "cost_info_model": "1 mô hình", "cost_info_tokens": "10 tokens", "generate_button": "Tạo" },
+  "Login": { "welcome": "Chào mừng đến với V2R", "get_started": "Nhập Email của bạn để bắt đầu", "email_placeholder": "Email", "password_placeholder": "Mật khẩu", "continue_button": "Tiếp tục", "forgot_password": "Quên mật khẩu", "or": "Hoặc", "continue_with_google": "Tiếp tục với Google", "no_account": "Chưa có tài khoản?", "register_now": "Đăng ký ngay", "terms_prefix": "Bằng việc tiếp tục, bạn đồng ý với", "terms_of_use": "Điều khoản sử dụng", "terms_and": "và", "privacy_policy": "Chính sách bảo mật" },
+  "Register": { "welcome": "Chào mừng đến với V2R", "get_started": "Nhập Email của bạn để bắt đầu", "email_placeholder": "Email", "full_name_placeholder": "Họ và tên", "password_placeholder": "Mật khẩu", "confirm_password_placeholder": "Xác nhận mật khẩu", "continue_button": "Tiếp tục", "have_account": "Đã có tài khoản?", "login_now": "Đăng nhập", "terms_prefix": "Bằng việc tiếp tục, bạn đồng ý với", "terms_of_use": "Điều khoản sử dụng", "terms_and": "và", "privacy_policy": "Chính sách bảo mật" },
+  "Workspace": { "new_project": "Dự án mới", "your_library": "Thư viện của bạn", "upgrade_account": "Nâng cấp tài khoản", "user_free_tier": "Miễn phí", "search": "Tìm kiếm", "upload": "Tải lên", "my_library": "Thư viện của tôi", "profile": "Hồ sơ", "logout": "Đăng xuất" },
+  "Pricing": { "title": "Nâng cấp", "subtitle": "Bắt đầu sử dụng miễn phí. Nâng cấp để nhận giá ưu đãi và thêm nhiều quyền lợi khác.", "basic": { "name": "Basic", "price": "199.000đ", "price_period": "tháng", "cta_button": "Đăng ký", "features": ["10 Mô hình", "Truy cập cộng đồng", "Hỗ trợ qua email"] }, "pro": { "name": "Pro", "price": "499.000đ", "price_period": "tháng", "cta_button": "Đăng ký", "features": ["30 Mô hình", "API access", "Hỗ trợ ưu tiên", "Plugin tích hợp"] }, "enterprise": { "name": "Enterprise", "price": "4.990.000đ", "price_period": "tháng", "cta_button": "Liên hệ", "features": ["Không giới hạn mô hình", "Quản lý đội nhóm", "Hỗ trợ riêng biệt", "Bảo mật nâng cao"] } },
   "OTP": {
     "title": "Nhập mã OTP",
-    "subtitle": "Mã xác thực đã được gửi đến *******762",
+    "subtitle": "Mã xác thực đã được gửi đến {email}",
     "did_not_receive": "Chưa nhận được mã?",
     "resend": "Gửi lại",
     "continue_button": "Tiếp tục",
@@ -148,14 +20,30 @@
     "no_email_found": "Không tìm thấy email đăng ký. Vui lòng đăng ký lại.",
     "invalid_otp": "Mã OTP không hợp lệ. Vui lòng thử lại."
   },
-  "Dashboard": {
-    "overview": "Tổng quan",
-    "status_and_resources": "Trạng thái & Tài nguyên",
-    "cost_reports": "Báo cáo Chi phí",
-    "console": "Console",
-    "customers": "Khách hàng",
-    "transactions": "Giao dịch",
-    "revenue": "Doanh thu",
-    "notifications": "Thông báo"
+  "Dashboard": { 
+    "overview": "Tổng quan", 
+    "status_and_resources": "Trạng thái & Tài nguyên", 
+    "cost_reports": "Báo cáo Chi phí", 
+    "console": "Console", 
+    "customers": "Khách hàng", 
+    "transactions": "Giao dịch", 
+    "revenue": "Doanh thu", 
+    "aiResourceStatus": "Trạng thái Tài nguyên AI Server", 
+    "cannotLoadResource": "Không thể tải dữ liệu tài nguyên server." 
+  },
+  "System": { "checkingAccess": "Đang kiểm tra quyền truy cập...", "checkingAdminAccess": "Đang kiểm tra quyền truy cập Admin...", "cpu": "CPU", "ram": "RAM", "gpu": "GPU", "vram": "VRAM" },
+  "ForgotPassword": { "title": "Quên Mật khẩu", "submitButton": "Gửi liên kết Reset", "backToLogin": "Quay lại Đăng nhập", "submittedTitle": "Kiểm tra Email của bạn", "submittedText": "Nếu tài khoản tồn tại cho {email}, chúng tôi đã gửi một liên kết để đặt lại mật khẩu của bạn." },
+  "About": { "title": "Về Chúng Tôi", "p1": "Chào mừng bạn đến với V2R, nền tảng tiên phong trong việc ứng dụng trí tuệ nhân tạo để tạo ra các mô hình 3D chất lượng cao. Sứ mệnh của chúng tôi là dân chủ hóa quá trình sáng tạo 3D, giúp mọi người, từ nghệ sĩ, nhà thiết kế đến những người đam mê, có thể biến ý tưởng của mình thành hiện thực một cách nhanh chóng và dễ dàng.", "h2": "Tầm nhìn", "p2": "Chúng tôi tin rằng tương lai của thiết kế và giải trí nằm ở không gian ba chiều. V2R được xây dựng với tầm nhìn phá bỏ mọi rào cản kỹ thuật, cho phép sự sáng tạo không giới hạn. Bằng cách chuyển đổi hình ảnh 2D và văn bản thành các mô hình 3D chi tiết, chúng tôi mở ra một thế giới mới đầy tiềm năng.", "h3": "Đội ngũ", "p3": "Đội ngũ của chúng tôi bao gồm các chuyên gia hàng đầu trong lĩnh vực AI, đồ họa máy tính và phát triển phần mềm. Chúng tôi cùng chia sẻ một niềm đam mê cháy bỏng với công nghệ và nghệ thuật, và luôn nỗ lực để mang đến những sản phẩm đột phá nhất." },
+  "Contact": { "title": "Liên Hệ", "p1": "Chúng tôi luôn sẵn lòng lắng nghe từ bạn! Nếu bạn có bất kỳ câu hỏi, góp ý, hoặc cần hỗ trợ, xin vui lòng liên hệ với chúng tôi qua các kênh dưới đây.", "supportEmail": "Email Hỗ trợ", "businessEmail": "Email Kinh doanh", "address": "Địa chỉ", "address_detail": "FPT University, District 9, Ho Chi Minh City", "p2": "Bạn cũng có thể theo dõi chúng tôi trên các mạng xã hội để cập nhật những tin tức mới nhất về sản phẩm và công nghệ." },
+  "Terms": { "title": "Điều khoản Sử dụng", "h1": "1. Chấp nhận Điều khoản", "p1": "Bằng cách truy cập và sử dụng dịch vụ của V2R ('Dịch vụ'), bạn đồng ý tuân thủ các điều khoản và điều kiện này. Nếu bạn không đồng ý, vui lòng không sử dụng Dịch vụ.", "h2": "2. Quyền Sở hữu Trí tuệ", "p2": "Các mô hình 3D được tạo ra bởi người dùng thuộc về người dùng. Tuy nhiên, bằng cách sử dụng Dịch vụ, bạn cấp cho V2R quyền sử dụng, sao chép, và hiển thị các mô hình đó cho mục đích vận hành và quảng bá Dịch vụ.", "h3": "3. Giới hạn Trách nhiệm", "p3": "Dịch vụ được cung cấp 'nguyên trạng'. V2R không chịu trách nhiệm cho bất kỳ thiệt hại nào phát sinh từ việc sử dụng Dịch vụ." },
+  "Privacy": { "title": "Chính sách Bảo mật", "h1": "1. Thu thập Thông tin", "p1": "Chúng tôi thu thập thông tin bạn cung cấp khi đăng ký, bao gồm email và họ tên. Chúng tôi cũng thu thập dữ liệu về cách bạn sử dụng Dịch vụ, chẳng hạn như các hình ảnh bạn tải lên và các mô hình bạn tạo ra.", "h2": "2. Sử dụng Thông tin", "p2": "Thông tin của bạn được sử dụng để cung cấp và cải thiện Dịch vụ, xử lý thanh toán, và liên lạc với bạn. Chúng tôi cam kết không chia sẻ thông tin cá nhân của bạn với bên thứ ba mà không có sự đồng ý của bạn, trừ khi được pháp luật yêu cầu.", "h3": "3. Bảo mật", "p3": "Chúng tôi áp dụng các biện pháp bảo mật hợp lý để bảo vệ thông tin của bạn khỏi truy cập, sử dụng hoặc tiết lộ trái phép." },
+  "Community": { "title": "Thư viện Cộng đồng", "subtitle": "Khám phá những tác phẩm 3D độc đáo được tạo ra bởi cộng đồng V2R.", "byAuthor": "bởi {author}" },
+  "Profile": { "updateInfo": "Cập nhật thông tin", "fullName": "Họ và tên", "phone": "Số điện thoại", "address": "Địa chỉ", "saveButton": "Lưu thay đổi", "saving": "Đang lưu...", "changePassword": "Đổi mật khẩu", "currentPassword": "Mật khẩu hiện tại", "newPassword": "Mật khẩu mới", "confirmNewPassword": "Xác nhận mật khẩu mới", "changePasswordButton": "Đổi mật khẩu", "changing": "Đang đổi...", "toasts": { "updateSuccess": "Cập nhật thông tin thành công!", "updateFailed": "Cập nhật thất bại.", "passwordMismatch": "Mật khẩu mới không khớp!", "passwordChangeSuccess": "Đổi mật khẩu thành công!", "passwordChangeFailed": "Đổi mật khẩu thất bại." } },
+  "Features": {
+    "title": "Tính năng của Chúng tôi",
+    "t2d_title": "Tạo 3D từ Văn bản",
+    "t2d_p1": "Biến lời nói của bạn thành hiện thực. Chỉ cần mô tả đối tượng bạn tưởng tượng, và AI tiên tiến của chúng tôi sẽ tạo ra một mô hình 3D chi tiết từ văn bản của bạn. Từ những hình dạng đơn giản đến các nhân vật phức tạp, sự sáng tạo của bạn là giới hạn duy nhất.",
+    "i2d_title": "Chuyển đổi 3D từ Hình ảnh",
+    "i2d_p1": "Biến đổi bất kỳ hình ảnh 2D, ảnh concept, hoặc ảnh chụp nào thành một mô hình 3D tuyệt đẹp. Hệ thống thông minh của chúng tôi sẽ phân tích hình ảnh để tái tạo lại hình học, chi tiết và chiều sâu, cung cấp cho bạn một tài sản 3D sẵn sàng sử dụng chỉ trong vài giây."
   }
 }

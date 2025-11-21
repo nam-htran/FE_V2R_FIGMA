@@ -8,21 +8,20 @@ import { useTranslations } from 'next-intl';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useAuth } from '@/context/AuthContext';
 import { Icon } from '@iconify/react';
-import { useUI } from '@/context/UIContext'; // --- BỔ SUNG ---
+import { useUI } from '@/context/UIContext';
 
 const Header = () => {
   const t = useTranslations('Header');
   const pathname = usePathname();
   const { isAuthenticated, logout, user } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { openLoginModal, openRegisterModal } = useUI(); // --- BỔ SUNG ---
+  const { openLoginModal, openRegisterModal } = useUI();
 
   const isActive = (path: string) => pathname === path;
 
   return (
     <header className="absolute top-0 left-0 w-full z-20">
       <nav className="flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24">
-        {/* ... phần logo và menu giữ nguyên ... */}
         <div className="flex items-center">
           <Link href="/">
             <Image src="/logo/dark.png" alt="Logo" width={90} height={56} priority />
@@ -35,7 +34,13 @@ const Header = () => {
           </Link>
           <Link href="/community" className={`font-medium transition-colors ${isActive('/community') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>{t('community')}</Link>
           <Link href="/features" className={`font-medium transition-colors ${isActive('/features') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>{t('features')}</Link>
-          <Link href="/pricing" className={`font-medium transition-colors ${isActive('/pricing') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}>{t('pricing')}</Link>
+          {/* CẬP NHẬT: Sửa href từ chuỗi thành object để trỏ đến anchor link */}
+          <Link 
+            href={{ pathname: '/', hash: 'pricing' }} 
+            className={`font-medium transition-colors ${pathname.startsWith('/#pricing') ? 'text-black font-bold' : 'text-neutral-700 hover:text-black'}`}
+          >
+            {t('pricing')}
+          </Link>
         </div>
         <div className="hidden md:flex items-center space-x-6">
           <LanguageSwitcher />
@@ -60,12 +65,10 @@ const Header = () => {
             </div>
           ) : (
             <>
-              {/* --- THAY ĐỔI: Chuyển Link thành button --- */}
               <button onClick={openLoginModal} className="text-neutral-800 font-['Unbounded'] text-lg font-medium hover:text-black transition-colors">{t('log_in')}</button>
-              {/* --- THAY ĐỔI: Chuyển Link thành button --- */}
-              <button onClick={openRegisterModal} className="bg-gradient-to-r from-[#2980B9] to-[#6DD5FA] text-white rounded-xl px-7 py-3 font-['Unbounded'] text-base hover:opacity-90 transition-opacity shadow-md">
+              <Link href="/workspace" className="bg-gradient-to-r from-[#2980B9] to-[#6DD5FA] text-white rounded-xl px-7 py-3 font-['Unbounded'] text-base hover:opacity-90 transition-opacity shadow-md">
                 {t('start_for_free')}
-              </button>
+              </Link>
             </>
           )}
         </div>

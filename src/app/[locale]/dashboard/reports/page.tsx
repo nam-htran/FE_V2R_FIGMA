@@ -1,87 +1,58 @@
-// ===== .\src\app\[locale]\dashboard\reports\page.tsx =====
+// ===== src/app/[locale]/dashboard/reports/page.tsx =====
 "use client";
 
-// SỬA ĐỔI: Import Line component từ react-chartjs-2
+import { useState } from 'react';
 import { Line } from 'react-chartjs-2';
-// SỬA ĐỔI: Import các thành phần cần thiết từ chart.js
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler, // Cần Filler để tô màu vùng dưới đường line
-} from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler, ChartData, ChartOptions, TooltipItem } from 'chart.js';
 
-// Đăng ký các thành phần với ChartJS
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
-// --- DỮ LIỆU GỐC (Không đổi) ---
-const costData = [
-  { name: '06/07', gpu: 18000, backend: 22000 },
-  { name: '07/07', gpu: 16000, backend: 21000 },
-  { name: '08/07', gpu: 17000, backend: 23000 },
-  { name: '09/07', gpu: 15000, backend: 20000 },
-  { name: '10/07', gpu: 19000, backend: 24000 },
-  { name: '11/07', gpu: 20000, backend: 25000 },
-  { name: '12/07', gpu: 18500, backend: 23500 },
-];
+// Định nghĩa Interface cho dữ liệu chi phí
+interface CostItem {
+    name: string;
+    gpu: number;
+    backend: number;
+}
 
-// --- CẤU HÌNH BIỂU ĐỒ CHO CHART.JS ---
+const costDataWeek: CostItem[] = [{"name":"06/07","gpu":18000,"backend":22000},{"name":"07/07","gpu":16000,"backend":21000},{"name":"08/07","gpu":17000,"backend":23000},{"name":"09/07","gpu":15000,"backend":20000},{"name":"10/07","gpu":19000,"backend":24000},{"name":"11/07","gpu":20000,"backend":25000},{"name":"12/07","gpu":18500,"backend":23500}];
+const costDataMonth: CostItem[] = [{"name":"Week 1","gpu":120000,"backend":150000},{"name":"Week 2","gpu":125000,"backend":155000},{"name":"Week 3","gpu":110000,"backend":140000},{"name":"Week 4","gpu":130000,"backend":165000}];
+const costDataYear: CostItem[] = [{"name":"Jan","gpu":500000,"backend":600000},{"name":"Feb","gpu":520000,"backend":620000},{"name":"Mar","gpu":480000,"backend":580000},{"name":"Apr","gpu":550000,"backend":650000},{"name":"May","gpu":530000,"backend":630000},{"name":"Jun","gpu":580000,"backend":680000},{"name":"Jul","gpu":600000,"backend":700000},{"name":"Aug","gpu":590000,"backend":690000},{"name":"Sep","gpu":620000,"backend":720000},{"name":"Oct","gpu":650000,"backend":750000},{"name":"Nov","gpu":630000,"backend":730000},{"name":"Dec","gpu":680000,"backend":780000}];
 
-const labels = costData.map(d => d.name);
+type TimeFilter = 'week' | 'month' | 'year';
 
-const chartData = {
-  labels,
-  datasets: [
-    {
-      label: 'GPU',
-      data: costData.map(d => d.gpu),
-      borderColor: '#818cf8',
-      backgroundColor: '#a5b4fc',
-      fill: true, // Bật tô màu vùng
-      tension: 0.4, // Làm cho đường cong mượt hơn
-    },
-    {
-      label: 'Backend',
-      data: costData.map(d => d.backend),
-      borderColor: '#312e81',
-      backgroundColor: '#4338ca',
-      fill: true, // Bật tô màu vùng
-      tension: 0.4,
-    },
-  ],
+// Thay thế any[] bằng CostItem[]
+const dataMap: Record<TimeFilter, CostItem[]> = {
+  week: costDataWeek,
+  month: costDataMonth,
+  year: costDataYear,
 };
 
-const chartOptions = {
+// Trả về ChartData<'line'>
+const getChartData = (filter: TimeFilter): ChartData<'line'> => {
+  const data = dataMap[filter];
+  const labels = data.map(d => d.name);
+  return {
+    labels,
+    datasets: [
+      { label: 'GPU', data: data.map(d => d.gpu), borderColor: '#818cf8', backgroundColor: '#a5b4fc', fill: true, tension: 0.4 },
+      { label: 'Backend', data: data.map(d => d.backend), borderColor: '#312e81', backgroundColor: '#4338ca', fill: true, tension: 0.4 },
+    ],
+  };
+};
+
+const chartOptions: ChartOptions<'line'> = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: {
-      display: false, // Ẩn legend mặc định để dùng legend tùy chỉnh bên ngoài
-    },
+    legend: { display: false },
     tooltip: {
       callbacks: {
-        // Tùy chỉnh tooltip để hiển thị dạng '...K'
-        label: function(context: any) {
+        // Sử dụng TooltipItem<'line'> thay vì any
+        label: function(context: TooltipItem<'line'>) {
             let label = context.dataset.label || '';
-            if (label) {
-                label += ': ';
-            }
-            if (context.parsed.y !== null) {
-                label += `${context.parsed.y / 1000}K`;
+            if (label) { label += ': '; }
+            if (context.parsed.y !== null && typeof context.parsed.y === 'number') { 
+                label += `${(context.parsed.y / 1000).toLocaleString()}K`; 
             }
             return label;
         }
@@ -89,31 +60,44 @@ const chartOptions = {
     }
   },
   scales: {
-    y: {
-      stacked: true, // Bật chế độ xếp chồng
-      ticks: {
-        // Tùy chỉnh các nhãn trên trục Y
-        callback: function(value: any) {
-          return `${value / 1000}K`;
-        }
-      }
+    y: { 
+        stacked: true, 
+        ticks: { 
+            callback: function(value) { 
+                return `${Number(value) / 1000}K`; 
+            } 
+        } 
     },
-    x: {
-        grid: {
-            display: false, // Ẩn đường kẻ dọc
-        }
-    }
+    x: { grid: { display: false } }
   },
 };
 
 export default function ReportsPage() {
+    const [timeFilter, setTimeFilter] = useState<TimeFilter>('week');
+    
+    const filters: {key: TimeFilter, label: string}[] = [
+        {key: 'week', label: 'TUẦN'},
+        {key: 'month', label: 'THÁNG'},
+        {key: 'year', label: 'NĂM'}
+    ];
+
     return (
         <div className="space-y-8">
             <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">Báo cáo & Chi phí</h1>
              <div className="flex justify-start gap-2">
-                 <button className="w-24 h-11 bg-blue-900 rounded-md text-neutral-100 text-base font-semibold font-['Unbounded']">TUẦN</button>
-                 <button className="w-24 h-11 bg-white rounded-md text-neutral-950 text-base font-semibold font-['Unbounded']">THÁNG</button>
-                 <button className="w-24 h-11 bg-white rounded-md text-neutral-950 text-base font-semibold font-['Unbounded']">NĂM</button>
+                 {filters.map(filter => (
+                     <button 
+                       key={filter.key}
+                       onClick={() => setTimeFilter(filter.key)}
+                       className={`w-24 h-11 rounded-md text-base font-semibold font-['Unbounded'] transition-colors ${
+                         timeFilter === filter.key 
+                           ? "bg-blue-900 text-neutral-100" 
+                           : "bg-white text-neutral-950 hover:bg-gray-100"
+                       }`}
+                     >
+                       {filter.label}
+                     </button>
+                 ))}
              </div>
              <div className="w-full bg-white rounded-2xl p-8">
                   <div className="flex justify-start items-center gap-x-6 mb-4">
@@ -126,9 +110,8 @@ export default function ReportsPage() {
                            <span className="text-neutral-950 text-xs font-semibold font-['Unbounded']">Backend</span>
                        </div>
                   </div>
-                 {/* SỬA ĐỔI: Sử dụng Line component và container có chiều cao cố định */}
                  <div style={{ position: 'relative', height: '400px' }}>
-                    <Line options={chartOptions} data={chartData} />
+                    <Line options={chartOptions} data={getChartData(timeFilter)} />
                  </div>
              </div>
         </div>

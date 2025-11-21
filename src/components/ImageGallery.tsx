@@ -1,4 +1,4 @@
-// ===== .\src/components/ImageGallery.tsx =====
+// ===== .\src\components\ImageGallery.tsx =====
 "use client";
 import { useState, type FC } from 'react';
 import Image from 'next/image';
@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Dữ liệu mẫu (không đổi)
 const allGalleryItems = [
   { src: '/landing-page/image 4.png', alt: '3D model 1', name: 'Yua Mikami', timestamp: '1 ngày trước' },
   { src: '/landing-page/image 13.png', alt: '3D model 2', name: 'Asuka Langley', timestamp: '3 ngày trước' },
@@ -19,7 +18,6 @@ const allGalleryItems = [
   { src: '/landing-page/image 17.png', alt: '3D model 9', name: 'Kensuke Aida', timestamp: '9 ngày trước' },
 ];
 
-// ... (variants không đổi) ...
 const carouselVariants = {
   main: { x: -250, y: 0, scale: 1, opacity: 1, zIndex: 3 },
   next: { x: 150, y: 100, scale: 0.7, opacity: 1, zIndex: 2 },
@@ -37,13 +35,11 @@ const ImageGallery: FC = () => {
   const t = useTranslations('ImageGallery');
   const [activeIndex, setActiveIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
-  // ... (logic không đổi) ...
+  
   const paginate = (direction: number) => {
-    setActiveIndex((prevIndex) => {
-        const newIndex = (prevIndex + direction + allGalleryItems.length) % allGalleryItems.length;
-        return newIndex;
-    });
+    setActiveIndex((prevIndex) => (prevIndex + direction + allGalleryItems.length) % allGalleryItems.length);
   };
+
   const getVariantName = (itemIndex: number) => {
     const total = allGalleryItems.length;
     if (itemIndex === activeIndex) return 'main';
@@ -56,7 +52,6 @@ const ImageGallery: FC = () => {
 
   return (
     <section className="relative">
-        {/* Lớp nền (không đổi) */}
         <div className="absolute inset-0 z-0 overflow-hidden">
             <AnimatePresence>
                 {!isExpanded && (
@@ -67,7 +62,6 @@ const ImageGallery: FC = () => {
              <motion.div initial={{ opacity: 0 }} animate={{ opacity: isExpanded ? 1 : 0 }} transition={{ duration: 0.5 }} className="absolute inset-0 bg-neutral-950"/>
         </div>
 
-        {/* Lớp nội dung */}
         <div className="relative z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
                 <div className="text-center max-w-3xl mx-auto mb-16">
@@ -76,29 +70,20 @@ const ImageGallery: FC = () => {
                 </div>
                 
                 <AnimatePresence mode="wait">
-                    {!isExpanded && (
+                    {!isExpanded ? (
                         <motion.div key="carousel" className="relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-
-                            {/* === CHỈNH SỬA TẠI ĐÂY: Tăng khoảng cách === */}
                             <button onClick={() => paginate(-1)} className="absolute left-[-80px] top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-gray-800/50 rounded-full flex items-center justify-center text-white hover:bg-gray-700/70 transition-colors">
                                 <Icon icon="mdi:chevron-left" width={28} />
                             </button>
-                            
-                            {/* === CHỈNH SỬA TẠI ĐÂY: Tăng khoảng cách === */}
                             <button onClick={() => paginate(1)} className="absolute right-[-80px] top-1/2 -translate-y-1/2 z-30 w-12 h-12 bg-gray-800/50 rounded-full flex items-center justify-center text-white hover:bg-gray-700/70 transition-opacity">
                                 <Icon icon="mdi:chevron-right" width={28} />
                             </button>
-
-                            {/* "Sân khấu" cho Carousel (không đổi) */}
                             <div className="relative h-[600px] flex items-center justify-center overflow-hidden">
                                 <div className="relative w-full max-w-5xl h-[550px]">
                                     <AnimatePresence mode="wait" initial={false}>
                                         <motion.div key={activeIndex} variants={textVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }} className="absolute top-12 left-[calc(50%+50px)] w-[400px] z-20">
                                             <h3 className="text-white text-4xl font-['Unbounded'] font-medium">{activeItem.name}</h3>
                                             <p className="text-white/70 text-lg font-['Inter'] font-light mt-1">{activeItem.timestamp}</p>
-                                            <button className="!mt-4 w-fit flex items-center gap-x-2 bg-gradient-to-r from-blue-600 to-cyan-400 rounded-lg px-3 py-1.5 text-white text-sm font-['Inter'] font-light tracking-wider hover:opacity-90 transition-opacity">
-                                                <Icon icon="mdi:download-outline" width={18} /> Tải về
-                                            </button>
                                         </motion.div>
                                     </AnimatePresence>
                                     <div className="absolute inset-0 flex items-center justify-center">
@@ -115,10 +100,7 @@ const ImageGallery: FC = () => {
                                 </div>
                             </div>
                         </motion.div>
-                    )}
-
-                    {/* Layout khi mở rộng (grid, không đổi) */}
-                    {isExpanded && (
+                    ) : (
                         <motion.div key="grid" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {allGalleryItems.map((item) => (
@@ -137,10 +119,10 @@ const ImageGallery: FC = () => {
                 </AnimatePresence>
             </div>
             
-            {/* Nút Tải thêm (không đổi) */}
             <div className="text-center pt-10 pb-16">
+                 {/* CẬP NHẬT: Sử dụng t() để đa ngôn ngữ */}
                  <button onClick={() => setIsExpanded(!isExpanded)} className="bg-neutral-800 text-white font-['Unbounded'] px-8 py-3 rounded-lg hover:bg-neutral-700 transition-colors">
-                    {isExpanded ? 'Thu gọn' : t('load_more')}
+                    {isExpanded ? t('collapse') : t('load_more')}
                 </button>
             </div>
         </div>

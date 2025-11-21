@@ -5,27 +5,16 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* CẬP NHẬT: Thêm dòng này để bật smooth scroll */
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  /* Nền trong suốt để hiển thị ảnh từ layout.tsx */
   background: transparent;
   color: var(--foreground);
 }
 
-/* CẬP NHẬT: Thêm CSS để buộc Leva dropdown mở lên trên */
 [data-leva-root] .leva-c-hPncDm {
   bottom: calc(100% + 8px) !important;
   top: auto !important;

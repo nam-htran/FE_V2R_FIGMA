@@ -1,10 +1,21 @@
-// ===== .\src\app\[locale]\otp\page.tsx =====
+// ===== .\src\app\[locale]\confirm\page.tsx =====
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRef, useState, type ChangeEvent, type KeyboardEvent } from "react";
+import { useRef, useState, type ChangeEvent, type KeyboardEvent, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { authService } from "@/services/api/auth";
+
+const maskEmail = (email: string): string => {
+  if (!email || !email.includes("@")) {
+    return "your email";
+  }
+  const [name, domain] = email.split("@");
+  if (name.length <= 3) {
+    return `${name.slice(0, 1)}***@${domain}`;
+  }
+  return `${name.slice(0, 3)}***@${domain}`;
+};
 
 export default function OtpPage() {
   const t = useTranslations("OTP");
@@ -14,7 +25,16 @@ export default function OtpPage() {
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [registrationEmail, setRegistrationEmail] = useState<string>("");
 
+  useEffect(() => {
+    const email = authService.getRegistrationEmail() || sessionStorage.getItem("registrationEmail");
+    if (email) {
+      setRegistrationEmail(email);
+    }
+  }, []);
+
+  // --- SỬA LỖI: Di chuyển hai hàm này vào bên trong component ---
   const handleChange = (index: number, e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (!/^\d?$/.test(value)) return;
@@ -33,6 +53,7 @@ export default function OtpPage() {
       inputRefs.current[index - 1]?.focus();
     }
   };
+  // --- KẾT THÚC PHẦN SỬA LỖI ---
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-neutral-800 p-4">
@@ -41,7 +62,7 @@ export default function OtpPage() {
           {t("title")}
         </h1>
         <p className="mt-6 text-black text-xl font-normal font-['Inter']">
-          {t("subtitle")}
+          {t("subtitle", { email: maskEmail(registrationEmail) })}
         </p>
 
         <div className="flex justify-center gap-x-2 sm:gap-x-5 my-14">
@@ -73,16 +94,14 @@ export default function OtpPage() {
                 setError(t("enter_otp"));
                 return;
               }
-
-              const email = authService.getRegistrationEmail() || sessionStorage.getItem("registrationEmail");
-              if (!email) {
+              if (!registrationEmail) {
                 setError(t("no_email_found"));
                 return;
               }
 
               try {
                 setLoading(true);
-                const res = await authService.verifyOtp({ email, otpCode });
+                const res = await authService.verifyOtp({ email: registrationEmail, otpCode });
                 if ((res as any).token) {
                   authService.setAuthToken((res as any).token as string);
                 }
@@ -113,13 +132,12 @@ export default function OtpPage() {
           {t("did_not_receive")} {" "}
           <button
             onClick={async () => {
-              const email = authService.getRegistrationEmail() || sessionStorage.getItem("registrationEmail");
-              if (!email) {
+              if (!registrationEmail) {
                 setError(t("no_email_found"));
                 return;
               }
               try {
-                await authService.resendOtp(email);
+                await authService.resendOtp(registrationEmail);
               } catch (e) {
                 /* ignore */
               }

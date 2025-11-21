@@ -1,145 +1,17 @@
 {
-  "Header": {
-    "home": "Home",
-    "community": "Community",
-    "features": "Features",
-    "pricing": "Pricing",
-    "log_in": "Log In",
-    "start_for_free": "Start For Free"
-  },
-  "Hero": {
-    "title": "The NO.1 AI 3D Model Generator for Everyone",
-    "description": "Convert your photos or concept art images into 3D models with stunning details in just a matter of seconds.",
-    "start_for_free": "START FOR FREE",
-    "explore": "EXPLORE"
-  },
-  "ImageGallery": {
-    "title": "Step into the World of 3D Imagination",
-    "description": "Discover and download a variety of unique 3D models from our vibrant community.",
-    "load_more": "Load more"
-  },
-  "WorkflowCTA": {
-    "title": "Unlock a faster 3D workflow",
-    "description": "Transform your design process with V2R. Try it now and see your creativity come to life effortlessly!",
-    "start_for_free": "START FOR FREE",
-    "explore": "EXPLORE"
-  },
-  "Footer": {
-    "subscribe_title": "Subscribe to updates",
-    "subscribe_description": "Join our newsletter to stay updated on latest news",
-    "email_placeholder": "Enter your email",
-    "subscribe_button": "Subscribe",
-    "features_title": "Features",
-    "text_to_3d": "Text to 3D",
-    "image_to_3d": "Image to 3D",
-    "product_title": "Product",
-    "pricing": "Pricing",
-    "community": "Community",
-    "plugin": "Plugin",
-    "status": "Status",
-    "company_title": "Company",
-    "about": "About",
-    "contact": "Contact"
-  },
-  "Sidebar": {
-    "text_to_3d": "Text to 3D",
-    "image_to_3d": "Image to 3D",
-    "image_label": "Image",
-    "uploader_title": "Your Image Here",
-    "uploader_formats": "Formats: .png, .jpg, .jpeg, .webp",
-    "name_label": "Name",
-    "name_placeholder": "Untitled Project",
-    "model_label": "AI Model",
-    "symmetry_label": "Symmetry",
-    "symmetry_off": "Off",
-    "symmetry_auto": "Auto",
-    "symmetry_on": "On",
-    "cost_info_model": "1 model",
-    "cost_info_tokens": "10 tokens",
-    "generate_button": "Generate"
-  },
-  "Login": {
-    "welcome": "Welcome to V2R",
-    "get_started": "Enter your Email to get started",
-    "email_placeholder": "Email",
-    "password_placeholder": "Password",
-    "continue_button": "Continue",
-    "forgot_password": "Forgot password",
-    "or": "Or",
-    "continue_with_google": "Continue with Google",
-    "no_account": "Don't have an account?",
-    "register_now": "Register now",
-    "terms_prefix": "By continuing, you agree to our",
-    "terms_of_use": "Terms of Use",
-    "terms_and": "and",
-    "privacy_policy": "Privacy Policy"
-  },
-    "Register": {
-    "welcome": "Welcome to V2R",
-    "get_started": "Enter your Email to get started",
-    "email_placeholder": "Email",
-    "full_name_placeholder": "Full name",
-    "password_placeholder": "Password",
-    "confirm_password_placeholder": "Confirm Password",
-    "continue_button": "Continue",
-    "have_account": "Already have an account?",
-    "login_now": "Log In",
-    "terms_prefix": "By continuing, you agree to our",
-    "terms_of_use": "Terms of Use",
-    "terms_and": "and",
-    "privacy_policy": "Privacy Policy"
-  },
-  "Workspace": {
-    "new_project": "New Project",
-    "your_library": "Your Library",
-    "upgrade_account": "Upgrade Account",
-    "user_free_tier": "Free",
-    "search": "Search",
-    "upload": "Upload",
-    "my_library": "My Library"
-  },
-  "Pricing": {
-    "title": "Upgrade",
-    "subtitle": "Start for free. Upgrade to get special prices and more benefits.",
-    "basic": {
-      "name": "Basic",
-      "price": "$9",
-      "price_period": "month",
-      "cta_button": "Sign Up",
-      "features": [
-        "10 Models",
-        "Community Access",
-        "Email Support"
-      ]
-    },
-    "pro": {
-      "name": "Pro",
-      "price": "$25",
-      "price_period": "month",
-      "cta_button": "Sign Up",
-      "features": [
-        "30 Models",
-        "API Access",
-        "Priority Support",
-        "Integration Plugin"
-      ]
-    },
-    "enterprise": {
-      "name": "Enterprise",
-      "price": "$99",
-      "price_period": "month",
-      "cta_button": "Contact Us",
-      "features": [
-        "Unlimited Models",
-        "Team Management",
-        "Dedicated Support",
-        "Advanced Security"
-      ]
-    }
-  },
+  "Header": { "home": "Home", "community": "Community", "features": "Features", "pricing": "Pricing", "log_in": "Log In", "start_for_free": "Start For Free" },
+  "Hero": { "title": "The NO.1 AI 3D Model Generator for Everyone", "description": "Convert your photos or concept art images into 3D models with stunning details in just a matter of seconds.", "start_for_free": "START FOR FREE", "explore": "EXPLORE" },
+  "ImageGallery": { "title": "Step into the World of 3D Imagination", "description": "Discover and download a variety of unique 3D models from our vibrant community.", "load_more": "Load more", "collapse": "Collapse"},
+  "WorkflowCTA": { "title": "Unlock a faster 3D workflow", "description": "Transform your design process with V2R. Try it now and see your creativity come to life effortlessly!", "start_for_free": "START FOR FREE", "explore": "EXPLORE" },
+  "Footer": { "subscribe_title": "Subscribe to updates", "subscribe_description": "Join our newsletter to stay updated on latest news", "email_placeholder": "Enter your email", "subscribe_button": "Subscribe", "features_title": "Features", "text_to_3d": "Text to 3D", "image_to_3d": "Image to 3D", "product_title": "Product", "pricing": "Pricing", "community": "Community", "plugin": "Plugin", "status": "Status", "company_title": "Company", "about": "About", "contact": "Contact" },
+  "Sidebar": { "text_to_3d": "Text to 3D", "image_to_3d": "Image to 3D", "image_label": "Image", "uploader_title": "Your Image Here", "uploader_formats": "Formats: .png, .jpg, .jpeg, .webp", "name_label": "Name", "name_placeholder": "Untitled Project", "model_label": "AI Model", "symmetry_label": "Symmetry", "symmetry_off": "Off", "symmetry_auto": "Auto", "symmetry_on": "On", "cost_info_model": "1 model", "cost_info_tokens": "10 tokens", "generate_button": "Generate" },
+  "Login": { "welcome": "Welcome to V2R", "get_started": "Enter your Email to get started", "email_placeholder": "Email", "password_placeholder": "Password", "continue_button": "Continue", "forgot_password": "Forgot password", "or": "Or", "continue_with_google": "Continue with Google", "no_account": "Don't have an account?", "register_now": "Register now", "terms_prefix": "By continuing, you agree to our", "terms_of_use": "Terms of Use", "terms_and": "and", "privacy_policy": "Privacy Policy" },
+  "Register": { "welcome": "Welcome to V2R", "get_started": "Enter your Email to get started", "email_placeholder": "Email", "full_name_placeholder": "Full name", "password_placeholder": "Password", "confirm_password_placeholder": "Confirm Password", "continue_button": "Continue", "have_account": "Already have an account?", "login_now": "Log In", "terms_prefix": "By continuing, you agree to our", "terms_of_use": "Terms of Use", "terms_and": "and", "privacy_policy": "Privacy Policy" },
+  "Workspace": { "new_project": "New Project", "your_library": "Your Library", "upgrade_account": "Upgrade Account", "user_free_tier": "Free", "search": "Search", "upload": "Upload", "my_library": "My Library", "profile": "Profile", "logout": "Log Out" },
+  "Pricing": { "title": "Upgrade", "subtitle": "Start for free. Upgrade to get special prices and more benefits.", "basic": { "name": "Basic", "price": "$9", "price_period": "month", "cta_button": "Sign Up", "features": ["10 Models", "Community Access", "Email Support"] }, "pro": { "name": "Pro", "price": "$25", "price_period": "month", "cta_button": "Sign Up", "features": ["30 Models", "API Access", "Priority Support", "Integration Plugin"] }, "enterprise": { "name": "Enterprise", "price": "$99", "price_period": "month", "cta_button": "Contact Us", "features": ["Unlimited Models", "Team Management", "Dedicated Support", "Advanced Security"] } },
   "OTP": {
     "title": "Enter OTP Code",
-    "subtitle": "A verification code has been sent to *******762",
+    "subtitle": "A verification code has been sent to {email}",
     "did_not_receive": "Didn't receive the code?",
     "resend": "Resend",
     "continue_button": "Continue",
@@ -148,14 +20,30 @@
     "no_email_found": "No registration email found. Please re-register.",
     "invalid_otp": "Invalid OTP. Please try again."
   },
-  "Dashboard": {
-    "overview": "Overview",
-    "status_and_resources": "Status & Resources",
-    "cost_reports": "Cost Reports",
-    "console": "Console",
-    "customers": "Customers",
-    "transactions": "Transactions",
-    "revenue": "Revenue",
-    "notifications": "Notifications"
+  "Dashboard": { 
+    "overview": "Overview", 
+    "status_and_resources": "Status & Resources", 
+    "cost_reports": "Cost Reports", 
+    "console": "Console", 
+    "customers": "Customers", 
+    "transactions": "Transactions", 
+    "revenue": "Revenue", 
+    "aiResourceStatus": "AI Server Resource Status", 
+    "cannotLoadResource": "Cannot load server resource data." 
+  },
+  "System": { "checkingAccess": "Checking access permissions...", "checkingAdminAccess": "Checking Admin access permissions...", "cpu": "CPU", "ram": "RAM", "gpu": "GPU", "vram": "VRAM" },
+  "ForgotPassword": { "title": "Forgot Password", "submitButton": "Send Reset Link", "backToLogin": "Back to Login", "submittedTitle": "Check Your Email", "submittedText": "If an account exists for {email}, we have sent a link to reset your password." },
+  "About": { "title": "About Us", "p1": "Welcome to V2R, the pioneering platform applying artificial intelligence to create high-quality 3D models. Our mission is to democratize the 3D creation process, enabling everyone, from artists and designers to enthusiasts, to bring their ideas to life quickly and easily.", "h2": "Vision", "p2": "We believe the future of design and entertainment lies in three-dimensional space. V2R was built with the vision of breaking down all technical barriers, allowing for limitless creativity. By converting 2D images and text into detailed 3D models, we are opening up a new world of potential.", "h3": "Team", "p3": "Our team consists of leading experts in the fields of AI, computer graphics, and software development. We share a burning passion for technology and art, and always strive to deliver the most groundbreaking products." },
+  "Contact": { "title": "Contact Us", "p1": "We are always happy to hear from you! If you have any questions, suggestions, or need support, please contact us through the channels below.", "supportEmail": "Support Email", "businessEmail": "Business Email", "address": "Address", "address_detail": "FPT University, District 9, Ho Chi Minh City", "p2": "You can also follow us on social media to stay updated on the latest news about our products and technology." },
+  "Terms": { "title": "Terms of Use", "h1": "1. Acceptance of Terms", "p1": "By accessing and using the V2R service ('Service'), you agree to comply with these terms and conditions. If you do not agree, please do not use the Service.", "h2": "2. Intellectual Property Rights", "p2": "The 3D models created by users belong to the users. However, by using the Service, you grant V2R the right to use, copy, and display those models for the purpose of operating and promoting the Service.", "h3": "3. Limitation of Liability", "p3": "The Service is provided 'as is'. V2R is not responsible for any damages arising from the use of the Service." },
+  "Privacy": { "title": "Privacy Policy", "h1": "1. Information Collection", "p1": "We collect information you provide upon registration, including your email and full name. We also collect data about how you use the Service, such as the images you upload and the models you create.", "h2": "2. Use of Information", "p2": "Your information is used to provide and improve the Service, process payments, and communicate with you. We are committed to not sharing your personal information with third parties without your consent, unless required by law.", "h3": "3. Security", "p3": "We implement reasonable security measures to protect your information from unauthorized access, use, or disclosure." },
+  "Community": { "title": "Community Library", "subtitle": "Discover unique 3D works created by the V2R community.", "byAuthor": "by {author}" },
+  "Profile": { "updateInfo": "Update Information", "fullName": "Full Name", "phone": "Phone Number", "address": "Address", "saveButton": "Save Changes", "saving": "Saving...", "changePassword": "Change Password", "currentPassword": "Current Password", "newPassword": "New Password", "confirmNewPassword": "Confirm New Password", "changePasswordButton": "Change Password", "changing": "Changing...", "toasts": { "updateSuccess": "Information updated successfully!", "updateFailed": "Update failed.", "passwordMismatch": "New passwords do not match!", "passwordChangeSuccess": "Password changed successfully!", "passwordChangeFailed": "Failed to change password." } },
+  "Features": {
+    "title": "Our Features",
+    "t2d_title": "Text to 3D Generation",
+    "t2d_p1": "Bring your words to life. Simply describe the object you imagine, and our advanced AI will generate a detailed 3D model from your text prompt. From simple shapes to complex characters, your creativity is the only limit.",
+    "i2d_title": "Image to 3D Conversion",
+    "i2d_p1": "Transform any 2D image, concept art, or photograph into a stunning 3D model. Our intelligent system analyzes the image to reconstruct its geometry, details, and depth, providing you with a ready-to-use 3D asset in seconds."
   }
 }

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useUI } from '@/context/UIContext';
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, MouseEvent } from 'react'; // BỔ SUNG MouseEvent
 import { authService } from '@/services/api/auth';
 import { useToast } from '@/context/ToastContext';
 
@@ -43,11 +43,9 @@ export default function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
     setLoading(true);
     try {
       await authService.register({ email, password, fullName });
-      // Store registration email for verification flow
       if (typeof window !== 'undefined') sessionStorage.setItem('registrationEmail', email);
       onClose();
       showToast('Registration successful — check your email for verification', 'success');
-      // Redirect to confirmation (OTP) page
       router.push('/confirm');
     } catch (err: any) {
       const msg = err?.message || 'Registration failed';
@@ -58,18 +56,24 @@ export default function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
     }
   };
   const switchToLogin = () => { onClose(); setTimeout(openLoginModal, 300); };
-
-  // --- TẠO MỘT BIẾN ĐỂ TÁI SỬ DỤNG CLASS CHO GỌN ---
   const inputClasses = "w-full h-10 px-4 bg-white/40 rounded-[10px] text-zinc-800 placeholder:text-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-[0px_13.07px_43.71px_0px_rgba(0,0,0,0.15)] backdrop-blur-[28.56px]";
+  
+  // --- THAY ĐỔI TẠI ĐÂY: Hàm xử lý đóng modal mới ---
+  const handleClose = (e: MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
+        // --- THAY ĐỔI TẠI ĐÂY: Sử dụng onMouseDown thay vì onClick ---
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={handleClose}
           className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4 font-inter">
           
           <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2, ease: "easeOut" }} onClick={(e) => e.stopPropagation()}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="relative w-72 h-[485px] rounded-2xl overflow-hidden flex justify-center">
 
             <Image src="/landing-page/background/register.png" alt="Register background" layout="fill" objectFit="cover" className="-z-10" />
@@ -77,7 +81,6 @@ export default function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
             <div className="w-full h-full p-6 flex flex-col">
               <Image src="/logo/dark.png" alt="V2R Logo" width={92} height={57} className="mx-auto mt-10 mb-8" />
               <form className="space-y-4" onSubmit={handleSubmit}>
-                {/* --- THAY ĐỔI TẠI ĐÂY --- */}
                 <input
                   type="text"
                   placeholder={t('full_name_placeholder')}

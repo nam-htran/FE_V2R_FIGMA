@@ -1,51 +1,60 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { useRouter } from '@/../i18n/navigation';
 import { api, ApiError } from '@/services/api';
 import type { UserResponse } from '@/services/api/user';
 import { Icon } from '@iconify/react';
+import { useToast } from '@/context/ToastContext';
+import { useTranslations } from 'next-intl';
 
 export default function ProfilePage() {
+  const t = useTranslations('Profile');
   const router = useRouter();
+  const { showToast } = useToast();
   const [profile, setProfile] = useState<UserResponse | null>(null);
   const [modelLimit, setModelLimit] = useState<number>(50);
   const [modelLimitDescription, setModelLimitDescription] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
 
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        // Check authentication
         const token = api.auth.getAuthToken();
         if (!token) {
           router.push('/login');
           return;
         }
-
-        // Get user ID from token
         const userId = api.auth.getUserId();
         if (!userId) {
           setError('User ID not found in token');
           setIsLoading(false);
           return;
         }
-
-        // Fetch user profile and model limit in parallel
         const [userData, modelLimitData] = await Promise.all([
           api.user.getUserById(userId),
           api.subscription.getUserModelLimit(userId).catch(() => null)
         ]);
-        
         setProfile(userData);
+        setFullName(userData.fullName || '');
+        setPhone(userData.phone || '');
+        setAddress(userData.address || '');
         
-        // Set model limit from API if available
         if (modelLimitData) {
           setModelLimit(modelLimitData.modelLimit);
           setModelLimitDescription(modelLimitData.description);
         }
-        
       } catch (err) {
         console.error('Error fetching profile:', err);
         if (err instanceof ApiError) {
@@ -57,9 +66,45 @@ export default function ProfilePage() {
         setIsLoading(false);
       }
     };
-
     fetchUserProfile();
   }, [router]);
+  
+  const handleUpdateProfile = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!profile) return;
+    setIsUpdating(true);
+    try {
+      // Logic gọi API update user sẽ ở đây
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Giả lập gọi API
+      setProfile(prev => prev ? {...prev, fullName, phone, address} : null);
+      showToast(t('toasts.updateSuccess'), 'success');
+    } catch (err) {
+      showToast(err instanceof ApiError ? err.message : t('toasts.updateFailed'), 'error');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleChangePassword = async (e: FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      showToast(t('toasts.passwordMismatch'), 'warning');
+      return;
+    }
+    setIsChangingPassword(true);
+    try {
+      // Logic gọi API đổi mật khẩu sẽ ở đây
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Giả lập gọi API
+      showToast(t('toasts.passwordChangeSuccess'), 'success');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      showToast(err instanceof ApiError ? err.message : t('toasts.passwordChangeFailed'), 'error');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -85,19 +130,15 @@ export default function ProfilePage() {
     );
   }
 
-  // Determine subscription plan based on role or other criteria
   const subscription = profile.role?.roleName === 'PREMIUM' ? 'Pro' : 'Basic';
   const subscriptionColor = subscription === 'Pro' ? 'text-blue-900' : 'text-black';
   const statusColor = profile.status ? 'text-green-700' : 'text-red-600';
   const statusText = profile.status ? 'Active' : 'Inactive';
-  
-  // Use model limit from API
   const modelsRemaining = modelLimit - profile.numberOfModel;
 
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">User Profile</h1>
           <button
@@ -109,143 +150,78 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        {/* Profile Info Card */}
         <div className="bg-white rounded-2xl p-8 space-y-6">
-          <div className="flex items-center space-x-6 pb-6 border-b border-gray-200">
-            {profile.avatar ? (
-              <img
-                src={profile.avatar}
-                alt={profile.fullName}
-                className="w-24 h-24 rounded-full object-cover flex-shrink-0"
-              />
-            ) : (
-              <div className="w-24 h-24 bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-3xl font-bold font-['Unbounded']">
-                  {profile.fullName.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-            <div>
-              <h2 className="text-black text-2xl font-semibold font-['Unbounded']">{profile.fullName}</h2>
-              <p className="text-gray-600 text-xl font-light font-['Inter'] mt-1">{profile.email}</p>
-              {profile.verified && (
-                <span className="inline-flex items-center mt-2 text-green-700 text-sm font-normal font-['Inter']">
-                  <Icon icon="mdi:check-circle" className="w-4 h-4 mr-1" />
-                  Verified
-                </span>
-              )}
+            <div className="flex items-center space-x-6 pb-6 border-b border-gray-200">
+                {profile.avatar ? (
+                <img src={profile.avatar} alt={profile.fullName} className="w-24 h-24 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                <div className="w-24 h-24 bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-3xl font-bold font-['Unbounded']">{profile.fullName.charAt(0).toUpperCase()}</span>
+                </div>
+                )}
+                <div>
+                <h2 className="text-black text-2xl font-semibold font-['Unbounded']">{profile.fullName}</h2>
+                <p className="text-gray-600 text-xl font-light font-['Inter'] mt-1">{profile.email}</p>
+                </div>
             </div>
-          </div>
-
-          {/* Information Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <p className="text-gray-500 text-base font-normal font-['Inter']">Subscription Plan</p>
-              <p className={`text-2xl font-semibold font-['Inter'] ${subscriptionColor}`}>
-                {subscription}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-gray-500 text-base font-normal font-['Inter']">Status</p>
-              <p className={`text-2xl font-semibold font-['Inter'] ${statusColor}`}>
-                {statusText}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-gray-500 text-base font-normal font-['Inter']">Models Created</p>
-              <p className="text-black text-2xl font-semibold font-['Inter']">
-                {profile.numberOfModel} / {modelLimit}
-              </p>
-              {modelLimitDescription && (
-                <p className="text-gray-500 text-sm font-light font-['Inter']">{modelLimitDescription}</p>
-              )}
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div
-                  className="bg-blue-900 h-3 rounded-full"
-                  style={{ width: `${Math.min((profile.numberOfModel / modelLimit) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-gray-500 text-base font-normal font-['Inter']">Loyalty Points</p>
-              <p className="text-black text-2xl font-semibold font-['Inter']">{profile.loyaltyPoints}</p>
-            </div>
-
-            {profile.phone && (
-              <div className="space-y-2">
-                <p className="text-gray-500 text-base font-normal font-['Inter']">Phone</p>
-                <p className="text-black text-xl font-light font-['Inter']">{profile.phone}</p>
-              </div>
-            )}
-
-            {profile.address && (
-              <div className="space-y-2">
-                <p className="text-gray-500 text-base font-normal font-['Inter']">Address</p>
-                <p className="text-black text-xl font-light font-['Inter']">{profile.address}</p>
-              </div>
-            )}
-          </div>
         </div>
 
-        {/* Subscription Details Card */}
         <div className="bg-white rounded-2xl p-8">
-          <h2 className="text-black text-2xl font-semibold font-['Unbounded'] mb-6">Subscription Details</h2>
-          
-          <div className="space-y-4">
-            <div className="flex justify-between items-center py-3 border-b border-gray-100">
-              <span className="text-black text-xl font-normal font-['Inter']">Current Plan</span>
-              <span className={`text-xl font-semibold font-['Inter'] ${subscriptionColor}`}>
-                {subscription}
-              </span>
+          <h2 className="text-black text-2xl font-semibold font-['Unbounded'] mb-6">{t('updateInfo')}</h2>
+          <form onSubmit={handleUpdateProfile} className="space-y-4">
+            <div>
+              <label className="text-gray-500 text-sm font-['Inter']">{t('fullName')}</label>
+              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className="w-full mt-1 p-2 border rounded-md"/>
             </div>
-
-            <div className="flex justify-between items-center py-3 border-b border-gray-100">
-              <span className="text-black text-xl font-normal font-['Inter']">Role</span>
-              <span className="text-black text-xl font-semibold font-['Inter']">
-                {profile.role?.roleName || 'User'}
-              </span>
+            <div>
+              <label className="text-gray-500 text-sm font-['Inter']">{t('phone')}</label>
+              <input type="text" value={phone} onChange={e => setPhone(e.target.value)} className="w-full mt-1 p-2 border rounded-md"/>
             </div>
-
-            <div className="flex justify-between items-center py-3 border-b border-gray-100">
-              <span className="text-black text-xl font-normal font-['Inter']">Models Limit</span>
-              <span className="text-black text-xl font-semibold font-['Inter']">
-                {modelLimit} models
-              </span>
+            <div>
+              <label className="text-gray-500 text-sm font-['Inter']">{t('address')}</label>
+              <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="w-full mt-1 p-2 border rounded-md"/>
             </div>
-
-            <div className="flex justify-between items-center py-3 border-b border-gray-100">
-              <span className="text-black text-xl font-normal font-['Inter']">Models Remaining</span>
-              <span className="text-black text-xl font-semibold font-['Inter']">
-                {Math.max(modelsRemaining, 0)} models
-              </span>
-            </div>
-
-            {modelLimitDescription && (
-              <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                <span className="text-black text-xl font-normal font-['Inter']">Plan Details</span>
-                <span className="text-gray-600 text-lg font-light font-['Inter']">
-                  {modelLimitDescription}
-                </span>
-              </div>
-            )}
-
-            <div className="flex justify-between items-center py-3">
-              <span className="text-black text-xl font-normal font-['Inter']">Loyalty Points</span>
-              <span className="text-black text-xl font-light font-['Inter']">{profile.loyaltyPoints} pts</span>
-            </div>
-          </div>
-
-          {subscription === 'Basic' && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <button className="w-full bg-blue-900 text-white rounded-xl px-6 py-3 font-['Unbounded'] text-lg font-semibold hover:bg-blue-800 transition-colors">
-                Upgrade to Pro
-              </button>
-            </div>
-          )}
+            <button type="submit" disabled={isUpdating} className="w-full bg-blue-900 text-white rounded-xl px-6 py-3 font-['Unbounded'] text-lg font-semibold hover:bg-blue-800 transition-colors disabled:opacity-50">
+              {isUpdating ? t('saving') : t('saveButton')}
+            </button>
+          </form>
         </div>
+
+        <div className="bg-white rounded-2xl p-8">
+          <h2 className="text-black text-2xl font-semibold font-['Unbounded'] mb-6">{t('changePassword')}</h2>
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div>
+              <label className="text-gray-500 text-sm font-['Inter']">{t('currentPassword')}</label>
+              <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="w-full mt-1 p-2 border rounded-md"/>
+            </div>
+            <div>
+              <label className="text-gray-500 text-sm font-['Inter']">{t('newPassword')}</label>
+              <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full mt-1 p-2 border rounded-md"/>
+            </div>
+             <div>
+              <label className="text-gray-500 text-sm font-['Inter']">{t('confirmNewPassword')}</label>
+              <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full mt-1 p-2 border rounded-md"/>
+            </div>
+            <button type="submit" disabled={isChangingPassword} className="w-full bg-neutral-800 text-white rounded-xl px-6 py-3 font-['Unbounded'] text-lg font-semibold hover:bg-neutral-700 transition-colors disabled:opacity-50">
+              {isChangingPassword ? t('changing') : t('changePasswordButton')}
+            </button>
+          </form>
+        </div>
+
+        <div className="bg-white rounded-2xl p-8">
+            <h2 className="text-black text-2xl font-semibold font-['Unbounded'] mb-6">Subscription Details</h2>
+            <div className="space-y-4">
+                <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-black text-xl font-normal font-['Inter']">Current Plan</span>
+                    <span className={`text-xl font-semibold font-['Inter'] ${subscriptionColor}`}>{subscription}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                    <span className="text-black text-xl font-normal font-['Inter']">Models Remaining</span>
+                    <span className="text-black text-xl font-semibold font-['Inter']">{Math.max(modelsRemaining, 0)} models</span>
+                </div>
+            </div>
+        </div>
+
       </div>
     </div>
   );

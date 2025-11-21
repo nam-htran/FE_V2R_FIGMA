@@ -1,207 +1,156 @@
-// ===== .\src\components\dashboard\Overview.tsx =====
+// ===== src/components/dashboard/Overview.tsx =====
 "use client";
 
-import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '@/services/api/config';
+import { useState, useEffect, ReactNode } from 'react';
+import { api } from '@/services/api';
 import { orderService } from '@/services/api/order';
-// SỬA ĐỔI: Import component Bar và Doughnut từ react-chartjs-2
-import { Bar, Doughnut } from 'react-chartjs-2';
-// SỬA ĐỔI: Import các thành phần cần thiết từ chart.js
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend, ChartOptions } from 'chart.js';
+import { useTranslations } from 'next-intl';
 
-// SỬA ĐỔI: Đăng ký các thành phần với ChartJS. Đây là bước bắt buộc!
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
-// --- DỮ LIỆU GỐC (Không đổi) ---
-const originalUserChartData = [
-  { name: "06/07", free: 300, basic: 400, pro: 200, enterprise: 100 },
-  { name: "07/07", free: 350, basic: 410, pro: 220, enterprise: 110 },
-  { name: "08/07", free: 320, basic: 420, pro: 210, enterprise: 120 },
-  { name: "09/07", free: 380, basic: 430, pro: 230, enterprise: 130 },
-  { name: "10/07", free: 360, basic: 440, pro: 240, enterprise: 140 },
-  { name: "11/07", free: 390, basic: 450, pro: 250, enterprise: 150 },
-  { name: "12/07", free: 400, basic: 460, pro: 260, enterprise: 160 },
-];
+// Định nghĩa Interface cho dữ liệu biểu đồ
+interface ChartDataset {
+  label: string;
+  data: number[];
+  backgroundColor: string;
+}
 
-const originalRevenueChartData = [
-    { name: 'Spring 2025', basic: 64, pro: 38, enterprise: 25 },
-    { name: 'Summer 2025', basic: 70, pro: 42, enterprise: 28 },
-    { name: 'Fall 2025', basic: 80, pro: 45, enterprise: 30 },
-    { name: 'Winter 2025', basic: 90, pro: 50, enterprise: 35 },
-];
+interface UserChartData {
+  labels: string[];
+  datasets: ChartDataset[];
+}
 
-const originalUserDistributionData = [
-  { name: "Người dùng miễn phí", value: 56 },
-  { name: "Người dùng trả phí", value: 44 },
-];
+// Dữ liệu mẫu với type rõ ràng
+const userChartDataWeek: UserChartData = {"labels":["06/07","07/07","08/07","09/07","10/07","11/07","12/07"],"datasets":[{"label":"Free","data":[300,350,320,380,360,390,400],"backgroundColor":"#A5B4FC"},{"label":"Basic","data":[400,410,420,430,440,450,460],"backgroundColor":"#6366F1"},{"label":"Pro","data":[200,220,210,230,240,250,260],"backgroundColor":"#4338CA"},{"label":"Enterprise","data":[100,110,120,130,140,150,160],"backgroundColor":"#1E3A8A"}]};
+const userChartDataMonth: UserChartData = {"labels":["Week 1","Week 2","Week 3","Week 4"],"datasets":[{"label":"Free","data":[1200,1350,1280,1520],"backgroundColor":"#A5B4FC"},{"label":"Basic","data":[1600,1640,1680,1720],"backgroundColor":"#6366F1"},{"label":"Pro","data":[800,880,840,920],"backgroundColor":"#4338CA"},{"label":"Enterprise","data":[400,440,480,520],"backgroundColor":"#1E3A8A"}]};
+const userChartDataYear: UserChartData = {"labels":["Jan","Feb","Mar","Apr","May","Jun"],"datasets":[{"label":"Free","data":[5000,5200,4800,5500,5300,5800],"backgroundColor":"#A5B4FC"},{"label":"Basic","data":[6000,6200,5800,6500,6300,6800],"backgroundColor":"#6366F1"},{"label":"Pro","data":[3000,3100,2900,3200,3150,3400],"backgroundColor":"#4338CA"},{"label":"Enterprise","data":[1500,1600,1400,1700,1650,1800],"backgroundColor":"#1E3A8A"}]};
 
-// --- CẤU HÌNH BIỂU ĐỒ CHO CHART.JS ---
+type TimeFilter = 'week' | 'month' | 'year';
 
-// Cấu hình chung
-const commonChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false, // Rất quan trọng để biểu đồ lấp đầy container
-  plugins: {
-    legend: {
-      position: 'top' as const,
-    },
-  },
+// Thay thế any bằng UserChartData
+const dataMap: Record<TimeFilter, UserChartData> = {
+  week: userChartDataWeek,
+  month: userChartDataMonth,
+  year: userChartDataYear,
 };
+const userChartOptions: ChartOptions<'bar'> = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' as const } }, scales: { x: { stacked: true }, y: { stacked: true } }};
 
-// 1. Dữ liệu và tùy chọn cho Biểu đồ người dùng (User Chart - Stacked Bar)
-const userChartLabels = originalUserChartData.map(d => d.name);
-const userChartData = {
-  labels: userChartLabels,
-  datasets: [
-    { label: 'Free', data: originalUserChartData.map(d => d.free), backgroundColor: '#A5B4FC' },
-    { label: 'Basic', data: originalUserChartData.map(d => d.basic), backgroundColor: '#6366F1' },
-    { label: 'Pro', data: originalUserChartData.map(d => d.pro), backgroundColor: '#4338CA' },
-    { label: 'Enterprise', data: originalUserChartData.map(d => d.enterprise), backgroundColor: '#1E3A8A' },
-  ],
-};
-const userChartOptions = {
-  ...commonChartOptions,
-  scales: {
-    x: { stacked: true }, // Bật chế độ xếp chồng cho trục X
-    y: { stacked: true }, // Bật chế độ xếp chồng cho trục Y
-  },
-};
+interface SystemStats {
+    cpu_percent: number;
+    ram_percent: number;
+    gpu: {
+        name: string;
+        utilization_percent: number;
+        memory: { total_mb: number; used_mb: number; free_mb: number; };
+    };
+}
 
-// 2. Dữ liệu và tùy chọn cho Phân bổ người dùng (User Distribution - Doughnut)
-const userDistributionData = {
-  labels: originalUserDistributionData.map(d => d.name),
-  datasets: [
-    {
-      label: 'Phân bổ người dùng',
-      data: originalUserDistributionData.map(d => d.value),
-      backgroundColor: ['#A5B4FC', '#1E3A8A'], // Màu tương ứng với labels
-      borderColor: ['#FFFFFF'],
-      borderWidth: 2,
-    },
-  ],
-};
-const userDistributionOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'bottom' as const, // Di chuyển chú thích xuống dưới cho đẹp hơn
-    },
-  },
-};
-
-// 3. Dữ liệu và tùy chọn cho Doanh thu theo gói (Revenue Chart - Bar)
-const revenueChartLabels = originalRevenueChartData.map(d => d.name);
-const revenueChartData = {
-  labels: revenueChartLabels,
-  datasets: [
-    { label: 'Basic', data: originalRevenueChartData.map(d => d.basic), backgroundColor: '#C7D2FE' },
-    { label: 'Pro', data: originalRevenueChartData.map(d => d.pro), backgroundColor: '#A5B4FC' },
-    { label: 'Enterprise', data: originalRevenueChartData.map(d => d.enterprise), backgroundColor: '#312E81' },
-  ],
-};
-
-// --- COMPONENT CHÍNH ---
 export default function Overview() {
-  const [totalUsers, setTotalUsers] = useState<number>(0);
-  const [paidUsers, setPaidUsers] = useState<number>(0);
-  const [totalRevenue, setTotalRevenue] = useState<number>(0);
+  const t = useTranslations('Dashboard');
+  const tSys = useTranslations('System');
+  const [totalUsers, setTotalUsers] = useState<number | null>(null);
+  const [paidUsers, setPaidUsers] = useState<number | null>(null);
+  const [totalRevenue, setTotalRevenue] = useState<number | null>(null);
+  const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('week');
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchAllStats = async () => {
       try {
-        // Fetch total users
-        const usersResponse = await fetch(`${API_BASE_URL}/api/users?page=0&size=1`);
-        const usersData = await usersResponse.json();
-        setTotalUsers(usersData.totalElements || 0);
+        const [usersResponse, subsResponse, revenue] = await Promise.all([
+          api.user.getUsersList(0, 1).catch(() => null),
+          api.subscription.getAllUserSubscriptions(0, 10000).catch(() => null),
+          orderService.getTotalPriceByStatus(2).catch(() => null)
+        ]);
+        
+        if(usersResponse) setTotalUsers(usersResponse.totalElements);
+        // Fix lỗi any ở subsResponse: dùng unknown và ép kiểu an toàn hơn hoặc dùng interface UserSubscription
+        if(subsResponse && Array.isArray(subsResponse.content)) {
+             setPaidUsers(subsResponse.content.filter((sub: { active: boolean }) => sub.active).length);
+        }
+        if(revenue !== null) setTotalRevenue(revenue);
+        
+        try {
+          const backendUrlRes = await fetch('/api/get-backend-url');
+          if (backendUrlRes.ok) {
+            const { url: backendUrl } = await backendUrlRes.json();
+            const statsRes = await fetch(`${backendUrl}/system/stats`, {
+              headers: {
+                'ngrok-skip-browser-warning': 'true',
+              },
+            });
+            if (statsRes.ok) {
+              const statsData = await statsRes.json();
+              setSystemStats(statsData);
+            }
+          }
+        } catch (e: unknown) { // Sử dụng unknown thay vì any
+             if (e instanceof Error) {
+                console.error('Error fetching system stats:', e.message);
+             }
+        }
 
-        // Fetch user subscriptions to count paid users
-        const subsResponse = await fetch(`${API_BASE_URL}/api/user-subscriptions?page=0&size=1000`);
-        const subsData = await subsResponse.json();
-        const activePaidUsers = subsData.content.filter((sub: any) => sub.active).length;
-        setPaidUsers(activePaidUsers);
-
-        // Fetch total revenue for completed orders (status 2)
-        const revenue = await orderService.getTotalPriceByStatus(2);
-        setTotalRevenue(revenue);
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error('Error fetching dashboard stats:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchStats();
+    fetchAllStats();
   }, []);
+
+  const filters: {key: TimeFilter, label: string}[] = [
+      {key: 'week', label: 'Tuần'},
+      {key: 'month', label: 'Tháng'},
+      {key: 'year', label: 'Năm'}
+  ];
 
   return (
     <div className="space-y-8">
       <h1 className="text-blue-900 text-4xl font-bold font-['Unbounded']">
-        Tổng quan
+        {t('overview')}
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <StatCard 
-          title="Tất cả người dùng" 
-          value={isLoading ? "..." : totalUsers.toString()} 
-        />
-        <StatCard
-          title="Người dùng trả phí"
-          value={isLoading ? "..." : paidUsers.toString()}
-          subtitle="Có gói đăng ký hoạt động"
-        />
-        <StatCard 
-          title="Tổng doanh thu" 
-          value={isLoading ? "..." : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalRevenue)}
-        />
+        <StatCard title="Tất cả người dùng" value={isLoading ? "..." : String(totalUsers ?? 'N/A')} />
+        <StatCard title="Người dùng trả phí" value={isLoading ? "..." : String(paidUsers ?? 'N/A')} />
+        <StatCard title="Tổng doanh thu" value={isLoading ? "..." : totalRevenue !== null ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalRevenue) : 'N/A'} />
       </div>
 
-      <ChartContainer title="Biểu đồ người dùng" filterOptions={["Tuần", "Tháng", "Năm"]}>
-        {/* SỬA ĐỔI: Sử dụng component Bar của Chart.js */}
+      {systemStats ? (
+         <div className="bg-white rounded-2xl p-6 shadow">
+            <h2 className="text-xl font-bold mb-4">{t('aiResourceStatus')}</h2>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <ResourceStatCard title={tSys('cpu')} value={systemStats.cpu_percent} unit="%" />
+                <ResourceStatCard title={tSys('ram')} value={systemStats.ram_percent} unit="%" />
+                <ResourceStatCard title={tSys('gpu')} value={systemStats.gpu.utilization_percent} unit="%" subtitle={systemStats.gpu.name} />
+                <ResourceStatCard title={tSys('vram')} value={(systemStats.gpu.memory.used_mb / systemStats.gpu.memory.total_mb) * 100} unit="%" subtitle={`${(systemStats.gpu.memory.used_mb / 1024).toFixed(1)} / ${(systemStats.gpu.memory.total_mb / 1024).toFixed(1)} GB`}/>
+             </div>
+         </div>
+      ) : (
+          !isLoading && <p className="text-center text-gray-500">{t('cannotLoadResource')}</p>
+      )}
+
+      <ChartContainer 
+        title="Biểu đồ người dùng" 
+        filterOptions={filters}
+        activeFilter={timeFilter}
+        onFilterChange={setTimeFilter}
+      >
         <div style={{ position: 'relative', height: '350px' }}>
-            <Bar options={userChartOptions} data={userChartData} />
+            <Bar options={userChartOptions} data={dataMap[timeFilter]} />
         </div>
       </ChartContainer>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <ChartContainer title="Phân bổ người dùng">
-            {/* SỬA ĐỔI: Sử dụng component Doughnut của Chart.js */}
-            <div style={{ position: 'relative', height: '300px' }}>
-                <Doughnut data={userDistributionData} options={userDistributionOptions} />
-            </div>
-        </ChartContainer>
-
-        <ChartContainer title="Doanh thu theo gói" filterOptions={["Tuần", "Tháng", "Quý", "Năm"]}>
-            {/* SỬA ĐỔI: Sử dụng component Bar của Chart.js */}
-            <div style={{ position: 'relative', height: '350px' }}>
-                <Bar options={commonChartOptions} data={revenueChartData} />
-            </div>
-        </ChartContainer>
-      </div>
     </div>
   );
 }
-
-// --- CÁC COMPONENT PHỤ (Không đổi) ---
-function StatCard({ title, value, subtitle }: { title: string; value: string; subtitle?: string; }) {
+// ... (Phần dưới của file Overview giữ nguyên StatCard và ChartContainer)
+// Cần phải giữ lại StatCard và ChartContainer ở cuối file
+function StatCard({ title, value }: { title: string; value: string; }) {
   return (
     <div className="bg-white rounded-xl p-6 shadow">
       <div className="bg-blue-900 text-white text-xl font-semibold font-['Unbounded'] p-3 rounded-xl -mt-10 mx-auto w-max">
@@ -210,30 +159,28 @@ function StatCard({ title, value, subtitle }: { title: string; value: string; su
       <p className="text-4xl font-black font-['Unbounded'] text-center mt-4">
         {value}
       </p>
-      {subtitle && (
-        <p className="text-sm font-medium text-center mt-2">{subtitle}</p>
-      )}
     </div>
   );
 }
 
-function ChartContainer({ title, children, filterOptions }: { title: string; children: React.ReactNode; filterOptions?: string[]; }) {
+function ChartContainer({ title, children, filterOptions, activeFilter, onFilterChange }: { title: string; children: ReactNode; filterOptions?: {key: TimeFilter, label: string}[]; activeFilter?: TimeFilter; onFilterChange?: (filter: TimeFilter) => void; }) {
   return (
     <div className="bg-white rounded-2xl p-6 shadow">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">{title}</h2>
-        {filterOptions && (
+        {filterOptions && onFilterChange && (
           <div className="flex gap-x-2">
-            {filterOptions.map((option, index) => (
-              <button
-                key={index}
-                className={`px-4 py-2 rounded-md text-base font-semibold ${
-                  index === 0
-                    ? "bg-blue-900 text-white"
-                    : "bg-white text-neutral-950"
+            {filterOptions.map(option => (
+              <button 
+                key={option.key} 
+                onClick={() => onFilterChange(option.key)}
+                className={`px-4 py-2 rounded-md text-base font-semibold transition-colors ${
+                  activeFilter === option.key 
+                    ? "bg-blue-900 text-white" 
+                    : "bg-white text-neutral-950 hover:bg-gray-100"
                 }`}
               >
-                {option.toUpperCase()}
+                {option.label.toUpperCase()}
               </button>
             ))}
           </div>
@@ -242,4 +189,22 @@ function ChartContainer({ title, children, filterOptions }: { title: string; chi
       {children}
     </div>
   );
+}
+
+function ResourceStatCard({ title, value, unit, subtitle }: { title: string; value: number; unit: string; subtitle?: string;}) {
+    const percentage = Math.round(value);
+    const color = percentage > 85 ? 'bg-red-500' : percentage > 60 ? 'bg-yellow-500' : 'bg-green-500';
+
+    return (
+        <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex justify-between items-baseline">
+                <h3 className="font-semibold text-gray-700">{title}</h3>
+                <span className="font-bold text-xl">{percentage}{unit}</span>
+            </div>
+            {subtitle && <p className="text-xs text-gray-500 -mt-1">{subtitle}</p>}
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                <div className={`${color} h-2.5 rounded-full`} style={{ width: `${percentage}%` }}></div>
+            </div>
+        </div>
+    );
 }

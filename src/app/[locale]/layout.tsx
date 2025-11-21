@@ -26,15 +26,13 @@ export default async function RootLayout({
         className={`${inter.variable} ${unbounded.variable} font-inter`}
         suppressHydrationWarning
       >
+        {/* === SỬA ĐỔI TẠI ĐÂY === */}
         <div className="fixed inset-0 -z-20">
           <Image
             src="/landing-page/background/full.png"
             alt="V2R landing page background"
-            layout="fill"
-            // === CHỈNH SỬA TẠI ĐÂY ===
-            // "fill" sẽ kéo dãn ảnh để lấp đầy toàn bộ không gian,
-            // đảm bảo không bị cắt và không có khoảng trống.
-            objectFit="fill" 
+            fill // Sử dụng 'fill' thay cho layout="fill"
+            className="object-cover" // Sử dụng className để điều khiển object-fit
             quality={100}
             priority
           />

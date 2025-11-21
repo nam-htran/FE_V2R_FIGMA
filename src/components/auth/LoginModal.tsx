@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { useUI } from '@/context/UIContext';
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, MouseEvent } from 'react'; // BỔ SUNG MouseEvent
 import { useToast } from '@/context/ToastContext';
 
 interface LoginModalProps {
@@ -44,18 +44,26 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     }
   };
   const switchToRegister = () => { onClose(); setTimeout(openRegisterModal, 300); };
-
-  // --- TẠO MỘT BIẾN ĐỂ TÁI SỬ DỤNG CLASS CHO GỌN ---
   const inputClasses = "w-full h-10 px-4 bg-white/40 rounded-[10px] text-zinc-800 placeholder:text-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-[0px_13.07px_43.71px_0px_rgba(0,0,0,0.15)] backdrop-blur-[28.56px]";
+  
+  // --- THAY ĐỔI TẠI ĐÂY: Hàm xử lý đóng modal mới ---
+  const handleClose = (e: MouseEvent<HTMLDivElement>) => {
+    // Chỉ đóng nếu click trực tiếp vào div nền (e.target),
+    // không phải các phần tử con bên trong (e.currentTarget)
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}
+        // --- THAY ĐỔI TẠI ĐÂY: Sử dụng onMouseDown thay vì onClick ---
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={handleClose}
           className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4 font-inter">
           
           <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2, ease: "easeOut" }} onClick={(e) => e.stopPropagation()}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="relative w-72 h-[619px] rounded-2xl overflow-hidden flex justify-center">
             
             <Image src="/landing-page/background/login.png" alt="Login background" layout="fill" objectFit="cover" className="-z-10" />
@@ -100,7 +108,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               <div className="flex items-center my-4">
                 <hr className="flex-grow border-black/20" /><span className="px-2 text-zinc-800 text-xs">{t('or')}</span><hr className="flex-grow border-black/20" />
               </div>
-              {/* --- THAY ĐỔI TẠI ĐÂY --- */}
               <button className={`${inputClasses} flex items-center justify-center gap-x-2 text-black font-semibold hover:bg-white/60 transition-colors`}>
                 <Icon icon="flat-color-icons:google" className="w-5 h-5" />
                 {t('continue_with_google')}

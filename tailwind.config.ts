@@ -1,6 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: "class",
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -12,7 +11,6 @@ module.exports = {
         inter: ['var(--font-inter)', 'sans-serif'],
         unbounded: ['var(--font-unbounded)', 'sans-serif'],
       },
-      // --- PHẦN TÙY CHỈNH box-shadow VÀ backdrop-blur ĐÃ ĐƯỢC XÓA ---
       keyframes: {
         'fade-in-up': {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
